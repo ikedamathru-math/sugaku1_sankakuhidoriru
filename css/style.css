@@ -6893,3 +6893,28 @@ svg.tap-point-symbol.next-point-symbol circle {
         overflow: visible !important;
     }
 }
+
+
+/* ===== v42: smartphone tan60/tan120 safe area, keep unit circle large ===== */
+@media (max-width: 767px) {
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        /* Taller frame compensates for the extra tan60/tan120 vertical range. */
+        height: clamp(450px, 126vw, 505px) !important;
+        min-height: 450px !important;
+        max-height: 505px !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+    #quiz-screen.choice-mode #quiz-unit-circle .unit-circle-svg {
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+}
+@media (max-width: 390px) {
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        height: clamp(430px, 128vw, 470px) !important;
+        min-height: 430px !important;
+        max-height: 470px !important;
+    }
+}
