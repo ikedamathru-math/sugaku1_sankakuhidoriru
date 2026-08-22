@@ -6918,3 +6918,27 @@ svg.tap-point-symbol.next-point-symbol circle {
         max-height: 470px !important;
     }
 }
+
+
+/* ===== v43: smartphone 4-choice circle slightly larger, trim tan60/120 vertical margins ===== */
+@media (max-width: 767px) {
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        height: clamp(466px, 129vw, 520px) !important;
+        min-height: 466px !important;
+        max-height: 520px !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+    #quiz-screen.choice-mode #quiz-unit-circle .unit-circle-svg {
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+}
+@media (max-width: 390px) {
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        height: clamp(446px, 130vw, 486px) !important;
+        min-height: 446px !important;
+        max-height: 486px !important;
+    }
+}

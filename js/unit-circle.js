@@ -62,7 +62,7 @@ class UnitCircleVisualizer {
                 </g>
 
                 <!-- Tangent guide line (x = 1) -->
-                <line x1="${this.R}" y1="${this.container && this.container.id === 'reference-guide-circle' ? -218 : (this.container && this.container.id === 'quiz-unit-circle' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches ? -210 : -218)}" x2="${this.R}" y2="${this.container && this.container.id === 'reference-guide-circle' ? 218 : (this.container && this.container.id === 'quiz-unit-circle' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches ? 210 : 218)}" class="tan-guide-line" />
+                <line x1="${this.R}" y1="${this.container && this.container.id === 'reference-guide-circle' ? -218 : (this.container && this.container.id === 'quiz-unit-circle' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches ? -204 : -218)}" x2="${this.R}" y2="${this.container && this.container.id === 'reference-guide-circle' ? 218 : (this.container && this.container.id === 'quiz-unit-circle' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches ? 204 : 218)}" class="tan-guide-line" />
                 <text x="${this.R + 6}" y="-135" class="tan-guide-text"><tspan class="math-var">x</tspan>=1</text>
 
                 <!-- Main Axes (X & Y) - Clear margins to avoid overlap -->
@@ -125,7 +125,7 @@ class UnitCircleVisualizer {
         const svg = this.container ? this.container.querySelector('svg.unit-circle-svg') : null;
         if (svg && this.container && this.container.id === 'quiz-unit-circle') {
             const isPhone = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
-            svg.setAttribute('viewBox', isPhone ? '-158 -218 368 436' : '-225 -225 450 450');
+            svg.setAttribute('viewBox', isPhone ? '-154 -208 360 416' : '-225 -225 450 450');
         }
 
         // Reset point styles
@@ -161,7 +161,7 @@ class UnitCircleVisualizer {
             const isPhoneQuiz = isQuizCircle && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
             svg.setAttribute(
                 'viewBox',
-                isPhoneQuiz ? '-158 -218 368 436' : '-225 -225 450 450'
+                isPhoneQuiz ? '-154 -208 360 416' : '-225 -225 450 450'
             );
             svg.setAttribute(
                 'aria-label',
@@ -265,7 +265,7 @@ class UnitCircleVisualizer {
             const tanVal = Math.tan(rad);
             const tanY = -tanVal * this.R;
             const isPhoneQuizTan = isQuizCircle && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
-            const tanLimit = isPhoneQuizTan ? 210 : (isExpandedCircle ? 218 : 145);
+            const tanLimit = isPhoneQuizTan ? 204 : (isExpandedCircle ? 218 : 145);
             const displayTanY = Math.max(-tanLimit, Math.min(tanLimit, tanY));
             content += `
                 <line x1="0" y1="0" x2="${this.R}" y2="${tanY}" class="tan-extend-line anim-fade-in" stroke-dasharray="3,3" />
@@ -274,8 +274,8 @@ class UnitCircleVisualizer {
             `;
             const badgeY = isPhoneQuizTan
                 ? (tanY < 0
-                    ? Math.max(-190, Math.min(-28, tanY / 2 - 10))
-                    : Math.min(170, Math.max(24, tanY / 2 - 10)))
+                    ? Math.max(-184, Math.min(-24, tanY / 2 - 10))
+                    : Math.min(164, Math.max(20, tanY / 2 - 10)))
                 : (isExpandedCircle
                     ? (tanY < 0
                         ? Math.max(-200, Math.min(-26, tanY / 2 - 10))
