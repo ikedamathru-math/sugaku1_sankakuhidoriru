@@ -6998,3 +6998,81 @@ svg.tap-point-symbol.next-point-symbol circle {
         padding-bottom: 0 !important;
     }
 }
+
+
+/* ===== v46: smartphone give slightly more top/bottom breathing room around the unit circle ===== */
+@media (max-width: 767px) {
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        aspect-ratio: 360 / 424 !important;
+    }
+}
+
+
+/* ===== v47: smartphone oversized start panel with huge face icon ===== */
+@media (max-width: 767px) {
+    #start-screen #btn-start-quiz,
+    #start-screen .start-quiz-btn {
+        width: 100% !important;
+        height: clamp(265px, 32dvh, 330px) !important;
+        min-height: clamp(265px, 32dvh, 330px) !important;
+        max-height: 330px !important;
+        padding: 16px 12px 14px !important;
+        margin-top: 2px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        border-radius: 20px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    #start-screen #btn-start-quiz .start-btn-label,
+    #start-screen .start-quiz-btn .start-btn-label {
+        display: block !important;
+        flex: 0 0 auto !important;
+        font-size: clamp(2.65rem, 12vw, 3.55rem) !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        transform: none !important;
+        text-align: center !important;
+    }
+
+    #start-screen #btn-start-quiz .start-btn-icon,
+    #start-screen .start-quiz-btn .start-btn-icon {
+        display: block !important;
+        width: clamp(150px, 42vw, 190px) !important;
+        height: clamp(150px, 42vw, 190px) !important;
+        max-width: 190px !important;
+        max-height: 190px !important;
+        margin: 0 auto !important;
+        flex: 0 0 auto !important;
+        object-fit: contain !important;
+        transform: none !important;
+        filter:
+            drop-shadow(1px 0 0 #fff)
+            drop-shadow(-1px 0 0 #fff)
+            drop-shadow(0 1px 0 #fff)
+            drop-shadow(0 -1px 0 #fff) !important;
+    }
+
+    /* Keep the enlarged panel snug under the time-limit row. */
+    #start-screen .settings-card {
+        padding-bottom: 4px !important;
+    }
+}
+
+/* Extra-short phone screens: keep the full button visible. */
+@media (max-width: 767px) and (max-height: 720px) {
+    #start-screen #btn-start-quiz,
+    #start-screen .start-quiz-btn {
+        height: 245px !important;
+        min-height: 245px !important;
+    }
+    #start-screen #btn-start-quiz .start-btn-icon,
+    #start-screen .start-quiz-btn .start-btn-icon {
+        width: 140px !important;
+        height: 140px !important;
+    }
+}
