@@ -87,8 +87,8 @@ class UnitCircleVisualizer {
                         const y = -Math.sin(rad) * this.R;
                         return `
                             <g class="circle-point-group" data-angle="${deg}">
-                                <circle cx="${x}" cy="${y}" r="24" class="point-hit-area" />
-                                <circle cx="${x}" cy="${y}" r="8" class="point-dot" />
+                                <circle cx="${x}" cy="${y}" r="16" class="point-hit-area" />
+                                <circle cx="${x}" cy="${y}" r="6" class="point-dot" />
                             </g>
                         `;
                     }).join('')}

@@ -6435,235 +6435,98 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 
-/* ===== v35: bigger unit circle + easier tap points ===== */
-.circle-point-group .point-hit-area {
-    fill: transparent;
-    cursor: pointer;
-}
-.circle-point-group .point-dot {
-    stroke-width: 2.8 !important;
-}
-.circle-point-group:hover:not(.disabled) .point-dot,
-.circle-point-group.correct .point-dot,
-.circle-point-group.incorrect .point-dot,
-.circle-point-group.selected .point-dot {
-    r: 10 !important;
-}
-
-/* 4-choice mode: make right column slimmer so the unit circle can grow */
-#quiz-screen.choice-mode .quiz-main-card {
-    padding: 10px 12px 14px !important;
-    gap: 6px !important;
-}
-#quiz-screen.choice-mode .question-display {
-    min-height: 68px !important;
-    padding: 6px 14px !important;
-}
-#quiz-screen.choice-mode .quiz-problem-layout {
-    grid-template-columns: minmax(0, 1.34fr) minmax(220px, 0.66fr) !important;
-    gap: 10px !important;
-}
-#quiz-screen.choice-mode .quiz-left-panel {
-    padding-right: 6px !important;
-}
-#quiz-screen.choice-mode .quiz-right-panel {
-    padding-left: 0 !important;
-}
-#quiz-screen.choice-mode #step-angle-label,
-#quiz-screen.choice-mode #step-value-label {
-    margin: 0 0 4px !important;
-    font-size: 1.22rem !important;
-}
-#quiz-screen.choice-mode #quiz-unit-circle {
-    height: 575px !important;
-    padding: 0 !important;
-}
-#quiz-screen.choice-mode .choices-grid {
-    gap: 8px !important;
-}
-#quiz-screen.choice-mode .choice-btn {
-    min-height: 74px !important;
-    padding: 8px 12px !important;
-    border-radius: 12px !important;
-    font-size: 1.55rem !important;
-}
-#quiz-screen.choice-mode .choice-num {
-    width: 30px !important;
-    height: 30px !important;
-    font-size: .92rem !important;
-}
-#quiz-screen.choice-mode .choice-val {
-    transform: scale(0.95);
-    transform-origin: center;
+/* ===== v35: mobile 4-choice horizontal + Century numerals unification ===== */
+/* Century numerals across quiz + reference (desktop/tablet/mobile) */
+#quiz-screen .q-angle,
+#quiz-screen .q-angle *,
+#quiz-screen .choice-num,
+#quiz-screen .choice-val,
+#quiz-screen .choice-val *,
+#quiz-screen .palette-btn,
+#quiz-screen .palette-btn *,
+#quiz-screen .component-label,
+#quiz-screen .guide-deg-label,
+#quiz-screen .angle-text,
+#quiz-screen .tan-guide-text,
+#quiz-screen .axis-val-label,
+#quiz-screen .point-label,
+#reference-screen .guide-deg-label,
+#reference-screen .guide-deg-label *,
+#reference-screen .angle-text,
+#reference-screen .angle-text *,
+#reference-screen .tan-guide-text,
+#reference-screen .tan-guide-text *,
+#reference-screen .axis-val-label,
+#reference-screen .axis-val-label *,
+#reference-screen .component-label,
+#reference-screen .component-label *,
+#reference-screen .point-label,
+#reference-screen .point-label *,
+#reference-screen .side-heading-angle,
+#reference-screen .side-heading-angle *,
+#reference-screen .side-heading-value,
+#reference-screen .side-heading-value *,
+#reference-screen .fraction,
+#reference-screen .fraction *,
+#quiz-screen .fraction,
+#quiz-screen .fraction * {
+    font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+    font-style: normal !important;
 }
 
-/* Tablet */
-@media (min-width: 768px) and (max-width: 1023px) {
-    #quiz-screen.choice-mode .quiz-main-card {
-        padding: 8px 10px 12px !important;
-        gap: 6px !important;
-    }
-    #quiz-screen.choice-mode .quiz-problem-layout {
-        grid-template-columns: minmax(0, 1.28fr) minmax(205px, 0.72fr) !important;
-        gap: 8px !important;
-    }
-    #quiz-screen.choice-mode #quiz-unit-circle {
-        height: 495px !important;
-    }
-    #quiz-screen.choice-mode .choice-btn {
-        min-height: 68px !important;
-        font-size: 1.38rem !important;
-        padding: 8px 10px !important;
-    }
-    #quiz-screen.choice-mode .choice-num {
-        width: 28px !important;
-        height: 28px !important;
-        font-size: .86rem !important;
-    }
-}
-
-/* Mobile: only slightly bigger tappable points and modest circle growth */
+/* Mobile: 4 choices in one horizontal row */
 @media (max-width: 767px) {
-    #quiz-screen.choice-mode .quiz-main-card {
-        padding: 8px !important;
-        gap: 6px !important;
-    }
-    #quiz-screen.choice-mode #quiz-unit-circle {
-        height: 350px !important;
-    }
-    #quiz-screen.choice-mode .choice-btn {
-        min-height: 70px !important;
-        font-size: 1.28rem !important;
-        padding: 8px 10px !important;
-    }
-    #quiz-screen.choice-mode .choice-num {
-        width: 28px !important;
-        height: 28px !important;
-        font-size: .82rem !important;
-    }
-}
-
-
-/* ===== v36: taller right choices, bigger choice typography, larger circle ===== */
-/* Desktop / large screens */
-#quiz-screen.choice-mode .quiz-main-card {
-    padding: 8px 10px 12px !important;
-    gap: 6px !important;
-}
-#quiz-screen.choice-mode .quiz-problem-layout {
-    grid-template-columns: minmax(0, 1.42fr) minmax(185px, 0.58fr) !important;
-    gap: 8px !important;
-    align-items: stretch !important;
-}
-#quiz-screen.choice-mode .quiz-left-panel {
-    padding-right: 6px !important;
-}
-#quiz-screen.choice-mode .quiz-right-panel {
-    padding-left: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-#quiz-screen.choice-mode #step-angle-label,
-#quiz-screen.choice-mode #step-value-label {
-    margin: 0 0 4px !important;
-    font-size: 1.18rem !important;
-}
-#quiz-screen.choice-mode #quiz-unit-circle {
-    height: 620px !important;
-    padding: 0 !important;
-}
-#quiz-screen.choice-mode .choice-answer-section {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 620px !important;
-    height: 100% !important;
-}
-#quiz-screen.choice-mode .choices-grid {
-    flex: 1 1 auto !important;
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-    min-height: 0 !important;
-    align-content: stretch !important;
-}
-#quiz-screen.choice-mode .choice-btn {
-    min-height: 0 !important;
-    height: 100% !important;
-    padding: 10px 12px !important;
-    border-radius: 14px !important;
-    font-size: 1.75rem !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-#quiz-screen.choice-mode .choice-num {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 1rem !important;
-    font-weight: 800 !important;
-}
-#quiz-screen.choice-mode .choice-val {
-    font-size: 1.82rem !important;
-    line-height: 1.1 !important;
-    transform: none !important;
-}
-#quiz-screen.choice-mode .choice-val .fraction {
-    font-size: 1.02em !important;
-}
-
-/* Tablet / iPad */
-@media (min-width: 768px) and (max-width: 1023px) {
-    #quiz-screen.choice-mode .quiz-main-card {
-        padding: 8px 10px 10px !important;
-        gap: 6px !important;
-    }
-    #quiz-screen.choice-mode .quiz-problem-layout {
-        grid-template-columns: minmax(0, 1.36fr) minmax(170px, 0.64fr) !important;
-        gap: 8px !important;
-    }
-    #quiz-screen.choice-mode #quiz-unit-circle {
-        height: 540px !important;
-    }
-    #quiz-screen.choice-mode .choice-answer-section {
-        min-height: 540px !important;
-    }
-    #quiz-screen.choice-mode #step-angle-label,
-    #quiz-screen.choice-mode #step-value-label {
-        font-size: 1.12rem !important;
-        margin-bottom: 4px !important;
-    }
     #quiz-screen.choice-mode .choices-grid {
-        gap: 7px !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+        align-items: stretch !important;
     }
     #quiz-screen.choice-mode .choice-btn {
-        font-size: 1.5rem !important;
-        padding: 8px 10px !important;
+        min-height: 92px !important;
+        padding: 8px 4px !important;
+        gap: 6px !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
         border-radius: 12px !important;
+        font-size: 1.05rem !important;
     }
     #quiz-screen.choice-mode .choice-num {
-        width: 30px !important;
-        height: 30px !important;
-        font-size: .92rem !important;
+        width: 24px !important;
+        height: 24px !important;
+        font-size: .72rem !important;
+        margin: 0 auto !important;
     }
     #quiz-screen.choice-mode .choice-val {
-        font-size: 1.56rem !important;
+        flex: 0 1 auto !important;
+        width: 100% !important;
+        text-align: center !important;
+        font-size: 1.55rem !important;
+        line-height: 1.05 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 44px !important;
+    }
+    #quiz-screen.choice-mode .choice-val .fraction {
+        transform: scale(.96) !important;
+        transform-origin: center !important;
     }
 }
 
-/* Mobile keeps stacked layout but slightly improved */
-@media (max-width: 767px) {
-    #quiz-screen.choice-mode #quiz-unit-circle {
-        height: 360px !important;
-    }
-    #quiz-screen.choice-mode .choices-grid {
-        gap: 8px !important;
-    }
-    #quiz-screen.choice-mode .choice-btn {
-        min-height: 72px !important;
-        font-size: 1.34rem !important;
-    }
-    #quiz-screen.choice-mode .choice-val {
-        font-size: 1.4rem !important;
+/* Tablet: reinforce Century numerals and choice values */
+@media (min-width: 768px) and (max-width: 1023px) {
+    #quiz-screen.choice-mode .choice-num,
+    #quiz-screen.choice-mode .choice-val,
+    #quiz-screen.palette-mode .palette-btn,
+    #reference-screen .side-heading-angle,
+    #reference-screen .side-heading-value,
+    #reference-screen .component-label,
+    #reference-screen .guide-deg-label,
+    #reference-screen .axis-val-label,
+    #reference-screen .angle-text,
+    #reference-screen .tan-guide-text {
+        font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+        font-style: normal !important;
     }
 }
