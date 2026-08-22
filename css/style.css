@@ -6865,3 +6865,31 @@ svg.tap-point-symbol.next-point-symbol circle {
         font-style: normal !important;
     }
 }
+
+
+/* ===== v41: smartphone answer layout fixes ===== */
+@media (max-width: 767px) {
+    /* Step ② does not need an outer frame; keep only the four answer cards. */
+    #quiz-screen.choice-mode .quiz-right-panel {
+        border: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* Preserve exactly the same visible unit-circle scale before and after answering. */
+    #quiz-screen.choice-mode #quiz-unit-circle,
+    #quiz-screen.choice-mode #quiz-unit-circle .unit-circle-svg {
+        transform: none !important;
+        scale: 1 !important;
+    }
+
+    /* Do not let the x=1 guide visually bleed below the unit-circle frame. */
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        overflow: hidden !important;
+    }
+    #quiz-screen.choice-mode #quiz-unit-circle .unit-circle-svg {
+        overflow: visible !important;
+    }
+}

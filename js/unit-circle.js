@@ -62,7 +62,7 @@ class UnitCircleVisualizer {
                 </g>
 
                 <!-- Tangent guide line (x = 1) -->
-                <line x1="${this.R}" y1="${this.container && (this.container.id === 'reference-guide-circle' || this.container.id === 'quiz-unit-circle') ? -218 : -148}" x2="${this.R}" y2="${this.container && (this.container.id === 'reference-guide-circle' || this.container.id === 'quiz-unit-circle') ? 218 : 10}" class="tan-guide-line" />
+                <line x1="${this.R}" y1="${this.container && this.container.id === 'reference-guide-circle' ? -218 : (this.container && this.container.id === 'quiz-unit-circle' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches ? -148 : -218)}" x2="${this.R}" y2="${this.container && this.container.id === 'reference-guide-circle' ? 218 : (this.container && this.container.id === 'quiz-unit-circle' && window.matchMedia && window.matchMedia('(max-width: 767px)').matches ? 148 : 218)}" class="tan-guide-line" />
                 <text x="${this.R + 6}" y="-135" class="tan-guide-text"><tspan class="math-var">x</tspan>=1</text>
 
                 <!-- Main Axes (X & Y) - Clear margins to avoid overlap -->
@@ -158,9 +158,10 @@ class UnitCircleVisualizer {
         const showFullCircleForObtuse = isExpandedCircle;
         const svg = this.container ? this.container.querySelector('svg.unit-circle-svg') : null;
         if (svg && isExpandedCircle) {
+            const isPhoneQuiz = isQuizCircle && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
             svg.setAttribute(
                 'viewBox',
-                '-225 -225 450 450'
+                isPhoneQuiz ? '-158 -158 316 316' : '-225 -225 450 450'
             );
             svg.setAttribute(
                 'aria-label',
