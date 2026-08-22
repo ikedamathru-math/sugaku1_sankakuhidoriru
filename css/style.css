@@ -45,7 +45,7 @@
     --radius-sm: 8px;
 
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', 'Meiryo', sans-serif;
-    --font-math: 'Century', 'Century Schoolbook', 'Century Gothic', 'TeX Gyre Schola', 'Baskerville', 'Times New Roman', serif;
+    --font-math: 'Century';
 }
 
 * {
@@ -4985,7 +4985,7 @@ svg text.axis-label.origin {
     gap: .36em !important;
 }
 .reference-inline-angle {
-    font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+    font-family: "Century" !important;
     font-size: .88em !important;
     font-weight: 700 !important;
     letter-spacing: .01em;
@@ -5273,7 +5273,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     margin-bottom: 8px !important;
 }
 .reference-inline-angle {
-    font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+    font-family: "Century" !important;
     font-size: .84em !important;
 }
 .reference-value-body {
@@ -5334,7 +5334,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     margin-bottom: 8px !important;
 }
 #reference-screen .reference-inline-angle {
-    font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+    font-family: "Century" !important;
     font-size: .84em !important;
 }
 #reference-screen .reference-value-body {
@@ -5642,7 +5642,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     line-height: 1 !important;
 }
 #reference-screen .side-heading-angle {
-    font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+    font-family: "Century" !important;
     font-size: .92rem !important;
     font-weight: 700 !important;
     color: #334155 !important;
@@ -5803,7 +5803,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 #reference-screen .cos-badge text,
 #reference-screen .sin-badge text,
 #reference-screen .tan-badge text {
-    font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+    font-family: "Century" !important;
 }
 
 @media (max-width: 1023px) {
@@ -6470,7 +6470,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 #reference-screen .fraction *,
 #quiz-screen .fraction,
 #quiz-screen .fraction * {
-    font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+    font-family: "Century" !important;
     font-style: normal !important;
 }
 
@@ -6526,7 +6526,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     #reference-screen .axis-val-label,
     #reference-screen .angle-text,
     #reference-screen .tan-guide-text {
-        font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+        font-family: "Century" !important;
         font-style: normal !important;
     }
 }
@@ -6652,4 +6652,216 @@ svg.tap-point-symbol.next-point-symbol circle {
 #quiz-screen.palette-mode .question-display .q-equals,
 #quiz-screen.palette-mode .question-display .q-question {
     text-align: center !important;
+}
+
+
+/* ===== v39: smartphone balance + larger selectable unit circle ===== */
+@media (max-width: 767px) {
+    /* Give question / step ① / step ② the same outer width and visual rhythm. */
+    #quiz-screen.choice-mode .quiz-main-card {
+        padding: 6px !important;
+        gap: 6px !important;
+    }
+    #quiz-screen.choice-mode .question-display,
+    #quiz-screen.choice-mode .quiz-left-panel,
+    #quiz-screen.choice-mode .quiz-right-panel {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        border-radius: 14px !important;
+    }
+    #quiz-screen.choice-mode .question-display {
+        min-height: 62px !important;
+        height: 62px !important;
+        padding: 6px 10px !important;
+        border: 2px solid #0f172a !important;
+        box-shadow: none !important;
+    }
+    #quiz-screen.choice-mode .quiz-problem-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        width: 100% !important;
+    }
+    #quiz-screen.choice-mode .quiz-left-panel,
+    #quiz-screen.choice-mode .quiz-right-panel {
+        border: 1.5px solid #cbd5e1 !important;
+        padding: 5px 6px 6px !important;
+        background: #ffffff !important;
+    }
+    #quiz-screen.choice-mode #step-angle-label,
+    #quiz-screen.choice-mode #step-value-label {
+        margin: 0 0 3px !important;
+        min-height: 24px !important;
+        line-height: 24px !important;
+        font-size: 1.08rem !important;
+        padding: 0 2px !important;
+    }
+
+    /* Larger unit-circle area. Tightened SVG viewBox in JS makes the circle itself larger too. */
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        width: 100% !important;
+        height: min(102vw, 410px) !important;
+        min-height: 380px !important;
+        max-height: 410px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+    }
+
+    /* Step ②: fixed-height container so values/fractions never resize the frame. */
+    #quiz-screen.choice-mode .quiz-right-panel {
+        height: 116px !important;
+        min-height: 116px !important;
+        max-height: 116px !important;
+        overflow: hidden !important;
+    }
+    #quiz-screen.choice-mode .choice-answer-section {
+        height: 100% !important;
+        min-height: 0 !important;
+    }
+    #quiz-screen.choice-mode .choices-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 5px !important;
+        height: 78px !important;
+        min-height: 78px !important;
+        max-height: 78px !important;
+        align-items: stretch !important;
+    }
+    #quiz-screen.choice-mode .choice-btn {
+        height: 78px !important;
+        min-height: 78px !important;
+        max-height: 78px !important;
+        box-sizing: border-box !important;
+        padding: 4px 2px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    #quiz-screen.choice-mode .choice-val {
+        height: 58px !important;
+        min-height: 58px !important;
+        max-height: 58px !important;
+        line-height: 1 !important;
+        overflow: visible !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.48rem !important;
+    }
+    #quiz-screen.choice-mode .choice-val .fraction {
+        max-height: 54px !important;
+        transform: scale(.92) !important;
+        transform-origin: center !important;
+    }
+}
+
+/* Extra-narrow phones: preserve the balance without shrinking ② unpredictably. */
+@media (max-width: 390px) {
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        height: 390px !important;
+        min-height: 370px !important;
+    }
+    #quiz-screen.choice-mode .choice-val {
+        font-size: 1.38rem !important;
+    }
+}
+
+
+/* ===== v40: complete tablet Century audit ===== */
+/*
+   Tablet numeric typography audit:
+   every element that can display a number, angle, score, time, fraction,
+   progress, record, answer value or dynamically generated result is forced
+   to the exact font-family name "Century".
+*/
+@media (min-width: 768px) and (max-width: 1023px) {
+    /* Start screen numbers / records / modes / timing */
+    #start-screen .pb-course-name,
+    #start-screen .pb-value,
+    #start-screen .pb-value *,
+    #start-screen .personal-best-note,
+    #start-screen .mode-name,
+    #start-screen .mode-desc,
+    #start-screen .pill-label,
+    #start-screen .settings-section-title,
+
+    /* Quiz HUD / question / unit-circle / answers */
+    #quiz-screen .quiz-badge,
+    #quiz-screen .quiz-progress-text,
+    #quiz-screen .global-timer-text,
+    #quiz-screen .combo-badge,
+    #quiz-screen .question-display,
+    #quiz-screen .question-display *,
+    #quiz-screen .answer-step,
+    #quiz-screen .answer-step *,
+    #quiz-screen .choice-btn,
+    #quiz-screen .choice-btn *,
+    #quiz-screen .palette-btn,
+    #quiz-screen .palette-btn *,
+    #quiz-screen .palette-row-title,
+    #quiz-screen .guide-deg-label,
+    #quiz-screen .guide-deg-label *,
+    #quiz-screen .angle-text,
+    #quiz-screen .angle-text *,
+    #quiz-screen .tan-guide-text,
+    #quiz-screen .tan-guide-text *,
+    #quiz-screen .axis-val-label,
+    #quiz-screen .axis-val-label *,
+    #quiz-screen .component-label,
+    #quiz-screen .component-label *,
+    #quiz-screen .point-label,
+    #quiz-screen .point-label *,
+    #quiz-screen .fraction,
+    #quiz-screen .fraction *,
+    #quiz-screen .explanation-card,
+    #quiz-screen .explanation-card *,
+
+    /* Reference screen / all numeric SVG and value displays */
+    #reference-screen .reference-hero-text,
+    #reference-screen .side-heading-angle,
+    #reference-screen .side-heading-angle *,
+    #reference-screen .side-heading-value,
+    #reference-screen .side-heading-value *,
+    #reference-screen .reference-inline-angle,
+    #reference-screen .reference-value-body,
+    #reference-screen .reference-value-body *,
+    #reference-screen .guide-deg-label,
+    #reference-screen .guide-deg-label *,
+    #reference-screen .angle-text,
+    #reference-screen .angle-text *,
+    #reference-screen .tan-guide-text,
+    #reference-screen .tan-guide-text *,
+    #reference-screen .axis-val-label,
+    #reference-screen .axis-val-label *,
+    #reference-screen .component-label,
+    #reference-screen .component-label *,
+    #reference-screen .point-label,
+    #reference-screen .point-label *,
+    #reference-screen .fraction,
+    #reference-screen .fraction *,
+
+    /* Result screen / dynamically generated percentages & history */
+    #result-screen .result-stat-value,
+    #result-screen .result-stat-value *,
+    #result-screen .result-stat-label,
+    #result-screen .history-item,
+    #result-screen .history-item *,
+    #result-screen .learning-analysis,
+    #result-screen .learning-analysis *,
+
+    /* Legacy reference modal, if opened */
+    #reference-modal .cell-angle,
+    #reference-modal .cell-angle *,
+    #reference-modal .cell-sin,
+    #reference-modal .cell-sin *,
+    #reference-modal .cell-cos,
+    #reference-modal .cell-cos *,
+    #reference-modal .cell-tan,
+    #reference-modal .cell-tan * {
+        font-family: "Century" !important;
+        font-style: normal !important;
+    }
 }

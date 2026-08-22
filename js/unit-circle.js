@@ -121,6 +121,13 @@ class UnitCircleVisualizer {
         this.dynamicLayer.innerHTML = '';
         this.setInteractive(true);
 
+        // Smartphone 4-choice: enlarge the selectable unit circle by using a tighter viewBox.
+        const svg = this.container ? this.container.querySelector('svg.unit-circle-svg') : null;
+        if (svg && this.container && this.container.id === 'quiz-unit-circle') {
+            const isPhone = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+            svg.setAttribute('viewBox', isPhone ? '-158 -158 316 316' : '-225 -225 450 450');
+        }
+
         // Reset point styles
         const pointGroups = this.container.querySelectorAll('.circle-point-group');
         pointGroups.forEach(grp => {
