@@ -667,6 +667,10 @@ class TrigQuizApp {
 
     renderQuestion() {
         setPointPNavigator('guide');
+        if (this.dom.quizScreen) {
+            this.dom.quizScreen.classList.toggle('palette-mode', this.answerType === 'palette');
+            this.dom.quizScreen.classList.toggle('choice-mode', this.answerType !== 'palette');
+        }
         if (this.answerType === 'palette') {
             if (this.dom.circleAnswerSection) this.dom.circleAnswerSection.style.display = 'none';
             if (this.dom.choiceAnswerSection) this.dom.choiceAnswerSection.style.display = 'none';

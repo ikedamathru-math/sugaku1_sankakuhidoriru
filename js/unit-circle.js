@@ -35,7 +35,7 @@ class UnitCircleVisualizer {
 
     renderBase() {
         this.container.innerHTML = `
-            <svg viewBox="${this.container && this.container.id === 'reference-guide-circle' ? '-225 -225 450 450' : '-175 -155 350 178'}" class="unit-circle-svg" aria-label="単位円の図解">
+            <svg viewBox="${(this.container && (this.container.id === 'reference-guide-circle' || this.container.id === 'quiz-unit-circle')) ? '-225 -225 450 450' : '-175 -155 350 178'}" class="unit-circle-svg" aria-label="単位円の図解">
                 <defs>
                     <!-- Arrow markers -->
                     <marker id="arrow-axis" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
@@ -62,7 +62,7 @@ class UnitCircleVisualizer {
                 </g>
 
                 <!-- Tangent guide line (x = 1) -->
-                <line x1="${this.R}" y1="${this.container && this.container.id === 'reference-guide-circle' ? -218 : -148}" x2="${this.R}" y2="${this.container && this.container.id === 'reference-guide-circle' ? 218 : 10}" class="tan-guide-line" />
+                <line x1="${this.R}" y1="${this.container && (this.container.id === 'reference-guide-circle' || this.container.id === 'quiz-unit-circle') ? -218 : -148}" x2="${this.R}" y2="${this.container && (this.container.id === 'reference-guide-circle' || this.container.id === 'quiz-unit-circle') ? 218 : 10}" class="tan-guide-line" />
                 <text x="${this.R + 6}" y="-135" class="tan-guide-text"><tspan class="math-var">x</tspan>=1</text>
 
                 <!-- Main Axes (X & Y) - Clear margins to avoid overlap -->
@@ -74,7 +74,7 @@ class UnitCircleVisualizer {
                 
                 <!-- Unit Semicircle (0° to 180°) -->
                 <path d="M ${this.R} 0 A ${this.R} ${this.R} 0 0 0 ${-this.R} 0" class="circle-path" />
-                ${this.container && this.container.id === 'reference-guide-circle' ? `<path d="M ${-this.R} 0 A ${this.R} ${this.R} 0 0 0 ${this.R} 0" class="circle-path reference-lower-circle-path" />` : ''}
+                ${this.container && (this.container.id === 'reference-guide-circle' || this.container.id === 'quiz-unit-circle') ? `<path d="M ${-this.R} 0 A ${this.R} ${this.R} 0 0 0 ${this.R} 0" class="circle-path reference-lower-circle-path" />` : ''}
 
                 <!-- Dynamic Layer (Angles, Triangles, Answer components) -->
                 <g id="dynamic-circle-layer"></g>
@@ -87,8 +87,8 @@ class UnitCircleVisualizer {
                         const y = -Math.sin(rad) * this.R;
                         return `
                             <g class="circle-point-group" data-angle="${deg}">
-                                <circle cx="${x}" cy="${y}" r="16" class="point-hit-area" />
-                                <circle cx="${x}" cy="${y}" r="6" class="point-dot" />
+                                <circle cx="${x}" cy="${y}" r="24" class="point-hit-area" />
+                                <circle cx="${x}" cy="${y}" r="8" class="point-dot" />
                             </g>
                         `;
                     }).join('')}
@@ -144,10 +144,13 @@ class UnitCircleVisualizer {
         const px = Math.cos(rad) * this.R;
         const py = -Math.sin(rad) * this.R; // SVGは上がマイナス
 
-        const isReferenceGuide = !!(this.container && this.container.id === 'reference-guide-circle');
-        const showFullCircleForObtuse = isReferenceGuide;
+        const circleId = this.container ? this.container.id : '';
+        const isReferenceGuide = circleId === 'reference-guide-circle';
+        const isQuizCircle = circleId === 'quiz-unit-circle';
+        const isExpandedCircle = isReferenceGuide || isQuizCircle;
+        const showFullCircleForObtuse = isExpandedCircle;
         const svg = this.container ? this.container.querySelector('svg.unit-circle-svg') : null;
-        if (svg && isReferenceGuide) {
+        if (svg && isExpandedCircle) {
             svg.setAttribute(
                 'viewBox',
                 '-225 -225 450 450'
@@ -244,7 +247,7 @@ class UnitCircleVisualizer {
         // Tan 表示 (always show on the x=1 tangent line)
         if (deg === 90) {
             content += `
-                <line x1="${this.R}" y1="-148" x2="${this.R}" y2="8" class="component-line tan-line active-func" />
+                <line x1="${this.R}" y1="${isExpandedCircle ? -218 : -148}" x2="${this.R}" y2="8" class="component-line tan-line active-func" />
                 <g class="tan-badge anim-fade-in">
                     <rect x="${this.R + 6}" y="-78" width="88" height="20" rx="4" fill="#ffffff" stroke="#059669" stroke-width="1.2" />
                     <text x="${this.R + 50}" y="-64" class="component-label tan-label" text-anchor="middle">tan=なし</text>
@@ -253,22 +256,22 @@ class UnitCircleVisualizer {
         } else {
             const tanVal = Math.tan(rad);
             const tanY = -tanVal * this.R;
-            const tanLimit = isReferenceGuide ? 218 : 145;
+            const tanLimit = isExpandedCircle ? 218 : 145;
             const displayTanY = Math.max(-tanLimit, Math.min(tanLimit, tanY));
             content += `
                 <line x1="0" y1="0" x2="${this.R}" y2="${tanY}" class="tan-extend-line anim-fade-in" stroke-dasharray="3,3" />
                 <line x1="${this.R}" y1="0" x2="${this.R}" y2="${displayTanY}" class="component-line tan-line active-func" />
                 <circle cx="${this.R}" cy="${tanY}" r="4.5" class="tan-point anim-pop" />
             `;
-            const badgeY = isReferenceGuide
+            const badgeY = isExpandedCircle
                 ? (tanY < 0
                     ? Math.max(-200, Math.min(-26, tanY / 2 - 10))
                     : Math.min(198, Math.max(24, tanY / 2 - 10)))
                 : Math.min(6, Math.max(-140, tanY / 2 - 10));
             content += `
                 <g class="tan-badge anim-fade-in">
-                    <rect x="${isReferenceGuide ? this.R + 2 : this.R + 6}" y="${badgeY}" width="${isReferenceGuide ? 82 : 88}" height="20" rx="4" fill="#ffffff" stroke="#059669" stroke-width="1.2" />
-                    <text x="${isReferenceGuide ? this.R + 43 : this.R + 50}" y="${badgeY + 14}" class="component-label tan-label" text-anchor="middle">tan=${valTan}</text>
+                    <rect x="${isExpandedCircle ? this.R + 2 : this.R + 6}" y="${badgeY}" width="${isExpandedCircle ? 82 : 88}" height="20" rx="4" fill="#ffffff" stroke="#059669" stroke-width="1.2" />
+                    <text x="${isExpandedCircle ? this.R + 43 : this.R + 50}" y="${badgeY + 14}" class="component-label tan-label" text-anchor="middle">tan=${valTan}</text>
                 </g>
             `;
         }
