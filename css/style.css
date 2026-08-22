@@ -6530,3 +6530,126 @@ svg.tap-point-symbol.next-point-symbol circle {
         font-style: normal !important;
     }
 }
+
+
+/* ===== v36: exact Century + remove mobile divider ===== */
+/* Use exactly Century for numerals/text requested by user */
+#quiz-screen .q-angle,
+#quiz-screen .q-angle *,
+#quiz-screen .choice-num,
+#quiz-screen .choice-val,
+#quiz-screen .choice-val *,
+#quiz-screen .palette-btn,
+#quiz-screen .palette-btn *,
+#quiz-screen .component-label,
+#quiz-screen .guide-deg-label,
+#quiz-screen .angle-text,
+#quiz-screen .tan-guide-text,
+#quiz-screen .axis-val-label,
+#quiz-screen .point-label,
+#reference-screen .guide-deg-label,
+#reference-screen .guide-deg-label *,
+#reference-screen .angle-text,
+#reference-screen .angle-text *,
+#reference-screen .tan-guide-text,
+#reference-screen .tan-guide-text *,
+#reference-screen .axis-val-label,
+#reference-screen .axis-val-label *,
+#reference-screen .component-label,
+#reference-screen .component-label *,
+#reference-screen .point-label,
+#reference-screen .point-label *,
+#reference-screen .side-heading-angle,
+#reference-screen .side-heading-angle *,
+#reference-screen .side-heading-value,
+#reference-screen .side-heading-value *,
+#reference-screen .fraction,
+#reference-screen .fraction *,
+#quiz-screen .fraction,
+#quiz-screen .fraction * {
+    font-family: "Century" !important;
+    font-style: normal !important;
+}
+
+/* Smartphone 4-choice: remove divider between ① and ② */
+@media (max-width: 767px) {
+    #quiz-screen.choice-mode .quiz-left-panel {
+        border-right: none !important;
+        padding-right: 0 !important;
+    }
+    #quiz-screen.choice-mode .quiz-right-panel {
+        border-left: none !important;
+        padding-left: 0 !important;
+    }
+    #quiz-screen.choice-mode .quiz-problem-layout {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+
+
+/* ===== v37: mobile 4-choice larger unit-circle points + no ①②③④ ===== */
+@media (max-width: 767px) {
+    /* Make the tappable points on the quiz unit circle larger */
+    #quiz-screen.choice-mode #quiz-unit-circle .circle-point-group .point-dot {
+        r: 9 !important;
+        stroke-width: 2.8 !important;
+    }
+    #quiz-screen.choice-mode #quiz-unit-circle .circle-point-group .point-hit-area {
+        r: 22 !important;
+    }
+    #quiz-screen.choice-mode #quiz-unit-circle .circle-point-group:hover:not(.disabled) .point-dot,
+    #quiz-screen.choice-mode #quiz-unit-circle .circle-point-group.selected .point-dot,
+    #quiz-screen.choice-mode #quiz-unit-circle .circle-point-group.correct .point-dot,
+    #quiz-screen.choice-mode #quiz-unit-circle .circle-point-group.incorrect .point-dot {
+        r: 11 !important;
+    }
+
+    /* Remove ①②③④ style badges on smartphone 4-choice */
+    #quiz-screen.choice-mode .choice-num {
+        display: none !important;
+    }
+    #quiz-screen.choice-mode .choice-btn {
+        justify-content: center !important;
+        padding: 8px 2px !important;
+        min-height: 72px !important;
+        gap: 0 !important;
+    }
+    #quiz-screen.choice-mode .choice-val {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 1.6rem !important;
+        min-height: 40px !important;
+    }
+
+    /* Use the freed vertical space to enlarge the unit circle */
+    #quiz-screen.choice-mode .quiz-main-card {
+        padding: 8px !important;
+        gap: 6px !important;
+    }
+    #quiz-screen.choice-mode #step-angle-label,
+    #quiz-screen.choice-mode #step-value-label {
+        margin-bottom: 4px !important;
+    }
+    #quiz-screen.choice-mode #quiz-unit-circle {
+        height: 360px !important;
+        padding: 0 !important;
+    }
+    #quiz-screen.choice-mode .choices-grid {
+        gap: 6px !important;
+    }
+}
+
+
+/* ===== v38: center the question display in palette mode like 4-choice ===== */
+#quiz-screen.palette-mode .question-display {
+    justify-content: center !important;
+    text-align: center !important;
+    align-self: center !important;
+}
+#quiz-screen.palette-mode .question-display .q-func,
+#quiz-screen.palette-mode .question-display .q-angle,
+#quiz-screen.palette-mode .question-display .q-equals,
+#quiz-screen.palette-mode .question-display .q-question {
+    text-align: center !important;
+}
