@@ -125,7 +125,7 @@ class UnitCircleVisualizer {
         const svg = this.container ? this.container.querySelector('svg.unit-circle-svg') : null;
         if (svg && this.container && this.container.id === 'quiz-unit-circle') {
             const isPhone = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
-            svg.setAttribute('viewBox', isPhone ? '-154 -205 360 410' : '-225 -225 450 450');
+            svg.setAttribute('viewBox', isPhone ? '-154 -206 360 412' : '-225 -225 450 450');
         }
 
         // Reset point styles
@@ -161,7 +161,7 @@ class UnitCircleVisualizer {
             const isPhoneQuiz = isQuizCircle && window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
             svg.setAttribute(
                 'viewBox',
-                isPhoneQuiz ? '-154 -205 360 410' : '-225 -225 450 450'
+                isPhoneQuiz ? '-154 -206 360 412' : '-225 -225 450 450'
             );
             svg.setAttribute(
                 'aria-label',
