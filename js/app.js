@@ -509,8 +509,8 @@ class TrigQuizApp {
         const screenTop = screen.getBoundingClientRect().top;
         const bodyStyle = window.getComputedStyle(document.body);
         const bottomPadding = parseFloat(bodyStyle.paddingBottom) || 0;
-        const safeGap = 2;
-        const availableHeight = Math.max(260, viewportHeight - screenTop - bottomPadding - safeGap);
+        const safeGap = 4;
+        const availableHeight = Math.max(280, viewportHeight - screenTop - bottomPadding - safeGap);
         const naturalHeight = card.getBoundingClientRect().height;
         if (!naturalHeight) return;
 
@@ -535,8 +535,8 @@ class TrigQuizApp {
         const screenTop = screen.getBoundingClientRect().top;
         const bodyStyle = window.getComputedStyle(document.body);
         const bottomPadding = parseFloat(bodyStyle.paddingBottom) || 0;
-        const safeGap = 2;
-        const availableHeight = Math.max(240, viewportHeight - screenTop - bottomPadding - safeGap);
+        const safeGap = 4;
+        const availableHeight = Math.max(280, viewportHeight - screenTop - bottomPadding - safeGap);
         const naturalHeight = screen.scrollHeight;
         if (!naturalHeight) return;
 
@@ -545,6 +545,11 @@ class TrigQuizApp {
         screen.style.transformOrigin = 'top center';
         screen.style.height = `${Math.ceil(naturalHeight * scale)}px`;
         screen.style.minHeight = `${Math.ceil(naturalHeight * scale)}px`;
+    }
+
+    requestQuizViewportFit() {
+        if (!this.dom.quizScreen.classList.contains('active')) return;
+        this.requestQuizViewportFit();
     }
 
     showScreen(screenName) {
@@ -563,7 +568,7 @@ class TrigQuizApp {
         }
         if (screenName === 'quiz') {
             this.dom.quizScreen.classList.add('active');
-            requestAnimationFrame(() => this.fitQuizScreenToViewport());
+            this.requestQuizViewportFit();
         } else {
             this.dom.quizScreen.style.transform = 'none';
             this.dom.quizScreen.style.height = 'auto';
@@ -1098,6 +1103,7 @@ class TrigQuizApp {
 
         // 角度と解答を単位円に表示（解答と同時に単位円展開）
         this.visualizer.update(this.currentQuestion.angle, this.currentQuestion.func, this.selectedAngle);
+        this.requestQuizViewportFit();
 
         // 正誤は選択肢と単位円上の色・記号で示す。答えそのものは下部に重複表示しない。
         this.dom.explanationText.innerHTML = '';
@@ -1157,6 +1163,7 @@ class TrigQuizApp {
         if (this.mode === 'endless') { this.lives--; this.updateLivesDisplay(); }
 
         this.visualizer.update(this.currentQuestion.angle, this.currentQuestion.func, null);
+        this.requestQuizViewportFit();
 
         this.dom.explanationText.innerHTML = `
             <p><strong>時間切れ！</strong> 正解: ${this.currentQuestion.func} ${this.currentQuestion.angle}° = ${window.formatValueHtml(this.currentQuestion.correctValueId, this.useRationalized)}</p>

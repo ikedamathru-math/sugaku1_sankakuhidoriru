@@ -7232,101 +7232,19 @@ body.quiz-active #quiz-screen.active {
 }
 
 
-/* ===== v51: no vertical scroll on every device + hide header controls on quiz screen ===== */
-html, body {
-    max-width: 100%;
-}
-
-/* Start screen: keep one-screen fit tighter */
-body.start-active {
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-    overflow: hidden !important;
-}
-body.start-active .app-header {
-    margin-bottom: 10px !important;
-}
-body.start-active .main-container {
-    width: 100% !important;
-}
-
-/* Quiz screen: hide top controls entirely and use full viewport for the question layout */
+/* ===== v51: fit the whole quiz screen into one viewport without vertical scrolling ===== */
 body.quiz-active {
-    padding: 8px !important;
     overflow: hidden !important;
-}
-body.quiz-active .app-header {
-    display: none !important;
 }
 body.quiz-active .main-container {
-    max-width: 920px !important;
     width: 100% !important;
+    max-width: 760px !important;
     flex: 1 1 auto !important;
     min-height: 0 !important;
-    justify-content: flex-start !important;
+    overflow: hidden !important;
 }
 body.quiz-active #quiz-screen.active {
-    gap: 6px !important;
-}
-body.quiz-active .quiz-hud {
-    margin-bottom: 4px !important;
-}
-body.quiz-active .quiz-main-card {
-    margin: 0 !important;
-}
-
-/* Color clarity for ON/OFF */
-#btn-sound.active,
-#btn-bgm-toggle.active {
-    background: #dcfce7 !important;
-    border-color: #16a34a !important;
-    color: #166534 !important;
-}
-#btn-sound:not(.active),
-#btn-bgm-toggle:not(.active) {
-    background: #fff1f2 !important;
-    border-color: #fb7185 !important;
-    color: #be123c !important;
-}
-
-/* Desktop / tablet quiz tightening */
-@media (min-width: 768px) {
-    body.quiz-active {
-        padding: 8px 10px !important;
-    }
-    body.quiz-active #quiz-screen.active {
-        gap: 4px !important;
-    }
-    body.quiz-active .quiz-hud {
-        padding: 6px 10px !important;
-    }
-    body.quiz-active .quiz-main-card {
-        padding-top: 10px !important;
-        padding-bottom: 10px !important;
-    }
-}
-
-/* Smartphone quiz tightening */
-@media (max-width: 767px) {
-    body.start-active {
-        padding: 6px !important;
-    }
-    body.start-active .app-header {
-        margin-bottom: 6px !important;
-        padding: 8px 10px !important;
-    }
-    body.quiz-active {
-        padding: 4px !important;
-    }
-    body.quiz-active #quiz-screen.active {
-        gap: 4px !important;
-    }
-    body.quiz-active .quiz-hud {
-        padding: 4px 6px !important;
-        margin-bottom: 2px !important;
-    }
-    body.quiz-active .quiz-main-card {
-        padding: 8px 8px 10px !important;
-        gap: 6px !important;
-    }
+    overflow: hidden !important;
+    align-self: stretch !important;
+    transform-origin: top center !important;
 }
