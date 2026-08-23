@@ -158,10 +158,11 @@ class TrigQuizApp {
         this.updateSettingsFromUI();
         this.syncSelectionCards();
         this.updatePersonalBestDisplay();
+        document.body.classList.add('start-active');
         requestAnimationFrame(() => this.fitStartScreenToViewport());
         this.initReferenceGuide();
         if (this.dom.btnBgmToggle) {
-            this.dom.btnBgmToggle.textContent = this.bgmEnabled ? 'BGM ON' : 'BGM OFF';
+            this.dom.btnBgmToggle.textContent = this.bgmEnabled ? '効果音 ON' : '効果音 OFF';
         }
         // BGM is fixed to the single track '全力疾走'
         this.bgmTrack = 'race';
@@ -172,6 +173,9 @@ class TrigQuizApp {
         const refit = () => requestAnimationFrame(() => this.fitStartScreenToViewport());
         window.addEventListener('resize', refit);
         window.addEventListener('orientationchange', refit);
+        window.addEventListener('load', refit);
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', refit);
+        if (document.fonts?.ready) document.fonts.ready.then(refit).catch(() => {});
     }
 
     bindAudioUnlock() {
@@ -251,14 +255,14 @@ class TrigQuizApp {
         }
 
         if (this.dom.btnSound) {
-            this.dom.btnSound.textContent = this.audio.soundEnabled ? 'SOUND ON' : 'SOUND OFF';
+            this.dom.btnSound.textContent = this.audio.soundEnabled ? '操作音 ON' : '操作音 OFF';
             this.dom.btnSound.classList.toggle('active', this.audio.soundEnabled);
         }
 
         // Sound toggle
         this.dom.btnSound.addEventListener('click', () => {
             const enabled = this.audio.toggleSound();
-            this.dom.btnSound.textContent = enabled ? 'SOUND ON' : 'SOUND OFF';
+            this.dom.btnSound.textContent = enabled ? '操作音 ON' : '操作音 OFF';
             this.dom.btnSound.classList.toggle('active', enabled);
             if (enabled) this.audio.playClick();
         });
@@ -275,7 +279,7 @@ class TrigQuizApp {
             this.dom.btnBgmToggle.addEventListener('click', () => {
                 this.audio.playClick();
                 this.bgmEnabled = !this.bgmEnabled;
-                this.dom.btnBgmToggle.textContent = this.bgmEnabled ? 'BGM ON' : 'BGM OFF';
+                this.dom.btnBgmToggle.textContent = this.bgmEnabled ? '効果音 ON' : '効果音 OFF';
                 this.dom.btnBgmToggle.classList.toggle('active', this.bgmEnabled);
                 if (this.bgmEnabled) this.audio.startBgm(this.bgmTrack);
                 else this.audio.stopBgm();
@@ -290,6 +294,25 @@ class TrigQuizApp {
             this.dom.btnReferenceBack.addEventListener('click', () => {
                 this.audio.playClick();
                 this.hideReferenceModal();
+            });
+        }
+
+        window.addEventListener('resize', () => {
+            if (this.dom.startScreen.classList.contains('active')) {
+                this.fitStartScreenToViewport();
+            }
+            if (this.dom.quizScreen.classList.contains('active')) {
+                this.fitQuizScreenToViewport();
+            }
+        });
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                if (this.dom.startScreen.classList.contains('active')) {
+                    this.fitStartScreenToViewport();
+                }
+                if (this.dom.quizScreen.classList.contains('active')) {
+                    this.fitQuizScreenToViewport();
+                }
             });
         }
         if (this.dom.btnCloseReference) {
@@ -470,14 +493,63 @@ class TrigQuizApp {
     }
 
     fitStartScreenToViewport() {
-        const card = this.dom.startScreen?.querySelector('.settings-card');
-        if (!card) return;
+        const screen = this.dom.startScreen;
+        const card = screen?.querySelector('.settings-card');
+        if (!screen || !card || !screen.classList.contains('active')) return;
+
+        // Reset first so measurement is always based on the natural layout.
         card.style.zoom = '1';
-        card.style.transform = '';
-        card.style.width = '';
+        card.style.transform = 'none';
+        card.style.transformOrigin = 'top center';
+        card.style.width = '100%';
+        screen.style.height = 'auto';
+        screen.style.minHeight = '0';
+
+        const viewportHeight = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight;
+        const screenTop = screen.getBoundingClientRect().top;
+        const bodyStyle = window.getComputedStyle(document.body);
+        const bottomPadding = parseFloat(bodyStyle.paddingBottom) || 0;
+        const safeGap = 2;
+        const availableHeight = Math.max(260, viewportHeight - screenTop - bottomPadding - safeGap);
+        const naturalHeight = card.getBoundingClientRect().height;
+        if (!naturalHeight) return;
+
+        const scale = Math.min(1, availableHeight / naturalHeight);
+        card.style.transform = `scale(${scale})`;
+        card.style.transformOrigin = 'top center';
+        screen.style.height = `${Math.ceil(naturalHeight * scale)}px`;
+        screen.style.minHeight = `${Math.ceil(naturalHeight * scale)}px`;
+    }
+
+    fitQuizScreenToViewport() {
+        const screen = this.dom.quizScreen;
+        if (!screen || !screen.classList.contains('active')) return;
+
+        screen.style.transform = 'none';
+        screen.style.transformOrigin = 'top center';
+        screen.style.width = '100%';
+        screen.style.height = 'auto';
+        screen.style.minHeight = '0';
+
+        const viewportHeight = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight;
+        const screenTop = screen.getBoundingClientRect().top;
+        const bodyStyle = window.getComputedStyle(document.body);
+        const bottomPadding = parseFloat(bodyStyle.paddingBottom) || 0;
+        const safeGap = 2;
+        const availableHeight = Math.max(240, viewportHeight - screenTop - bottomPadding - safeGap);
+        const naturalHeight = screen.scrollHeight;
+        if (!naturalHeight) return;
+
+        const scale = Math.min(1, availableHeight / naturalHeight);
+        screen.style.transform = `scale(${scale})`;
+        screen.style.transformOrigin = 'top center';
+        screen.style.height = `${Math.ceil(naturalHeight * scale)}px`;
+        screen.style.minHeight = `${Math.ceil(naturalHeight * scale)}px`;
     }
 
     showScreen(screenName) {
+        document.body.classList.toggle('start-active', screenName === 'start');
+        document.body.classList.toggle('quiz-active', screenName === 'quiz');
         this.dom.startScreen.classList.remove('active');
         this.dom.quizScreen.classList.remove('active');
         this.dom.resultScreen.classList.remove('active');
@@ -489,7 +561,20 @@ class TrigQuizApp {
             this.audio.stopBgm();
             requestAnimationFrame(() => this.fitStartScreenToViewport());
         }
-        if (screenName === 'quiz') this.dom.quizScreen.classList.add('active');
+        if (screenName === 'quiz') {
+            this.dom.quizScreen.classList.add('active');
+            requestAnimationFrame(() => this.fitQuizScreenToViewport());
+        } else {
+            this.dom.quizScreen.style.transform = 'none';
+            this.dom.quizScreen.style.height = 'auto';
+            this.dom.quizScreen.style.minHeight = '0';
+        }
+        if (screenName !== 'start') {
+            this.dom.startScreen.style.height = 'auto';
+            this.dom.startScreen.style.minHeight = '0';
+            const card = this.dom.startScreen.querySelector('.settings-card');
+            if (card) card.style.transform = 'none';
+        }
         if (screenName === 'reference' && this.dom.referenceScreen) {
             this.dom.referenceScreen.classList.add('active');
         }
@@ -1377,6 +1462,7 @@ class TrigQuizApp {
         }
         this.dom.quizScreen.classList.remove('active');
         this.dom.resultScreen.classList.remove('active');
+        document.body.classList.add('start-active');
         this.dom.startScreen.classList.add('active');
         this.stopGlobalChallengeTimer();
         this.audio.stopBgm();

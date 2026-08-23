@@ -7128,3 +7128,205 @@ svg.tap-point-symbol.next-point-symbol circle {
             drop-shadow(-1px -1px 0 #fff) !important;
     }
 }
+
+
+/* ===== v49: top screen fits inside one viewport on every device ===== */
+body.start-active {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-y: hidden !important;
+}
+body.start-active .main-container {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+}
+body.start-active #start-screen.active {
+    width: 100% !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    transform-origin: top center !important;
+    gap: 0 !important;
+}
+body.start-active #start-screen .settings-card {
+    width: 100% !important;
+    transform-origin: top center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Japanese control names: keep all three header controls on one line. */
+#btn-reference,
+#btn-sound,
+#btn-bgm-toggle {
+    white-space: nowrap !important;
+}
+@media (max-width: 767px) {
+    .header-actions {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: 1.35fr .9fr .9fr !important;
+        gap: 3px !important;
+    }
+    #btn-reference,
+    #btn-sound,
+    #btn-bgm-toggle {
+        width: 100% !important;
+        padding-left: 3px !important;
+        padding-right: 3px !important;
+        font-size: .68rem !important;
+    }
+}
+
+
+/* ===== v50: quiz screen fits within viewport + ON/OFF color states ===== */
+body.quiz-active {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-y: hidden !important;
+}
+body.quiz-active .main-container {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+}
+body.quiz-active #quiz-screen.active {
+    width: 100% !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    transform-origin: top center !important;
+    gap: 8px !important;
+}
+
+/* Header toggle buttons: green when ON, gray/red when OFF */
+#btn-sound,
+#btn-bgm-toggle {
+    font-weight: 800 !important;
+    transition: all .2s ease !important;
+}
+#btn-sound.active,
+#btn-bgm-toggle.active {
+    background: #dcfce7 !important;
+    border-color: #16a34a !important;
+    color: #166534 !important;
+    box-shadow: 0 0 0 2px rgba(34,197,94,.08) inset !important;
+}
+#btn-sound:not(.active),
+#btn-bgm-toggle:not(.active) {
+    background: #fff1f2 !important;
+    border-color: #fb7185 !important;
+    color: #be123c !important;
+    box-shadow: 0 0 0 2px rgba(244,63,94,.06) inset !important;
+}
+
+@media (max-width: 767px) {
+    body.quiz-active #quiz-screen.active {
+        gap: 6px !important;
+    }
+    #btn-sound.active,
+    #btn-bgm-toggle.active,
+    #btn-sound:not(.active),
+    #btn-bgm-toggle:not(.active) {
+        font-size: .68rem !important;
+    }
+}
+
+
+/* ===== v51: no vertical scroll on every device + hide header controls on quiz screen ===== */
+html, body {
+    max-width: 100%;
+}
+
+/* Start screen: keep one-screen fit tighter */
+body.start-active {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    overflow: hidden !important;
+}
+body.start-active .app-header {
+    margin-bottom: 10px !important;
+}
+body.start-active .main-container {
+    width: 100% !important;
+}
+
+/* Quiz screen: hide top controls entirely and use full viewport for the question layout */
+body.quiz-active {
+    padding: 8px !important;
+    overflow: hidden !important;
+}
+body.quiz-active .app-header {
+    display: none !important;
+}
+body.quiz-active .main-container {
+    max-width: 920px !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    justify-content: flex-start !important;
+}
+body.quiz-active #quiz-screen.active {
+    gap: 6px !important;
+}
+body.quiz-active .quiz-hud {
+    margin-bottom: 4px !important;
+}
+body.quiz-active .quiz-main-card {
+    margin: 0 !important;
+}
+
+/* Color clarity for ON/OFF */
+#btn-sound.active,
+#btn-bgm-toggle.active {
+    background: #dcfce7 !important;
+    border-color: #16a34a !important;
+    color: #166534 !important;
+}
+#btn-sound:not(.active),
+#btn-bgm-toggle:not(.active) {
+    background: #fff1f2 !important;
+    border-color: #fb7185 !important;
+    color: #be123c !important;
+}
+
+/* Desktop / tablet quiz tightening */
+@media (min-width: 768px) {
+    body.quiz-active {
+        padding: 8px 10px !important;
+    }
+    body.quiz-active #quiz-screen.active {
+        gap: 4px !important;
+    }
+    body.quiz-active .quiz-hud {
+        padding: 6px 10px !important;
+    }
+    body.quiz-active .quiz-main-card {
+        padding-top: 10px !important;
+        padding-bottom: 10px !important;
+    }
+}
+
+/* Smartphone quiz tightening */
+@media (max-width: 767px) {
+    body.start-active {
+        padding: 6px !important;
+    }
+    body.start-active .app-header {
+        margin-bottom: 6px !important;
+        padding: 8px 10px !important;
+    }
+    body.quiz-active {
+        padding: 4px !important;
+    }
+    body.quiz-active #quiz-screen.active {
+        gap: 4px !important;
+    }
+    body.quiz-active .quiz-hud {
+        padding: 4px 6px !important;
+        margin-bottom: 2px !important;
+    }
+    body.quiz-active .quiz-main-card {
+        padding: 8px 8px 10px !important;
+        gap: 6px !important;
+    }
+}
