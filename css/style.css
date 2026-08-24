@@ -7833,6 +7833,56 @@ body:has(#quiz-screen.active) #quiz-screen .quiz-main-card {
     height: 22px !important;
     font-size: 1.14rem !important;
 }
+#quiz-screen .answer-focus-point.func-sin {
+    fill: #e11d48 !important;
+    stroke: #e11d48 !important;
+}
+#quiz-screen .answer-focus-point.func-cos {
+    fill: #0369a1 !important;
+    stroke: #0369a1 !important;
+}
+#quiz-screen .answer-focus-point.func-tan {
+    fill: #059669 !important;
+    stroke: #059669 !important;
+}
+#quiz-screen .circle-point-group.selected-func-sin .point-dot {
+    fill: #e11d48 !important;
+}
+#quiz-screen .circle-point-group.selected-func-cos .point-dot {
+    fill: #0369a1 !important;
+}
+#quiz-screen .circle-point-group.selected-func-tan .point-dot {
+    fill: #059669 !important;
+}
+#quiz-screen .circle-point-group.selected-wrong-angle .point-dot {
+    fill: #fed7aa !important;
+    stroke: #f59e0b !important;
+    r: 8.5px !important;
+}
+#quiz-screen .wrong-angle-cross {
+    fill: #c2410c;
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    dominant-baseline: middle;
+    paint-order: stroke fill;
+    stroke: #fff;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+#quiz-screen .correct-angle-symbol {
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 21px;
+    font-weight: 900;
+    dominant-baseline: middle;
+    paint-order: stroke fill;
+    stroke: #fff;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+#quiz-screen .correct-angle-symbol.func-sin { fill: #e11d48; }
+#quiz-screen .correct-angle-symbol.func-cos { fill: #0369a1; }
+#quiz-screen .correct-angle-symbol.func-tan { fill: #059669; }
 
 /* Keep explanation numerals in Century on smartphones as well. */
 @media (max-width: 767px) {
@@ -7881,6 +7931,16 @@ body:has(#quiz-screen.active) #quiz-screen .quiz-main-card {
 }
 #result-screen .result-stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+#result-screen.two-minute-result .result-stats-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+#result-screen.two-minute-result .result-stat-item:has(#result-score-text) {
+    display: block !important;
+}
+#result-screen.two-minute-result .result-stat-item:has(#result-accuracy-text),
+#result-screen.two-minute-result .result-stat-item:has(#result-max-streak-text) {
+    display: none !important;
 }
 #quiz-screen .answer-fraction-bar {
     stroke: currentColor;

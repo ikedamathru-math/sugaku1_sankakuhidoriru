@@ -1143,6 +1143,7 @@ class TrigQuizApp {
         this.audio.stopBgm();
         this.savePersonalBest();
         this.showScreen('result');
+        this.dom.resultScreen?.classList.toggle('two-minute-result', this.mode === '3min-challenge');
 
         const total = this.history.length;
         const correctCount = this.history.filter(h => h.isCorrect).length;
@@ -1154,18 +1155,31 @@ class TrigQuizApp {
         // Rank determination
         let rank = 'C';
         let rankClass = 'rank-c';
-        if (accuracy === 100 && total >= 20) {
-            rank = 'S+';
-            rankClass = 'rank-s-plus';
-        } else if (accuracy >= 90) {
-            rank = 'S';
-            rankClass = 'rank-s';
-        } else if (accuracy >= 75) {
-            rank = 'A';
-            rankClass = 'rank-a';
-        } else if (accuracy >= 60) {
-            rank = 'B';
-            rankClass = 'rank-b';
+        if (this.mode === '3min-challenge') {
+            if (correctCount >= 40) {
+                rank = 'S';
+                rankClass = 'rank-s';
+            } else if (correctCount >= 30) {
+                rank = 'A';
+                rankClass = 'rank-a';
+            } else if (correctCount >= 20) {
+                rank = 'B';
+                rankClass = 'rank-b';
+            }
+        } else {
+            if (accuracy === 100 && total >= 20) {
+                rank = 'S+';
+                rankClass = 'rank-s-plus';
+            } else if (accuracy >= 90) {
+                rank = 'S';
+                rankClass = 'rank-s';
+            } else if (accuracy >= 75) {
+                rank = 'A';
+                rankClass = 'rank-a';
+            } else if (accuracy >= 60) {
+                rank = 'B';
+                rankClass = 'rank-b';
+            }
         }
 
         this.dom.resultRankBadge.textContent = rank;

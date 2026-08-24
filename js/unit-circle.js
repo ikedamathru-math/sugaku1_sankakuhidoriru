@@ -139,7 +139,7 @@ class UnitCircleVisualizer {
         // Reset point styles
         const pointGroups = this.container.querySelectorAll('.circle-point-group');
         pointGroups.forEach(grp => {
-            grp.classList.remove('selected', 'correct', 'incorrect', 'selected-guide-point');
+            grp.classList.remove('selected', 'correct', 'incorrect', 'selected-guide-point', 'selected-func-sin', 'selected-func-cos', 'selected-func-tan', 'selected-wrong-angle');
         });
     }
 
@@ -241,6 +241,24 @@ class UnitCircleVisualizer {
         // Quiz feedback: show only the length that answers the current function.
         if (isQuizCircle) {
             let focusContent = '';
+            let wrongAngleMark = '';
+            const resultMarkRadius = this.R + 22;
+            const resultMarkPosition = angle => {
+                const markRad = (angle * Math.PI) / 180;
+                let x = Math.cos(markRad) * resultMarkRadius;
+                let y = -Math.sin(markRad) * resultMarkRadius;
+                if (angle === 0) { x = this.R + 18; y = -17; }
+                if (angle === 90) { x = 17; y = -(this.R + 20); }
+                if (angle === 180) { x = -(this.R + 18); y = -17; }
+                return { x, y };
+            };
+            const correctMarkPos = resultMarkPosition(deg);
+            const correctAngleMark = `<text x="${correctMarkPos.x}" y="${correctMarkPos.y}" class="correct-angle-symbol func-${func}" text-anchor="middle">○</text>`;
+            const hasWrongAngle = Number.isFinite(userSelectedDeg) && userSelectedDeg !== deg;
+            if (hasWrongAngle) {
+                const wrongMarkPos = resultMarkPosition(userSelectedDeg);
+                wrongAngleMark = `<text x="${wrongMarkPos.x}" y="${wrongMarkPos.y}" class="wrong-angle-cross" text-anchor="middle">×</text>`;
+            }
             if (func === 'sin') {
                 const labelX = px + (px >= 0 ? -34 : 34);
                 const labelY = py / 2;
@@ -286,15 +304,18 @@ class UnitCircleVisualizer {
             }
 
             this.dynamicLayer.innerHTML = `
-                <circle cx="${px}" cy="${py}" r="7" class="point-p answer-focus-point" />
+                <circle cx="${px}" cy="${py}" r="8.5" class="point-p answer-focus-point func-${func}" />
                 ${focusContent}
+                ${correctAngleMark}
+                ${wrongAngleMark}
             `;
 
             const pointGroups = this.container.querySelectorAll('.circle-point-group');
             pointGroups.forEach(grp => {
                 const d = parseInt(grp.dataset.angle, 10);
-                grp.classList.remove('correct', 'incorrect', 'selected-guide-point');
-                if (d === deg) grp.classList.add('selected-guide-point');
+                grp.classList.remove('correct', 'incorrect', 'selected-guide-point', 'selected-func-sin', 'selected-func-cos', 'selected-func-tan', 'selected-wrong-angle');
+                if (d === deg) grp.classList.add('selected-guide-point', `selected-func-${func}`);
+                if (hasWrongAngle && d === userSelectedDeg) grp.classList.add('selected-wrong-angle');
             });
             return;
         }
