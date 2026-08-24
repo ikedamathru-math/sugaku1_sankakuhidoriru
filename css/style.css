@@ -703,17 +703,6 @@ body {
     animation: fade-in 0.35s ease-out;
 }
 
-.anim-pop {
-    animation: pop-point 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform-origin: center;
-}
-
-@keyframes pop-point {
-    0% { transform: scale(0); opacity: 0; }
-    70% { transform: scale(1.35); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
 /* ==========================================
    Math Fractions & Minus Sign Formatting
    ========================================== */
@@ -4824,6 +4813,12 @@ svg text.axis-label.origin {
 /* Make the selected circle point itself strongly visible too */
 #reference-screen .circle-point-group.selected-guide-point .point-dot {
     r: 12 !important;
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+}
+#reference-screen .circle-point-group .point-dot {
+    transition: none !important;
 }
 #reference-screen .circle-point-group.selected-guide-point .point-hit-area {
     r: 25 !important;
@@ -7818,8 +7813,8 @@ body:has(#quiz-screen.active) #quiz-screen .quiz-main-card {
 
 /* Small, unobtrusive correctness marks in the upper-left corner. */
 #quiz-screen .answer-result-mark {
-    top: 3px !important;
-    left: 4px !important;
+    top: 0 !important;
+    left: 1px !important;
     right: auto !important;
     min-width: 22px !important;
     min-height: 22px !important;
@@ -7832,11 +7827,24 @@ body:has(#quiz-screen.active) #quiz-screen .quiz-main-card {
     line-height: 1 !important;
 }
 #quiz-screen .answer-result-mark.correct-mark {
-    min-width: 26px !important;
-    min-height: 26px !important;
-    width: 26px !important;
-    height: 26px !important;
-    font-size: 1.37rem !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 1.14rem !important;
+}
+
+/* Keep explanation numerals in Century on smartphones as well. */
+@media (max-width: 767px) {
+    #quiz-screen .answer-focus-label,
+    #quiz-screen .answer-focus-label *,
+    #quiz-screen .answer-focus-value,
+    #quiz-screen .answer-focus-value *,
+    #quiz-screen .explanation-card,
+    #quiz-screen .explanation-card * {
+        font-family: "Century" !important;
+        font-style: normal !important;
+    }
 }
 
 /* Stacked answer fractions and the x=1 intersection used for tan feedback. */

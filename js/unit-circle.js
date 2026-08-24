@@ -286,7 +286,7 @@ class UnitCircleVisualizer {
             }
 
             this.dynamicLayer.innerHTML = `
-                <circle cx="${px}" cy="${py}" r="7" class="point-p answer-focus-point anim-pop" />
+                <circle cx="${px}" cy="${py}" r="7" class="point-p answer-focus-point" />
                 ${focusContent}
             `;
 
@@ -380,7 +380,7 @@ class UnitCircleVisualizer {
             content += `
                 <line x1="0" y1="0" x2="${this.R}" y2="${tanY}" class="tan-extend-line anim-fade-in" stroke-dasharray="3,3" />
                 <line x1="${this.R}" y1="0" x2="${this.R}" y2="${displayTanY}" class="component-line tan-line active-func" />
-                <circle cx="${this.R}" cy="${tanY}" r="4.5" class="tan-point anim-pop" />
+                <circle cx="${this.R}" cy="${tanY}" r="4.5" class="tan-point" />
             `;
             const badgeY = isPhoneQuizTan
                 ? (tanY < 0
@@ -409,7 +409,7 @@ class UnitCircleVisualizer {
         else { pLabelX = px + 24; pLabelY = py - 8; }
 
         content += `
-            <circle cx="${px}" cy="${py}" r="5.5" class="point-p anim-pop" filter="url(#glow-p)" />
+            <circle cx="${px}" cy="${py}" r="5.5" class="point-p" filter="url(#glow-p)" />
             <g class="p-coord-badge anim-fade-in">
                 <rect x="${pLabelX - 36}" y="${pLabelY - 11}" width="72" height="18" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
                 <text x="${pLabelX}" y="${pLabelY + 2}" class="point-label" text-anchor="middle">P(${valCos}, ${valSin})</text>
