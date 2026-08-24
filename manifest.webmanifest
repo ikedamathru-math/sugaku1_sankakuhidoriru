@@ -1,0 +1,19 @@
+{
+  "name": "三角比ドリル",
+  "short_name": "三角比ドリル",
+  "description": "単位円で学ぶ三角比ドリル",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/start-face.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
