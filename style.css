@@ -66,6 +66,7 @@ body {
         radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.03) 0%, transparent 50%);
     color: var(--text-primary);
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -88,6 +89,60 @@ body {
     border-radius: var(--radius-lg);
     margin-bottom: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.install-choice {
+    width: 100%;
+    max-width: 760px;
+    margin: -12px 0 12px;
+    padding: 10px 12px;
+    border: 1px solid #bae6fd;
+    border-radius: 14px;
+    background: #f0f9ff;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, .08);
+}
+.install-choice[hidden] { display: none !important; }
+.install-choice-text {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    color: #0c4a6e;
+}
+.install-choice-text span { font-size: .78rem; }
+.install-choice-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 7px;
+}
+.install-choice-primary {
+    border-color: #0284c7 !important;
+    background: #0284c7 !important;
+    color: #fff !important;
+}
+.install-ios-guide {
+    margin: 8px 0 0;
+    color: #0c4a6e;
+    font-size: .8rem;
+    font-weight: 700;
+    text-align: center;
+}
+@media (max-width: 599px) {
+    .install-choice {
+        margin-top: -14px;
+        padding: 8px;
+    }
+    .install-choice-text {
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+    }
+    .install-choice-actions .btn {
+        min-height: 34px;
+        padding: 5px 10px;
+        font-size: .78rem;
+    }
 }
 
 .brand-area {
@@ -701,17 +756,6 @@ body {
 
 .anim-fade-in {
     animation: fade-in 0.35s ease-out;
-}
-
-.anim-pop {
-    animation: none !important;
-    transform-origin: center;
-}
-
-@keyframes pop-point {
-    0% { transform: scale(0); opacity: 0; }
-    70% { transform: scale(1.35); }
-    100% { transform: scale(1); opacity: 1; }
 }
 
 /* ==========================================
@@ -3745,6 +3789,14 @@ svg .circle-point-group.selected-guide-point circle:nth-of-type(2) {
     flex: 0 0 auto;
 }
 
+/* Crown P appears after earning S or better in both courses. */
+.start-btn-icon.is-crown-achieved {
+    /* Black lines become white; the inverted black background disappears
+       against the orange button through screen blending. */
+    filter: invert(1) !important;
+    mix-blend-mode: screen;
+}
+
 /* Rename answer option text support */
 #start-screen .pill-label {
     letter-spacing: 0 !important;
@@ -4058,7 +4110,7 @@ svg .circle-point-group.selected-guide-point circle:nth-of-type(2) {
 /* =======================
    MOBILE 0–767px
    ======================= */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     .main-container,
     .app-header {
         max-width: 100% !important;
@@ -4213,6 +4265,13 @@ svg .circle-point-group.selected-guide-point circle:nth-of-type(2) {
 #reference-screen .side-heading-value .fraction .top,
 #reference-screen .side-heading-value .fraction .bottom {
     font-size: 1.20rem !important;
+}
+
+/* Earned Start icon: show the original crown drawing as white line art.
+   Screen blending makes the inverted black background visually transparent. */
+#btn-start-quiz .start-btn-icon.is-crown-achieved {
+    filter: invert(1) !important;
+    mix-blend-mode: screen !important;
 }
 
 /* Disabled: the iPhone SE full-fit experiment was reverted. */
@@ -4407,7 +4466,7 @@ body:has(#reference-screen.active) .main-container {
 /* =======================
    TABLET 768–1023px
    ======================= */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     .main-container,
     .app-header {
         max-width: 820px !important;
@@ -4704,7 +4763,7 @@ svg .tan-guide-text {
     display: none !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #start-screen .drill-title {
         margin-top: 4px !important;
     }
@@ -4725,7 +4784,7 @@ svg .tan-guide-text {
     }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #btn-start-quiz,
     .start-quiz-btn {
         gap: 8px !important;
@@ -4766,7 +4825,7 @@ svg .tan-guide-text {
         drop-shadow(0 -0.7px 0 #fff) !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #btn-start-quiz .start-btn-icon,
     .start-quiz-btn .start-btn-icon {
         width: 64px !important;
@@ -4775,7 +4834,7 @@ svg .tan-guide-text {
     }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #btn-start-quiz .start-btn-icon,
     .start-quiz-btn .start-btn-icon {
         width: 80px !important;
@@ -4824,20 +4883,26 @@ svg text.axis-label.origin {
 /* Make the selected circle point itself strongly visible too */
 #reference-screen .circle-point-group.selected-guide-point .point-dot {
     r: 12 !important;
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+}
+#reference-screen .circle-point-group .point-dot {
+    transition: none !important;
 }
 #reference-screen .circle-point-group.selected-guide-point .point-hit-area {
     r: 25 !important;
 }
 
 /* Start icon: even larger */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #btn-start-quiz .start-btn-icon,
     .start-quiz-btn .start-btn-icon {
         width: 72px !important;
         height: 72px !important;
     }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #btn-start-quiz .start-btn-icon,
     .start-quiz-btn .start-btn-icon {
         width: 90px !important;
@@ -4868,7 +4933,7 @@ svg text.axis-label.origin {
     object-fit: contain;
     flex: 0 0 auto;
 }
-.personal-best-entry-20 {
+.personal-best-entry {
     position: relative;
 }
 .pb-rank-mark {
@@ -4882,12 +4947,27 @@ svg text.axis-label.origin {
     font-weight: 900;
     line-height: 1;
 }
+
+.personal-best-entry .pb-result-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: .38em;
+    width: 100%;
+    min-width: 0;
+}
+.personal-best-entry .pb-result-line .pb-rank-mark {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    min-width: 1em;
+}
 .personal-best-entry-20 .pb-value {
     padding-right: 50px;
 }
 
 /* Device-specific mascot sizing */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     .personal-best-card {
         column-gap: 6px !important;
     }
@@ -4904,7 +4984,7 @@ svg text.axis-label.origin {
         padding-right: 32px;
     }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     .personal-best-mascot {
         width: 92px;
         height: 92px;
@@ -4952,7 +5032,7 @@ svg text.axis-label.origin {
 }
 
 /* スマホでは少し控えめに */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #reference-screen .guide-deg-label {
         font-size: 14px !important;
     }
@@ -4968,14 +5048,14 @@ svg text.axis-label.origin {
     height: 128px !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     .personal-best-mascot {
         width: 76px !important;
         height: 76px !important;
     }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     .personal-best-mascot {
         width: 104px !important;
         height: 104px !important;
@@ -5048,7 +5128,7 @@ svg text.axis-label.origin {
 }
 
 /* Mobile tuning */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     .reference-circle-stage {
         margin-bottom: 2px !important;
         padding-bottom: 2px !important;
@@ -5078,7 +5158,7 @@ svg text.axis-label.origin {
 }
 
 /* Tablet */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     .reference-value-body {
         font-size: 1.95rem !important;
     }
@@ -5168,7 +5248,7 @@ svg text.axis-label.origin {
 }
 
 /* mobile/tablet tuning */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     .reference-circle-stage {
         margin-bottom: 6px !important;
         padding: 6px 2px 8px !important;
@@ -5253,7 +5333,7 @@ svg text.origin-big,
     font-weight: 800 !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     .reference-hero-text {
         font-size: 1.14rem !important;
     }
@@ -5277,7 +5357,7 @@ svg text.origin-big,
         font-size: 17px !important;
     }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     .reference-value-label {
         font-size: 1.26rem !important;
     }
@@ -5333,7 +5413,7 @@ svg text.origin-big,
     font-weight: 800 !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #btn-reference {
         min-width: 132px !important;
         font-size: .78rem !important;
@@ -5354,7 +5434,7 @@ svg text.origin-big,
         font-size: 14px !important;
     }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #btn-reference { min-width: 152px !important; }
     #btn-sound { min-width: 108px !important; }
     svg text.origin-big,
@@ -5402,7 +5482,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     stroke: #0284c7 !important;
     stroke-width: 2.5 !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
   svg.tap-point-symbol.next-point-symbol,
   .tap-point-symbol.next-point-symbol {
       width: 18px !important;
@@ -5465,7 +5545,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     color: #1d4ed8;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     svg.tap-point-symbol.next-point-symbol,
     .tap-point-symbol.next-point-symbol {
         width: 26px !important;
@@ -5473,7 +5553,7 @@ svg.tap-point-symbol.next-point-symbol circle {
         flex-basis: 26px !important;
     }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     svg.tap-point-symbol.next-point-symbol,
     .tap-point-symbol.next-point-symbol {
         width: 29px !important;
@@ -5526,7 +5606,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     font-size: 2rem !important;
     line-height: 1.04 !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
   .reference-layout { grid-template-columns: minmax(0,1fr) 116px !important; gap: 6px !important; }
   .reference-values-card { padding: 5px !important; }
   .reference-values-grid { gap: 6px !important; }
@@ -5587,7 +5667,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     font-size: 2rem !important;
     line-height: 1.04 !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
   #reference-screen .reference-main-layout { grid-template-columns: minmax(0,1fr) 114px !important; gap: 6px !important; }
   #reference-screen .reference-values-card { padding: 5px !important; }
   #reference-screen .reference-values-grid { gap: 6px !important; }
@@ -5659,14 +5739,14 @@ svg.tap-point-symbol.next-point-symbol circle {
 #reference-screen .component-line.sin-line { stroke: #e11d48 !important; stroke-width: 4 !important; }
 #reference-screen .component-line.tan-line { stroke: #059669 !important; stroke-width: 4 !important; }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #reference-screen .reference-guide-circle {
         min-height: 360px !important;
         max-width: 100% !important;
     }
     #reference-screen .component-label { font-size: 12px !important; }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #reference-screen .reference-guide-circle { min-height: 420px !important; }
 }
 
@@ -5764,7 +5844,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     opacity: 1 !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #reference-screen .reference-main-layout {
         grid-template-columns: minmax(0, 1fr) 82px !important;
         gap: 5px !important;
@@ -5779,7 +5859,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #reference-screen .reference-main-layout {
         grid-template-columns: minmax(0, 1fr) 98px !important;
     }
@@ -5866,7 +5946,7 @@ svg.tap-point-symbol.next-point-symbol circle {
   #reference-screen .side-heading-func { font-size: 1.28rem !important; }
   #reference-screen .side-heading-value { font-size: 1rem !important; }
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
   #reference-screen .reference-main-layout { grid-template-columns: minmax(0,1fr) 90px !important; gap: 6px !important; }
   #reference-screen .reference-guide-circle { min-height: 400px !important; }
   #reference-screen .reference-side-heading { min-height: 72px !important; gap: 6px !important; }
@@ -5924,14 +6004,14 @@ svg.tap-point-symbol.next-point-symbol circle {
 #reference-screen .lower-tan-guide-extension {
     display: inline !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
   #reference-screen .reference-main-layout { grid-template-columns: minmax(0, 1fr) 102px !important; }
   #reference-screen .reference-guide-circle { min-height: 430px !important; }
   #reference-screen .side-heading-func { font-size: 1.08rem !important; }
   #reference-screen .side-heading-angle { font-size: .78rem !important; }
   #reference-screen .side-heading-value { font-size: .92rem !important; }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
   #reference-screen .reference-main-layout { grid-template-columns: minmax(0, 1fr) 120px !important; }
   #reference-screen .reference-guide-circle { min-height: 470px !important; }
 }
@@ -5971,7 +6051,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     font-size: 1.18rem !important;
     font-weight: 800 !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #reference-screen .reference-guide-circle {
         width: min(100%, 430px) !important;
         max-width: 430px !important;
@@ -5980,7 +6060,7 @@ svg.tap-point-symbol.next-point-symbol circle {
         font-size: 1rem !important;
     }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #reference-screen .reference-guide-circle {
         width: min(100%, 520px) !important;
         max-width: 520px !important;
@@ -6070,7 +6150,7 @@ svg.tap-point-symbol.next-point-symbol circle {
         height: 390px !important;
     }
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen .quiz-main-card {
         padding: 16px 14px 18px !important;
         gap: 10px !important;
@@ -6222,7 +6302,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 /* iPad / tablet: preserve the two-column design */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #quiz-screen .quiz-main-card {
         grid-template-columns: minmax(0, 1.12fr) minmax(290px, .88fr) !important;
         column-gap: 16px !important;
@@ -6245,7 +6325,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 /* Smartphone: stack the two panels vertically */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen .quiz-main-card {
         display: flex !important;
         flex-direction: column !important;
@@ -6402,7 +6482,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 /* tablet */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #quiz-screen .quiz-problem-layout {
         grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr) !important;
         gap: 14px !important;
@@ -6428,7 +6508,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 /* mobile -> stack */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen .quiz-main-card {
         padding: 12px !important;
         gap: 10px !important;
@@ -6559,7 +6639,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     top: 14px !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.palette-mode .quiz-main-card {
         padding: 14px !important;
         gap: 10px !important;
@@ -6640,7 +6720,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     min-height: 90px !important;
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #quiz-screen.choice-mode .quiz-main-card {
         padding: 10px 12px 14px !important;
         gap: 8px !important;
@@ -6668,7 +6748,7 @@ svg.tap-point-symbol.next-point-symbol circle {
         min-height: 82px !important;
     }
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.palette-mode .question-display {
         min-height: 62px !important;
         padding: 8px 12px !important;
@@ -6734,7 +6814,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 /* Mobile: 4 choices in one horizontal row */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.choice-mode .choices-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         gap: 6px !important;
@@ -6774,7 +6854,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 /* Tablet: reinforce Century numerals and choice values */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     #quiz-screen.choice-mode .choice-num,
     #quiz-screen.choice-mode .choice-val,
     #quiz-screen.palette-mode .palette-btn,
@@ -6831,7 +6911,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 /* Smartphone 4-choice: remove divider between ① and ② */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.choice-mode .quiz-left-panel {
         border-right: none !important;
         padding-right: 0 !important;
@@ -6848,7 +6928,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v37: mobile 4-choice larger unit-circle points + no ①②③④ ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     /* Make the tappable points on the quiz unit circle larger */
     #quiz-screen.choice-mode #quiz-unit-circle .circle-point-group .point-dot {
         r: 9 !important;
@@ -6915,7 +6995,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v39: smartphone balance + larger selectable unit circle ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     /* Give question / step ① / step ② the same outer width and visual rhythm. */
     #quiz-screen.choice-mode .quiz-main-card {
         padding: 6px !important;
@@ -7036,7 +7116,7 @@ svg.tap-point-symbol.next-point-symbol circle {
    progress, record, answer value or dynamically generated result is forced
    to the exact font-family name "Century".
 */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1023px) {
     /* Start screen numbers / records / modes / timing */
     #start-screen .pb-course-name,
     #start-screen .pb-value,
@@ -7127,7 +7207,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v41: smartphone answer layout fixes ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     /* Step ② does not need an outer frame; keep only the four answer cards. */
     #quiz-screen.choice-mode .quiz-right-panel {
         border: none !important;
@@ -7155,7 +7235,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v42: smartphone tan60/tan120 safe area, keep unit circle large ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.choice-mode #quiz-unit-circle {
         /* Taller frame compensates for the extra tan60/tan120 vertical range. */
         height: clamp(450px, 126vw, 505px) !important;
@@ -7180,7 +7260,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v43: smartphone 4-choice circle slightly larger, trim tan60/120 vertical margins ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.choice-mode #quiz-unit-circle {
         height: clamp(466px, 129vw, 520px) !important;
         min-height: 466px !important;
@@ -7204,7 +7284,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v44: smartphone quiz trim top/bottom margins around the green dashed line ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.choice-mode #quiz-unit-circle {
         height: clamp(476px, 132vw, 530px) !important;
         min-height: 476px !important;
@@ -7228,7 +7308,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v45: smartphone remove vertical letterbox around unit circle ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.choice-mode #quiz-unit-circle {
         width: 100% !important;
         height: auto !important;
@@ -7260,7 +7340,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v46: smartphone give slightly more top/bottom breathing room around the unit circle ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.choice-mode #quiz-unit-circle {
         aspect-ratio: 360 / 424 !important;
     }
@@ -7268,7 +7348,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v47: smartphone oversized start panel with huge face icon ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #start-screen #btn-start-quiz,
     #start-screen .start-quiz-btn {
         width: 100% !important;
@@ -7323,7 +7403,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 }
 
 /* Extra-short phone screens: keep the full button visible. */
-@media (max-width: 767px) and (max-height: 720px) {
+@media (max-width: 599px) and (max-height: 720px) {
     #start-screen #btn-start-quiz,
     #start-screen .start-quiz-btn {
         height: 245px !important;
@@ -7338,7 +7418,7 @@ svg.tap-point-symbol.next-point-symbol circle {
 
 
 /* ===== v48: smartphone top screen large start panel with huge icon below text ===== */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #start-screen .settings-card {
         padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
     }
@@ -7409,7 +7489,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     color: #be123c !important;
     box-shadow: 0 0 0 2px rgba(244,63,94,.06) inset !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #btn-sound,
     #btn-bgm-toggle {
         font-size: .72rem !important;
@@ -7432,7 +7512,7 @@ svg.tap-point-symbol.next-point-symbol circle {
     font-weight: 800 !important;
     color: #475569 !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen .question-display .quiz-progress-text {
         left: 10px !important;
         right: auto !important;
@@ -7684,7 +7764,7 @@ body:has(#quiz-screen.active) #quiz-screen .quiz-main-card {
     font-weight: 900 !important;
     color: #0f172a !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen .question-display .quiz-progress-text {
         font-size: .98rem !important;
     }
@@ -7726,7 +7806,7 @@ body:has(#quiz-screen.active) #quiz-screen .quiz-main-card {
     gap: 3px !important;
     flex-wrap: nowrap !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen.choice-mode .quiz-right-panel {
         height: 106px !important;
         min-height: 106px !important;
@@ -7838,9 +7918,59 @@ body:has(#quiz-screen.active) #quiz-screen .quiz-main-card {
     height: 22px !important;
     font-size: 1.14rem !important;
 }
+#quiz-screen .answer-focus-point.func-sin {
+    fill: #e11d48 !important;
+    stroke: #e11d48 !important;
+}
+#quiz-screen .answer-focus-point.func-cos {
+    fill: #0369a1 !important;
+    stroke: #0369a1 !important;
+}
+#quiz-screen .answer-focus-point.func-tan {
+    fill: #059669 !important;
+    stroke: #059669 !important;
+}
+#quiz-screen .circle-point-group.selected-func-sin .point-dot {
+    fill: #e11d48 !important;
+}
+#quiz-screen .circle-point-group.selected-func-cos .point-dot {
+    fill: #0369a1 !important;
+}
+#quiz-screen .circle-point-group.selected-func-tan .point-dot {
+    fill: #059669 !important;
+}
+#quiz-screen .circle-point-group.selected-wrong-angle .point-dot {
+    fill: #fed7aa !important;
+    stroke: #f59e0b !important;
+    r: 8.5px !important;
+}
+#quiz-screen .wrong-angle-cross {
+    fill: #c2410c;
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    dominant-baseline: middle;
+    paint-order: stroke fill;
+    stroke: #fff;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+#quiz-screen .correct-angle-symbol {
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 21px;
+    font-weight: 900;
+    dominant-baseline: middle;
+    paint-order: stroke fill;
+    stroke: #fff;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+#quiz-screen .correct-angle-symbol.func-sin { fill: #e11d48; }
+#quiz-screen .correct-angle-symbol.func-cos { fill: #0369a1; }
+#quiz-screen .correct-angle-symbol.func-tan { fill: #059669; }
 
 /* Keep explanation numerals in Century on smartphones as well. */
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #quiz-screen .answer-focus-label,
     #quiz-screen .answer-focus-label *,
     #quiz-screen .answer-focus-value,
@@ -7886,6 +8016,16 @@ body:has(#quiz-screen.active) #quiz-screen .quiz-main-card {
 }
 #result-screen .result-stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+#result-screen.two-minute-result .result-stats-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+#result-screen.two-minute-result .result-stat-item:has(#result-score-text) {
+    display: block !important;
+}
+#result-screen.two-minute-result .result-stat-item:has(#result-accuracy-text),
+#result-screen.two-minute-result .result-stat-item:has(#result-max-streak-text) {
+    display: none !important;
 }
 #quiz-screen .answer-fraction-bar {
     stroke: currentColor;
@@ -7980,7 +8120,7 @@ body:has(#reference-screen.active) .reference-screen-card {
 #reference-screen .tan-parallel-badge {
     display: none !important;
 }
-@media (max-width: 767px) {
+@media (max-width: 599px) {
     #reference-screen .reference-guide-circle {
         width: 100% !important;
         max-width: none !important;

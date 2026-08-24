@@ -87,9 +87,11 @@ class TrigQuizApp {
             timeLimitInputs: document.querySelectorAll('input[name="time-limit"]'),
             rationalizeToggle: document.getElementById('toggle-rationalize'),
             btnStartQuiz: document.getElementById('btn-start-quiz'),
+            startBtnIcon: document.querySelector('#btn-start-quiz .start-btn-icon'),
             personalBestTime: document.getElementById('personal-best-time'),
             personalBestDetail: document.getElementById('personal-best-detail'),
             personalBestRankMark: document.getElementById('personal-best-rank-mark'),
+            personalBest2minRankMark: document.getElementById('personal-best-2min-rank-mark'),
             personalBestNote: document.getElementById('personal-best-note'),
 
             // Quiz screen elements
@@ -171,9 +173,27 @@ class TrigQuizApp {
 
 
     bindViewportFit() {
-        const refit = () => requestAnimationFrame(() => this.fitStartScreenToViewport());
+        const refit = () => requestAnimationFrame(() => {
+            this.fitStartScreenToViewport();
+            this.syncVisualTimerPlacement();
+        });
         window.addEventListener('resize', refit);
         window.addEventListener('orientationchange', refit);
+    }
+
+    syncVisualTimerPlacement() {
+        const questionDisplay = this.dom.questionFunc?.closest('.question-display');
+        const quizFooter = this.dom.btnQuitQuiz?.closest('.quiz-footer');
+        const useShortLandscapeLayout = window.matchMedia(
+            '(min-width: 600px) and (max-height: 500px) and (orientation: landscape)'
+        ).matches;
+
+        if (!this.dom.visualTimer || !questionDisplay || !quizFooter) return;
+        if (this.mode === '3min-challenge' && useShortLandscapeLayout) {
+            quizFooter.appendChild(this.dom.visualTimer);
+        } else if (this.dom.quizProgressText) {
+            questionDisplay.insertBefore(this.dom.visualTimer, this.dom.quizProgressText);
+        }
     }
 
     bindAudioUnlock() {
@@ -543,6 +563,9 @@ class TrigQuizApp {
         this.pauseStartedAt = 0;
         this.dom.quizScreen.classList.remove('quiz-paused');
         this.dom.quizScreen.classList.toggle('three-minute-mode', this.mode === '3min-challenge');
+        // Keep the hourglass in the layout-specific position, including after
+        // rotating between portrait and landscape.
+        this.syncVisualTimerPlacement();
         this.dom.btnQuitQuiz.style.display = 'inline-flex';
         if (this.dom.stopChoiceButtons) this.dom.stopChoiceButtons.style.display = 'none';
 
@@ -1143,6 +1166,7 @@ class TrigQuizApp {
         this.audio.stopBgm();
         this.savePersonalBest();
         this.showScreen('result');
+        this.dom.resultScreen?.classList.toggle('two-minute-result', this.mode === '3min-challenge');
 
         const total = this.history.length;
         const correctCount = this.history.filter(h => h.isCorrect).length;
@@ -1154,18 +1178,31 @@ class TrigQuizApp {
         // Rank determination
         let rank = 'C';
         let rankClass = 'rank-c';
-        if (accuracy === 100 && total >= 20) {
-            rank = 'S+';
-            rankClass = 'rank-s-plus';
-        } else if (accuracy >= 90) {
-            rank = 'S';
-            rankClass = 'rank-s';
-        } else if (accuracy >= 75) {
-            rank = 'A';
-            rankClass = 'rank-a';
-        } else if (accuracy >= 60) {
-            rank = 'B';
-            rankClass = 'rank-b';
+        if (this.mode === '3min-challenge') {
+            if (correctCount >= 40) {
+                rank = 'S';
+                rankClass = 'rank-s';
+            } else if (correctCount >= 30) {
+                rank = 'A';
+                rankClass = 'rank-a';
+            } else if (correctCount >= 20) {
+                rank = 'B';
+                rankClass = 'rank-b';
+            }
+        } else {
+            if (accuracy === 100 && total >= 20) {
+                rank = 'S+';
+                rankClass = 'rank-s-plus';
+            } else if (accuracy >= 90) {
+                rank = 'S';
+                rankClass = 'rank-s';
+            } else if (accuracy >= 75) {
+                rank = 'A';
+                rankClass = 'rank-a';
+            } else if (accuracy >= 60) {
+                rank = 'B';
+                rankClass = 'rank-b';
+            }
         }
 
         this.dom.resultRankBadge.textContent = rank;
@@ -1277,7 +1314,8 @@ class TrigQuizApp {
 
     savePersonalBest() {
         const correctCount = this.history.filter(h => h.isCorrect).length;
-        if (correctCount < 18) {
+        const hasAllFunctions = ['sin', 'cos', 'tan'].every(func => this.targetFunctions.includes(func));
+        if (!hasAllFunctions || correctCount < 18) {
             this.updatePersonalBestDisplay();
             return;
         }
@@ -1305,6 +1343,23 @@ class TrigQuizApp {
 
         const best20 = Number(localStorage.getItem('trig-quiz-best-20-challenge'));
         const best3min = Number(localStorage.getItem('trig-quiz-best-2min-challenge'));
+        const best20Rank = !best20 ? '—'
+            : best20 <= 60 ? 'S'
+                : best20 <= 120 ? 'A'
+                    : best20 <= 180 ? 'B' : 'C';
+        const best2minRank = !best3min ? '—'
+            : best3min >= 40 ? 'S'
+                : best3min >= 30 ? 'A'
+                    : best3min >= 20 ? 'B' : 'C';
+        const hasEarnedCrown = best20Rank === 'S' && best2minRank === 'S';
+
+        if (this.dom.startBtnIcon) {
+            this.dom.startBtnIcon.src = hasEarnedCrown
+                ? 'assets/start-icon-crown.png'
+                : 'assets/start-icon-white.png';
+            this.dom.startBtnIcon.classList.toggle('is-crown-achieved', hasEarnedCrown);
+            this.dom.startBtnIcon.alt = hasEarnedCrown ? '両コースS達成' : '';
+        }
 
         this.dom.personalBestTime.textContent = best20
             ? `${best20.toFixed(2)}秒`
@@ -1315,34 +1370,20 @@ class TrigQuizApp {
             : '---問';
 
         if (this.dom.personalBestRankMark) {
-            let mark = '—';
-            let label = '記録なし';
-            if (best20) {
-                if (best20 <= 60) {
-                    mark = '💮';
-                    label = '1分以内';
-                } else if (best20 <= 120) {
-                    mark = '○';
-                    label = '2分以内';
-                } else if (best20 <= 180) {
-                    mark = '△';
-                    label = '3分以内';
-                } else {
-                    mark = '×';
-                    label = '3分超';
-                }
-            }
-            this.dom.personalBestRankMark.textContent = mark;
-            this.dom.personalBestRankMark.setAttribute('aria-label', label);
-            this.dom.personalBestRankMark.title = label;
+            const labels = { S: '1分以内', A: '2分以内', B: '3分以内', C: '3分超', '—': '記録なし' };
+            this.dom.personalBestRankMark.textContent = best20Rank;
+            this.dom.personalBestRankMark.setAttribute('aria-label', labels[best20Rank]);
+            this.dom.personalBestRankMark.title = labels[best20Rank];
+        }
+        if (this.dom.personalBest2minRankMark) {
+            const labels = { S: '40問以上', A: '30問以上', B: '20問以上', C: '20問未満', '—': '記録なし' };
+            this.dom.personalBest2minRankMark.textContent = best2minRank;
+            this.dom.personalBest2minRankMark.setAttribute('aria-label', labels[best2minRank]);
+            this.dom.personalBest2minRankMark.title = labels[best2minRank];
         }
 
         if (this.dom.personalBestNote) {
-            if (best20 || best3min) {
-                this.dom.personalBestNote.textContent = '18問以上正解した記録のみ表示';
-            } else {
-                this.dom.personalBestNote.textContent = '18問以上正解したときに記録が表示されます';
-            }
+            this.dom.personalBestNote.textContent = '※sin・cos・tan全選択かつ18問以上正解した記録のみ反映';
         }
     }
 

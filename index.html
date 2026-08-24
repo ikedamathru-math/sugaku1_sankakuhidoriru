@@ -4,8 +4,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<meta content="#ffffff" name="theme-color"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <title>三角比マスター (0°〜180°) - sin, cos, tan クイズ</title>
 <meta content="0度から180度までの三角比（sin, cos, tan）を半円・単位円と合わせて楽しく学べるスピードクイズ＆特訓Webアプリ" name="description"/>
+<link href="manifest.webmanifest" rel="manifest"/>
+<link href="assets/start-face.png" rel="apple-touch-icon"/>
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -23,6 +28,14 @@
 <button class="btn" id="btn-bgm-toggle" title="効果音オン・オフ">効果音 OFF</button>
 </div>
 </header>
+<aside aria-label="ホーム画面への追加" class="install-choice" hidden id="install-choice">
+<div class="install-choice-text"><strong>ホーム画面から起動しますか？</strong><span>アドレスバーなしで広く使えます</span></div>
+<div class="install-choice-actions">
+<button class="btn install-choice-primary" id="btn-install-app" type="button">ホーム画面に追加</button>
+<button class="btn" id="btn-use-browser" type="button">このまま使う</button>
+</div>
+<p class="install-ios-guide" hidden id="install-ios-guide">Safari下部の共有ボタンを押し、「ホーム画面に追加」を選んでください。</p>
+</aside>
 <!-- Main Container -->
 <main class="main-container">
 <!-- ==========================================
@@ -37,11 +50,11 @@
 <div class="mode-tabs-grid">
 <div class="mode-tab active" data-mode="20-challenge">
 <span class="mode-name">20問コース</span>
-<span class="mode-desc">制限時間付きでスコアアタック</span>
+<span class="mode-desc">制限時間付き</span>
 </div>
 <div class="mode-tab" data-mode="3min-challenge">
 <span class="mode-name">2分チャレンジ</span>
-<span class="mode-desc">2分間で何問正解できるか挑戦</span>
+<span class="mode-desc">2分間で何問正解できるか</span>
 </div>
 </div>
 </div>
@@ -94,14 +107,18 @@
 <div class="personal-best-grid">
 <div class="personal-best-entry personal-best-entry-20">
 <div class="pb-course-name">20問コース</div>
+<div class="pb-result-line">
 <div class="pb-value" id="personal-best-time">--,---秒</div>
-<div class="pb-rank-mark" id="personal-best-rank-mark">—</div></div>
+<div class="pb-rank-mark" id="personal-best-rank-mark">—</div>
+</div></div>
 <div class="personal-best-entry personal-best-entry-3min">
 <div class="pb-course-name">2分チャレンジ</div>
+<div class="pb-result-line">
 <div class="pb-value" id="personal-best-detail">---問</div>
+<div class="pb-rank-mark" id="personal-best-2min-rank-mark">—</div>
+</div></div>
 </div>
-</div>
-<div class="personal-best-note" id="personal-best-note">18問以上正解したときに記録が表示されます</div>
+<div class="personal-best-note" id="personal-best-note">※sin・cos・tan全選択かつ18問以上正解した記録のみ反映</div>
 </div><img alt="" class="personal-best-mascot" src="assets/personal-best-mascot.png"/></div>
 </div>
 </section>
@@ -177,7 +194,7 @@
 <button class="btn btn-stop" id="btn-quit-quiz">■ ストップ</button>
 <div class="stop-choice-buttons" id="stop-choice-buttons" style="display:none;">
 <button class="btn btn-primary" id="btn-stop-resume">画面タップで再開</button>
-<button class="btn" id="btn-stop-home">🏠 トップ</button>
+<button class="btn" id="btn-stop-home">トップ</button>
 </div>
 </div>
 <button class="btn btn-primary" id="btn-next-question" style="display: none;">
@@ -219,8 +236,8 @@
 </div>
 <!-- Leaderboard -->
 <div class="result-actions">
-<button class="btn btn-primary btn-large" id="btn-restart-quiz">もう一度挑戦 🔄</button>
-<button class="btn btn-large" id="btn-back-to-home">ホームに戻る 🏠</button>
+<button class="btn btn-primary btn-large" id="btn-restart-quiz">もう一度挑戦</button>
+<button class="btn btn-large" id="btn-back-to-home">ホームに戻る</button>
 </div>
 </div>
 </section>
@@ -270,6 +287,7 @@
 <script src="js/trig-data.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/unit-circle.js"></script>
+<script src="js/pwa.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
