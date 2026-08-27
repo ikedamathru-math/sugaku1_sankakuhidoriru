@@ -1474,7 +1474,15 @@ body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid .palette-
   min-width: 0 !important;
   min-height: 42px !important;
   padding: 2px !important;
-  font-size: clamp(.68rem, 1.45vw, .92rem) !important;
+  font-family: "Century" !important;
+  font-style: normal !important;
+  font-size: clamp(.8rem, 1.7vw, 1.05rem) !important;
+}
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid .palette-btn.value-compact {
+  font-size: clamp(.7rem, 1.5vw, .92rem) !important;
+}
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid .palette-btn.value-very-compact {
+  font-size: clamp(.62rem, 1.3vw, .82rem) !important;
 }
 body.secret-mode-unlocked #quiz-screen .palette-flat-grid .priority-top { border-color: #f59e0b !important; background: #fffbeb !important; }
 body.secret-mode-unlocked #quiz-screen .palette-flat-grid .priority-middle { border-color: #8b5cf6 !important; background: #f5f3ff !important; }
@@ -1495,7 +1503,14 @@ body.secret-mode-unlocked #quiz-screen .palette-flat-grid .priority-hard { borde
   }
   body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid .palette-btn {
     min-height: 38px !important;
-    font-size: clamp(.54rem, 2.35vw, .68rem) !important;
+    font-family: "Century" !important;
+    font-size: clamp(.66rem, 2.75vw, .82rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid .palette-btn.value-compact {
+    font-size: clamp(.6rem, 2.45vw, .74rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid .palette-btn.value-very-compact {
+    font-size: clamp(.53rem, 2.15vw, .65rem) !important;
   }
 }
 

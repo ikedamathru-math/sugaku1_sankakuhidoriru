@@ -16,14 +16,18 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Main Style -->
-<link href="css/style.css?v=86" rel="stylesheet"/>
-<link href="css/height-compact.css?v=86" rel="stylesheet"/>
+<link href="css/style.css?v=98" rel="stylesheet"/>
+<link href="css/height-compact.css?v=98" rel="stylesheet"/>
 </head>
 <body>
 <!-- Header HUD -->
 <header class="app-header">
 <div class="header-actions">
 <button class="btn" id="btn-reference" title="三角比確認表">三角比確認表</button>
+<span class="mode-world-switcher" id="mode-world-switcher" hidden>
+<button class="btn mode-world-btn" id="btn-normal-mode" type="button">基本版</button>
+<button class="btn mode-world-btn" id="btn-secret-mode" type="button">裏版</button>
+</span>
 <button class="btn active" id="btn-sound" title="操作音オン・オフ">操作音 ON</button>
 <button class="btn" id="btn-bgm-toggle" title="効果音オン・オフ">効果音 OFF</button>
 </div>
@@ -34,8 +38,20 @@
 <button class="btn install-choice-primary" id="btn-install-app" type="button">ホーム画面に追加</button>
 <button class="btn" id="btn-use-browser" type="button">このまま使う</button>
 </div>
-<p class="install-ios-guide" hidden id="install-ios-guide">Safari下部の共有ボタンを押し、「ホーム画面に追加」を選んでください。</p>
 </aside>
+<div aria-labelledby="install-guide-title" aria-modal="true" class="install-guide-overlay" hidden id="install-guide-overlay" role="dialog">
+<div class="install-guide-card">
+<div class="install-guide-symbol" id="install-guide-symbol" aria-hidden="true">＋</div>
+<h2 id="install-guide-title">ホーム画面への追加方法</h2>
+<p class="install-guide-lead" id="install-guide-lead"></p>
+<ol class="install-guide-steps" id="install-guide-steps"></ol>
+<p class="install-guide-note" id="install-guide-note"></p>
+<div class="install-guide-actions">
+<button class="btn install-choice-primary" hidden id="btn-guide-install" type="button">インストール画面を開く</button>
+<button class="btn" id="btn-guide-close" type="button">今回は追加しない</button>
+</div>
+</div>
+</div>
 <!-- Main Container -->
 <main class="main-container">
 <!-- ==========================================
@@ -296,10 +312,10 @@
 <!-- Victory Confetti Canvas -->
 <canvas id="confetti-canvas"></canvas>
 <!-- Scripts -->
-<script src="js/trig-data.js?v=86"></script>
+<script src="js/trig-data.js?v=98"></script>
 <script src="js/audio.js"></script>
-<script src="js/unit-circle.js?v=86"></script>
-<script src="js/pwa.js"></script>
-<script src="js/app.js?v=86"></script>
+<script src="js/unit-circle.js?v=98"></script>
+<script src="js/pwa.js?v=98"></script>
+<script src="js/app.js?v=98"></script>
 </body>
 </html>
