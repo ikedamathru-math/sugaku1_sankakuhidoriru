@@ -839,7 +839,9 @@ class TrigQuizApp {
 
     render4Choices() {
         const correctId = this.currentQuestion.correctValueId;
-        const allIds = Object.keys(window.VALUE_DEFS);
+        // 基本編の4択には、従来の有名角で使う値だけを出す。
+        // VALUE_DEFSには裏編の難しい値も含まれるため、候補を明示的に分離する。
+        const allIds = window.STANDARD_VALUE_IDS || Object.keys(window.VALUE_DEFS);
 
         let candidates = allIds.filter(id => id !== correctId);
 

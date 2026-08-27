@@ -5,6 +5,11 @@
 
 const ANGLES = [0, 30, 45, 60, 90, 120, 135, 150, 180];
 const FUNCTIONS = ['sin', 'cos', 'tan'];
+const STANDARD_VALUE_IDS = [
+    '0', '1/2', '-1/2', '1/sqrt2', '-1/sqrt2',
+    'sqrt3/2', '-sqrt3/2', '1', '-1',
+    '1/sqrt3', '-1/sqrt3', 'sqrt3', '-sqrt3', 'none'
+];
 
 const MINUS = '<span class="minus-sign">−</span>';
 
@@ -235,6 +240,7 @@ window.TRIG_DATA = TRIG_DATA;
 window.VALUE_DEFS = VALUE_DEFS;
 window.ANGLES = ANGLES;
 window.FUNCTIONS = FUNCTIONS;
+window.STANDARD_VALUE_IDS = STANDARD_VALUE_IDS;
 window.SECRET_QUESTION_POOL = SECRET_QUESTION_POOL;
 window.SECRET_ANGLES = SECRET_ANGLES;
 window.formatValueHtml = formatValueHtml;
