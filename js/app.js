@@ -21,7 +21,7 @@ class TrigQuizApp {
         this.lastScreenBeforeReference = 'start';
 
         // Settings State
-        this.mode = '20-challenge'; // '20-challenge' | '3min-challenge'
+        this.mode = '20-challenge'; // '20-challenge' | '3min-challenge' | '1min-secret'
         this.answerType = 'choice4'; // 'choice4' | 'palette'
         this.targetFunctions = ['sin', 'cos', 'tan']; // Array of selected functions
         this.angleRange = '180'; // fixed: 0°〜180°
@@ -92,7 +92,12 @@ class TrigQuizApp {
             personalBestDetail: document.getElementById('personal-best-detail'),
             personalBestRankMark: document.getElementById('personal-best-rank-mark'),
             personalBest2minRankMark: document.getElementById('personal-best-2min-rank-mark'),
+            personalBestSecretDetail: document.getElementById('personal-best-secret-detail'),
+            personalBestSecretRankMark: document.getElementById('personal-best-secret-rank-mark'),
             personalBestNote: document.getElementById('personal-best-note'),
+            personalBestPlant: document.getElementById('personal-best-plant'),
+            secretModeBadge: document.getElementById('secret-mode-badge'),
+            secretMemoryTable: document.getElementById('secret-memory-table'),
 
             // Quiz screen elements
             quizModeBadge: document.getElementById('quiz-mode-badge'),
@@ -183,15 +188,8 @@ class TrigQuizApp {
 
     syncVisualTimerPlacement() {
         const questionDisplay = this.dom.questionFunc?.closest('.question-display');
-        const quizFooter = this.dom.btnQuitQuiz?.closest('.quiz-footer');
-        const useShortLandscapeLayout = window.matchMedia(
-            '(min-width: 600px) and (max-height: 500px) and (orientation: landscape)'
-        ).matches;
-
-        if (!this.dom.visualTimer || !questionDisplay || !quizFooter) return;
-        if (this.mode === '3min-challenge' && useShortLandscapeLayout) {
-            quizFooter.appendChild(this.dom.visualTimer);
-        } else if (this.dom.quizProgressText) {
+        if (!this.dom.visualTimer || !questionDisplay) return;
+        if (this.dom.quizProgressText) {
             questionDisplay.insertBefore(this.dom.visualTimer, this.dom.quizProgressText);
         }
     }
@@ -435,11 +433,17 @@ class TrigQuizApp {
     }
 
     updateSettingsFromUI() {
+        if (this.mode === '1min-secret') {
+            this.answerType = 'palette';
+            this.targetFunctions = ['sin', 'cos', 'tan'];
+        }
         const checkedFuncs = Array.from(this.dom.funcCheckboxes)
             .filter(cb => cb.checked)
             .map(cb => cb.value);
 
-        if (checkedFuncs.length === 0) {
+        if (this.mode === '1min-secret') {
+            this.targetFunctions = ['sin', 'cos', 'tan'];
+        } else if (checkedFuncs.length === 0) {
             this.dom.funcCheckboxes[0].checked = true;
             this.targetFunctions = ['sin'];
         } else {
@@ -459,8 +463,11 @@ class TrigQuizApp {
                 'reference-guide-circle',
                 (deg) => this.updateReferenceGuide(deg)
             );
+            if (this.secretModeUnlocked) {
+                this.referenceGuideVisualizer.setAngles(window.SECRET_ANGLES);
+            }
             this.referenceGuideVisualizer.setInteractive(true);
-            this.updateReferenceGuide(45);
+            this.updateReferenceGuide(this.secretModeUnlocked ? window.SECRET_ANGLES[0] : 45);
         }
     }
 
@@ -556,6 +563,8 @@ class TrigQuizApp {
         this.maxStreak = 0;
         this.lives = 3;
         this.history = [];
+        this.usedQuestionKeys = { standard: new Set(), secret: new Set() };
+        this.attemptCounted = false;
         this.reviewQueue = null;
         this.isReviewSession = false;
         this.isAnswered = false;
@@ -592,6 +601,20 @@ class TrigQuizApp {
                 this.dom.globalTimerText.style.display = 'none';
                 this.dom.globalTimerText.textContent = '残り 2:00';
             }
+        } else if (this.mode === '1min-secret') {
+            this.totalQuestions = Number.POSITIVE_INFINITY;
+            this.answerType = 'palette';
+            this.targetFunctions = ['sin', 'cos', 'tan'];
+            this.dom.quizModeBadge.textContent = '⚡ 裏・1分チャレンジ';
+            this.dom.timerContainer.style.display = 'block';
+            this.dom.livesContainer.style.display = 'none';
+            this.timePerQuestion = this.timeLimitSetting;
+            this.globalTimeLeft = 60;
+            this.globalChallengeEnded = false;
+            if (this.dom.globalTimerText) {
+                this.dom.globalTimerText.style.display = 'none';
+                this.dom.globalTimerText.textContent = '残り 1:00';
+            }
         }
 
         this.showScreen('quiz');
@@ -609,7 +632,7 @@ class TrigQuizApp {
         }
 
         if (this.bgmEnabled) this.audio.startBgm(this.bgmTrack);
-        if (this.mode === '3min-challenge') this.startGlobalChallengeTimer();
+        if (this.mode === '3min-challenge' || this.mode === '1min-secret') this.startGlobalChallengeTimer();
         this.nextQuestion();
     }
 
@@ -639,7 +662,7 @@ class TrigQuizApp {
             this.finishQuiz();
             return;
         }
-        if (this.mode === '3min-challenge' && this.globalChallengeEnded) {
+        if ((this.mode === '3min-challenge' || this.mode === '1min-secret') && this.globalChallengeEnded) {
             this.finishQuiz();
             return;
         }
@@ -660,7 +683,7 @@ class TrigQuizApp {
         // Update progress bar
         if (this.isReviewSession || this.mode === '20-challenge') {
             this.dom.quizProgressText.textContent = `${this.toFullWidthNumber(this.questionIndex)}問目`;
-        } else if (this.mode === '3min-challenge') {
+        } else if (this.mode === '3min-challenge' || this.mode === '1min-secret') {
             const correctSoFar = this.history.filter(h => h.isCorrect).length;
             this.dom.quizProgressText.textContent = `正解 ${this.toFullWidthNumber(correctSoFar)}問`;
         } else {
@@ -685,23 +708,37 @@ class TrigQuizApp {
             };
         }
 
+        if (this.mode === '1min-secret') {
+            const useAddedAngle = this.questionIndex % 5 === 0;
+            const pool = useAddedAngle
+                ? (window.SECRET_QUESTION_POOL || [])
+                : window.ANGLES.flatMap(angle => this.targetFunctions.map(func => ({
+                    angle,
+                    func,
+                    valueId: window.TRIG_DATA[angle][func].valueId,
+                    explanation: window.TRIG_DATA[angle][func].explanation
+                })));
+            const question = this.takeUnusedQuestion(pool, useAddedAngle ? 'secret' : 'standard');
+            return {
+                angle: question.angle,
+                func: question.func,
+                correctValueId: question.valueId,
+                explanation: question.explanation
+            };
+        }
+
         const angles = [0, 30, 45, 60, 90, 120, 135, 150, 180];
 
         const funcs = this.targetFunctions;
 
-        let angle, func;
-        let attempts = 0;
-        do {
-            angle = angles[Math.floor(Math.random() * angles.length)];
-            func = funcs[Math.floor(Math.random() * funcs.length)];
-            attempts++;
-        } while (
-            attempts < 10 &&
-            this.currentQuestion &&
-            this.currentQuestion.angle === angle &&
-            this.currentQuestion.func === func
-        );
-
+        const pool = angles.flatMap(angle => funcs.map(func => ({
+            angle,
+            func,
+            valueId: window.TRIG_DATA[angle][func].valueId,
+            explanation: window.TRIG_DATA[angle][func].explanation
+        })));
+        const question = this.takeUnusedQuestion(pool, 'standard');
+        const { angle, func } = question;
         const data = window.TRIG_DATA[angle][func];
         const correctValueId = data.valueId;
 
@@ -711,6 +748,24 @@ class TrigQuizApp {
             correctValueId,
             explanation: data.explanation
         };
+    }
+
+    takeUnusedQuestion(pool, bucketName) {
+        const used = this.usedQuestionKeys?.[bucketName] || new Set();
+        const keyOf = question => `${question.angle}-${question.func}`;
+        let available = pool.filter(question => !used.has(keyOf(question)));
+        if (!available.length) {
+            used.clear();
+            available = pool.filter(question => {
+                if (!this.currentQuestion) return true;
+                return keyOf(question) !== keyOf(this.currentQuestion);
+            });
+        }
+        const question = available[Math.floor(Math.random() * available.length)];
+        used.add(keyOf(question));
+        if (!this.usedQuestionKeys) this.usedQuestionKeys = { standard: new Set(), secret: new Set() };
+        this.usedQuestionKeys[bucketName] = used;
+        return question;
     }
 
     renderQuestion() {
@@ -796,45 +851,53 @@ class TrigQuizApp {
     }
 
     renderPalette() {
-        const rowSinCos = ['-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2', 'sqrt3/2', '1'];
-        const rowTan = ['-sqrt3', '-1', '-1/sqrt3', '0', '1/sqrt3', '1', 'sqrt3', 'none'];
+        if (this.mode === '1min-secret') {
+            const baseValues = ['-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2', 'sqrt3/2', '1', '-sqrt3', '-1/sqrt3', '1/sqrt3', 'sqrt3', 'none'];
+            const addedValues = ['sqrt5-1/4', 'sqrt5+1/4', '2-sqrt3', '2+sqrt3', 'sqrt2-1', 'sqrt2+1', 'sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'tan18', 'tan72', 'tan36', 'tan54', 'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4'];
+            const topValues = new Set(['sqrt5-1/4', 'sqrt5+1/4', '2-sqrt3', '2+sqrt3', 'sqrt2-1', 'sqrt2+1']);
+            const middleValues = new Set(['sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2']);
+            const values = [...new Set([...baseValues, ...addedValues])];
+            this.dom.paletteContainer.innerHTML = '<div class="palette-flat-grid" aria-label="三角比の値一覧"></div>';
+            const grid = this.dom.paletteContainer.querySelector('.palette-flat-grid');
+            values.forEach(valueId => {
+                const btn = document.createElement('button');
+                const priorityClass = topValues.has(valueId) ? 'priority-top' : (middleValues.has(valueId) ? 'priority-middle' : (addedValues.includes(valueId) ? 'priority-hard' : 'priority-standard'));
+                btn.className = `palette-btn ${priorityClass}`;
+                btn.dataset.valueId = valueId;
+                btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
+                btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
+                grid.appendChild(btn);
+            });
+            return;
+        }
 
-        this.dom.paletteContainer.innerHTML = `
-            <div class="palette-row-block">
-                <div class="palette-row-title">sin / cos の値</div>
-                <div class="palette-row-grid row-sin-cos" id="palette-row-1"></div>
+        const rows = [
+            { title: 'sin / cos の値', className: 'row-sin-cos', values: ['-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2', 'sqrt3/2', '1'] },
+            { title: 'tan の値', className: 'row-tan', values: ['-sqrt3', '-1', '-1/sqrt3', '0', '1/sqrt3', '1', 'sqrt3', 'none'] }
+        ];
+        this.dom.paletteContainer.innerHTML = rows.map((row, index) => `
+            <div class="palette-row-block ${index >= 2 ? 'secret-palette-row' : ''}">
+                <div class="palette-row-title">${row.title}</div>
+                <div class="palette-row-grid ${row.className}" data-palette-row="${index}"></div>
             </div>
-            <div class="palette-row-block">
-                <div class="palette-row-title">tan の値</div>
-                <div class="palette-row-grid row-tan" id="palette-row-2"></div>
-            </div>
-        `;
+        `).join('');
 
-        const row1El = this.dom.paletteContainer.querySelector('#palette-row-1');
-        const row2El = this.dom.paletteContainer.querySelector('#palette-row-2');
-
-        rowSinCos.forEach(valueId => {
-            const btn = document.createElement('button');
-            btn.className = 'palette-btn';
-            btn.dataset.valueId = valueId;
-            btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
-            btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
-            row1El.appendChild(btn);
-        });
-
-        rowTan.forEach(valueId => {
-            const btn = document.createElement('button');
-            btn.className = 'palette-btn';
-            btn.dataset.valueId = valueId;
-            btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
-            btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
-            row2El.appendChild(btn);
+        rows.forEach((row, index) => {
+            const rowEl = this.dom.paletteContainer.querySelector(`[data-palette-row="${index}"]`);
+            row.values.forEach(valueId => {
+                const btn = document.createElement('button');
+                btn.className = 'palette-btn';
+                btn.dataset.valueId = valueId;
+                btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
+                btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
+                rowEl.appendChild(btn);
+            });
         });
     }
 
     startGlobalChallengeTimer() {
         this.stopGlobalChallengeTimer();
-        this.globalTimeLeft = 120;
+        this.globalTimeLeft = this.mode === '1min-secret' ? 60 : 120;
         this.globalChallengeEnded = false;
         this.updateGlobalChallengeDisplay();
 
@@ -863,7 +926,7 @@ class TrigQuizApp {
     }
 
     updateGlobalChallengeDisplay() {
-        if (this.mode !== '3min-challenge') return;
+        if (this.mode !== '3min-challenge' && this.mode !== '1min-secret') return;
         const seconds = Math.max(0, Math.ceil(this.globalTimeLeft));
         const min = Math.floor(seconds / 60);
         const sec = String(seconds % 60).padStart(2, '0');
@@ -1162,61 +1225,53 @@ class TrigQuizApp {
         this.stopTimer();
         this.stopGlobalChallengeTimer();
         this.quizFinishedAt = Date.now();
+        this.recordPlantAttempt();
         this.clearAutoAdvance();
         this.audio.stopBgm();
         this.savePersonalBest();
         this.showScreen('result');
-        this.dom.resultScreen?.classList.toggle('two-minute-result', this.mode === '3min-challenge');
+        this.dom.resultScreen?.classList.toggle('two-minute-result', this.mode === '3min-challenge' || this.mode === '1min-secret');
 
         const total = this.history.length;
         const correctCount = this.history.filter(h => h.isCorrect).length;
         const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
-        if (this.mode === '3min-challenge') {
+        if (this.mode === '3min-challenge' || this.mode === '1min-secret') {
             this.dom.resultScoreText.textContent = `${correctCount} 問`;
         }
 
         // Rank determination
         let rank = 'C';
         let rankClass = 'rank-c';
-        if (this.mode === '3min-challenge') {
-            if (correctCount >= 40) {
-                rank = 'S';
-                rankClass = 'rank-s';
-            } else if (correctCount >= 30) {
-                rank = 'A';
-                rankClass = 'rank-a';
-            } else if (correctCount >= 20) {
-                rank = 'B';
-                rankClass = 'rank-b';
-            }
+        if (this.mode === '3min-challenge' || this.mode === '1min-secret') {
+            ({ rank, rankClass } = this.getTimedChallengeRank(
+                correctCount,
+                this.mode === '1min-secret'
+            ));
         } else {
-            if (accuracy === 100 && total >= 20) {
-                rank = 'S+';
-                rankClass = 'rank-s-plus';
-            } else if (accuracy >= 90) {
-                rank = 'S';
-                rankClass = 'rank-s';
-            } else if (accuracy >= 75) {
-                rank = 'A';
-                rankClass = 'rank-a';
-            } else if (accuracy >= 60) {
-                rank = 'B';
-                rankClass = 'rank-b';
-            }
+            ({ rank, rankClass } = this.get20ChallengeRank(
+                correctCount,
+                this.getElapsedQuizTimeSeconds()
+            ));
+        }
+
+        if (this.mode === '1min-secret' && rank === 'S') {
+            localStorage.setItem('trig-quiz-plant-secret-attempts', '50');
         }
 
         this.dom.resultRankBadge.textContent = rank;
         this.dom.resultRankBadge.className = `rank-badge ${rankClass}`;
-        if (this.mode !== '3min-challenge') {
+        if (this.mode !== '3min-challenge' && this.mode !== '1min-secret') {
             this.dom.resultScoreText.textContent = this.score.toLocaleString();
         }
         this.dom.resultAccuracyText.textContent = `${accuracy}% (${correctCount}/${total}問)`;
         const resultTitle = this.dom.resultScreen?.querySelector('h2');
-        if (resultTitle) resultTitle.textContent = this.mode === '3min-challenge'
-            ? '2分チャレンジ結果'
-            : 'クイズ結果発表！';
+        if (resultTitle) resultTitle.textContent = this.mode === '1min-secret'
+            ? '裏・1分チャレンジ結果'
+            : (this.mode === '3min-challenge' ? '2分チャレンジ結果' : 'クイズ結果発表！');
         const scoreLabel = this.dom.resultScoreText?.parentElement?.querySelector('.result-stat-label');
-        if (scoreLabel) scoreLabel.textContent = this.mode === '3min-challenge' ? '2分間の正解数' : 'スコア';
+        if (scoreLabel) scoreLabel.textContent = this.mode === '1min-secret'
+            ? '1分間の正解数'
+            : (this.mode === '3min-challenge' ? '2分間の正解数' : 'スコア');
         this.dom.resultMaxStreakText.textContent = `${this.maxStreak} 回`;
 
         // Learning analysis by function and error type
@@ -1271,7 +1326,9 @@ class TrigQuizApp {
 
         // Save normal attempts only
         if (!this.isReviewSession) {
-            this.saveToLeaderboard(this.nickname, this.score, accuracy, this.mode);
+            if (typeof this.saveToLeaderboard === 'function') {
+                this.saveToLeaderboard(this.nickname, this.score, accuracy, this.mode);
+            }
         }
 
         // Fanfare & Confetti on S rank
@@ -1312,27 +1369,107 @@ class TrigQuizApp {
         return Math.max(0, (end - this.quizStartedAt - (this.totalPausedMs || 0)) / 1000);
     }
 
+    get20ChallengeRank(correctCount, elapsedSeconds) {
+        if (correctCount === 20 && elapsedSeconds <= 60) {
+            return { rank: 'S+', rankClass: 'rank-s-plus' };
+        }
+        if (correctCount >= 18 && elapsedSeconds <= 90) {
+            return { rank: 'S', rankClass: 'rank-s' };
+        }
+        if (correctCount >= 18 && elapsedSeconds <= 120) {
+            return { rank: 'A', rankClass: 'rank-a' };
+        }
+        if (correctCount >= 12) {
+            return { rank: 'B', rankClass: 'rank-b' };
+        }
+        return { rank: 'C', rankClass: 'rank-c' };
+    }
+
+    getTimedChallengeRank(correctCount, isSecret = false) {
+        const thresholds = isSecret
+            ? { s: 20, a: 15, b: 10 }
+            : { s: 40, a: 30, b: 20 };
+        if (correctCount >= thresholds.s) return { rank: 'S', rankClass: 'rank-s' };
+        if (correctCount >= thresholds.a) return { rank: 'A', rankClass: 'rank-a' };
+        if (correctCount >= thresholds.b) return { rank: 'B', rankClass: 'rank-b' };
+        return { rank: 'C', rankClass: 'rank-c' };
+    }
+
+    recordPlantAttempt() {
+        if (this.attemptCounted || this.isReviewSession) return;
+        const completedTwentyQuestions = this.mode === '20-challenge' && this.questionIndex >= this.totalQuestions;
+        const completedTimedChallenge = (this.mode === '3min-challenge' || this.mode === '1min-secret') && this.globalChallengeEnded;
+        if (!completedTwentyQuestions && !completedTimedChallenge) return;
+        this.attemptCounted = true;
+        const key = this.mode === '1min-secret'
+            ? 'trig-quiz-plant-secret-attempts'
+            : 'trig-quiz-plant-normal-attempts';
+        const current = Number(localStorage.getItem(key) || 0);
+        localStorage.setItem(key, String(Math.min(50, current + 1)));
+    }
+
+    renderPersonalBestPlant(secretMode) {
+        if (!this.dom.personalBestPlant) return;
+        const key = secretMode ? 'trig-quiz-plant-secret-attempts' : 'trig-quiz-plant-normal-attempts';
+        const count = Math.min(50, Math.max(0, Number(localStorage.getItem(key) || 0)));
+        const stage = Math.min(10, Math.floor(count / 5));
+        const stageLabels = ['たね', '芽', '茎', '小さな葉', '葉', 'つぼみ', '育ったつぼみ', '花びら', '開花', 'もうすぐ満開', '満開'];
+        this.dom.personalBestPlant.classList.toggle('secret-plant', secretMode);
+        this.dom.personalBestPlant.setAttribute('aria-label', `${secretMode ? '裏モード' : '通常モード'}の花：${count}回、${stageLabels[stage]}`);
+        this.dom.personalBestPlant.innerHTML = `
+            <span class="plant-sprite-viewport" aria-hidden="true">
+                <span class="plant-sprite-sheet" style="--plant-stage:${stage};--plant-row:${secretMode ? 1 : 0}"></span>
+            </span>
+            <span class="plant-progress">${count}回<br><small>${stageLabels[stage]}</small></span>`;
+    }
+
     savePersonalBest() {
         const correctCount = this.history.filter(h => h.isCorrect).length;
+        const totalAnswered = this.history.length;
+        const accuracy = totalAnswered > 0 ? correctCount / totalAnswered : 0;
         const hasAllFunctions = ['sin', 'cos', 'tan'].every(func => this.targetFunctions.includes(func));
-        if (!hasAllFunctions || correctCount < 18) {
+        if (!hasAllFunctions) {
             this.updatePersonalBestDisplay();
             return;
         }
 
         if (this.mode === '20-challenge') {
+            if (correctCount < 18) {
+                this.updatePersonalBestDisplay();
+                return;
+            }
             const elapsed = this.getElapsedQuizTimeSeconds();
             if (!elapsed || !Number.isFinite(elapsed)) return;
             const key = 'trig-quiz-best-20-challenge';
+            const correctKey = 'trig-quiz-best-20-correct';
             const current = Number(localStorage.getItem(key));
             if (!current || elapsed < current) {
                 localStorage.setItem(key, elapsed.toFixed(2));
+                localStorage.setItem(correctKey, String(correctCount));
             }
         } else if (this.mode === '3min-challenge') {
+            if (accuracy < 0.9) {
+                this.updatePersonalBestDisplay();
+                return;
+            }
             const key = 'trig-quiz-best-2min-challenge';
+            const totalKey = 'trig-quiz-best-2min-total';
             const current = Number(localStorage.getItem(key) || 0);
             if (correctCount > current) {
                 localStorage.setItem(key, String(correctCount));
+                localStorage.setItem(totalKey, String(totalAnswered));
+            }
+        } else if (this.mode === '1min-secret') {
+            if (accuracy < 0.9) {
+                this.updatePersonalBestDisplay();
+                return;
+            }
+            const key = 'trig-quiz-best-1min-secret';
+            const totalKey = 'trig-quiz-best-1min-secret-total';
+            const current = Number(localStorage.getItem(key) || 0);
+            if (correctCount > current) {
+                localStorage.setItem(key, String(correctCount));
+                localStorage.setItem(totalKey, String(totalAnswered));
             }
         }
         this.updatePersonalBestDisplay();
@@ -1342,16 +1479,30 @@ class TrigQuizApp {
         if (!this.dom.personalBestTime || !this.dom.personalBestDetail) return;
 
         const best20 = Number(localStorage.getItem('trig-quiz-best-20-challenge'));
+        const storedBest20Correct = Number(localStorage.getItem('trig-quiz-best-20-correct'));
+        // Existing records were already limited to 18+ correct; preserve them when migrating.
+        const best20Correct = storedBest20Correct || (best20 ? 18 : 0);
         const best3min = Number(localStorage.getItem('trig-quiz-best-2min-challenge'));
-        const best20Rank = !best20 ? '—'
-            : best20 <= 60 ? 'S'
-                : best20 <= 120 ? 'A'
-                    : best20 <= 180 ? 'B' : 'C';
-        const best2minRank = !best3min ? '—'
-            : best3min >= 40 ? 'S'
-                : best3min >= 30 ? 'A'
-                    : best3min >= 20 ? 'B' : 'C';
-        const hasEarnedCrown = best20Rank === 'S' && best2minRank === 'S';
+        const best3minTotalStored = Number(localStorage.getItem('trig-quiz-best-2min-total'));
+        const best3minTotal = best3minTotalStored || best3min;
+        const best3minQualifies = best3min > 0 && best3minTotal > 0 && best3min / best3minTotal >= 0.9;
+        const bestSecret = Number(localStorage.getItem('trig-quiz-best-1min-secret'));
+        const best20Rank = best20
+            ? this.get20ChallengeRank(best20Correct, best20).rank
+            : '—';
+        const best2minRank = best3minQualifies
+            ? this.getTimedChallengeRank(best3min, false).rank
+            : '—';
+        const bestSecretRank = bestSecret
+            ? this.getTimedChallengeRank(bestSecret, true).rank
+            : '—';
+        if (bestSecretRank === 'S') {
+            localStorage.setItem('trig-quiz-plant-secret-attempts', '50');
+        }
+        const hasEarnedCrown = (best20Rank === 'S' || best20Rank === 'S+') && best2minRank === 'S';
+
+        this.applySecretModeState(hasEarnedCrown);
+        this.renderPersonalBestPlant(hasEarnedCrown);
 
         if (this.dom.startBtnIcon) {
             this.dom.startBtnIcon.src = hasEarnedCrown
@@ -1366,25 +1517,132 @@ class TrigQuizApp {
             : '--,---秒';
 
         this.dom.personalBestDetail.textContent = best3min
-            ? `${best3min}問`
+            && best3minQualifies ? `${best3min}問`
             : '---問';
 
+        if (this.dom.personalBestSecretDetail) {
+            this.dom.personalBestSecretDetail.textContent = bestSecret ? `${bestSecret}問` : '---問';
+        }
+
         if (this.dom.personalBestRankMark) {
-            const labels = { S: '1分以内', A: '2分以内', B: '3分以内', C: '3分超', '—': '記録なし' };
+            const labels = {
+                'S+': '20問正解・60秒以内',
+                S: '18問以上・90秒以内',
+                A: '18問以上・120秒以内',
+                B: '12問以上',
+                C: '11問以下',
+                '—': '記録なし'
+            };
             this.dom.personalBestRankMark.textContent = best20Rank;
             this.dom.personalBestRankMark.setAttribute('aria-label', labels[best20Rank]);
             this.dom.personalBestRankMark.title = labels[best20Rank];
         }
         if (this.dom.personalBest2minRankMark) {
-            const labels = { S: '40問以上', A: '30問以上', B: '20問以上', C: '20問未満', '—': '記録なし' };
+            const labels = { S: '40問以上・正答率90%以上', A: '30問以上・正答率90%以上', B: '20問以上・正答率90%以上', C: '20問未満・正答率90%以上', '—': '記録なし' };
             this.dom.personalBest2minRankMark.textContent = best2minRank;
             this.dom.personalBest2minRankMark.setAttribute('aria-label', labels[best2minRank]);
             this.dom.personalBest2minRankMark.title = labels[best2minRank];
         }
+        if (this.dom.personalBestSecretRankMark) {
+            const labels = { S: '20問以上・正答率90%以上', A: '15問以上・正答率90%以上', B: '10問以上・正答率90%以上', C: '10問未満・正答率90%以上', '—': '記録なし' };
+            this.dom.personalBestSecretRankMark.textContent = bestSecretRank;
+            this.dom.personalBestSecretRankMark.setAttribute('aria-label', labels[bestSecretRank]);
+            this.dom.personalBestSecretRankMark.title = labels[bestSecretRank];
+        }
 
         if (this.dom.personalBestNote) {
-            this.dom.personalBestNote.textContent = '※sin・cos・tan全選択かつ18問以上正解した記録のみ反映';
+            this.dom.personalBestNote.textContent = hasEarnedCrown
+                ? '※正答率90％以上の記録のみ反映'
+                : '※全三角比選択。20問は18問以上、2分は正答率90％以上のみ反映';
         }
+    }
+
+    applySecretModeState(unlocked) {
+        this.secretModeUnlocked = unlocked;
+        document.body.classList.toggle('secret-mode-unlocked', unlocked);
+        if (this.dom.btnReference) this.dom.btnReference.textContent = unlocked ? '裏三角比確認表' : '三角比確認表';
+        if (this.dom.referenceScreen) this.dom.referenceScreen.classList.toggle('secret-reference-mode', unlocked);
+        const referenceTitle = this.dom.referenceScreen?.querySelector('.reference-topbar-title');
+        if (referenceTitle) referenceTitle.innerHTML = unlocked
+            ? '余角ペアで覚える・裏三角比'
+            : '単位円の角度の<span class="tap-symbol-gap"> </span><svg aria-hidden="true" class="tap-point-symbol next-point-symbol" focusable="false" viewBox="0 0 16 16"><circle cx="8" cy="8" fill="#ffffff" r="6" stroke="#0284c7" stroke-width="2.5"></circle></svg><span class="tap-symbol-gap"> </span>をタップ';
+        if (this.dom.secretMemoryTable) {
+            this.dom.secretMemoryTable.hidden = !unlocked;
+            if (unlocked) this.buildSecretMemoryTable();
+        }
+
+        const normalModeTabs = Array.from(this.dom.modeTabs).filter(tab => tab.dataset.mode !== '1min-secret');
+        const secretModeTab = Array.from(this.dom.modeTabs).find(tab => tab.dataset.mode === '1min-secret');
+        const choiceInput = Array.from(this.dom.answerTypeInputs).find(input => input.value === 'choice4');
+        const paletteInput = Array.from(this.dom.answerTypeInputs).find(input => input.value === 'palette');
+        const time2 = Array.from(this.dom.timeLimitInputs).find(input => input.value === '2');
+
+        normalModeTabs.forEach(tab => { tab.hidden = unlocked; tab.classList.remove('active'); });
+        if (secretModeTab) {
+            secretModeTab.hidden = !unlocked;
+            secretModeTab.classList.toggle('active', unlocked);
+        }
+
+        document.querySelectorAll('.personal-best-entry-20, .personal-best-entry-3min').forEach(el => { el.hidden = unlocked; });
+        const secretBest = document.querySelector('.personal-best-entry-secret');
+        if (secretBest) secretBest.hidden = !unlocked;
+
+        if (!unlocked) return;
+
+        this.mode = '1min-secret';
+        this.answerType = 'palette';
+        if (choiceInput) {
+            choiceInput.checked = false;
+            choiceInput.closest('.pill-option').hidden = true;
+        }
+        if (paletteInput) {
+            paletteInput.checked = true;
+            paletteInput.closest('.pill-option').hidden = false;
+        }
+        this.dom.answerTypeInputs.forEach(input => { input.disabled = true; });
+        this.dom.funcCheckboxes.forEach(input => { input.checked = true; input.disabled = true; });
+        this.targetFunctions = ['sin', 'cos', 'tan'];
+
+        this.dom.timeLimitInputs.forEach(input => {
+            const allowed = ['0', '2', '3', '5'].includes(input.value);
+            input.closest('.pill-option').hidden = !allowed;
+            input.disabled = !allowed;
+        });
+        if (!['0', '2', '3', '5'].includes(String(this.timeLimitSetting))) {
+            this.timeLimitSetting = 3;
+            const time3 = Array.from(this.dom.timeLimitInputs).find(input => input.value === '3');
+            if (time3) time3.checked = true;
+        }
+        if (time2) time2.closest('.pill-option').hidden = false;
+        this.syncSelectionCards();
+        this.buildReferenceTable();
+    }
+
+    buildSecretMemoryTable() {
+        if (!this.dom.secretMemoryTable) return;
+        const groups = [
+            { level: 'top', label: '最重要', relation: '同じ値（余角）', reason: '正五角形・黄金比の基本', items: [['sin 18°', 'sqrt5-1/4'], ['cos 72°', 'sqrt5-1/4']] },
+            { level: 'top', label: '最重要', relation: '同じ値（余角）', reason: '黄金比に直結する基本値', items: [['cos 36°', 'sqrt5+1/4'], ['sin 54°', 'sqrt5+1/4']] },
+            { level: 'top', label: '最重要', relation: '余角・互いに逆数', reason: '加法定理の代表で形が簡単', items: [['tan 15°', '2-sqrt3'], ['tan 75°', '2+sqrt3']] },
+            { level: 'top', label: '最重要', relation: '余角・互いに逆数', reason: '半角公式の代表値', items: [['tan 22.5°', 'sqrt2-1'], ['tan 67.5°', 'sqrt2+1']] },
+            { level: 'middle', label: '重要', relation: '同じ値（余角）', reason: '加法定理で頻出', items: [['sin 15°', 'sqrt6-sqrt2/4'], ['cos 75°', 'sqrt6-sqrt2/4']] },
+            { level: 'middle', label: '重要', relation: '同じ値（余角）', reason: '15°系をまとめて覚えられる', items: [['cos 15°', 'sqrt6+sqrt2/4'], ['sin 75°', 'sqrt6+sqrt2/4']] },
+            { level: 'middle', label: '重要', relation: '同じ値（余角）', reason: '45°の半角として重要', items: [['sin 22.5°', 'sqrt(2-sqrt2)/2'], ['cos 67.5°', 'sqrt(2-sqrt2)/2']] },
+            { level: 'middle', label: '重要', relation: '同じ値（余角）', reason: '半角公式の対になる値', items: [['cos 22.5°', 'sqrt(2+sqrt2)/2'], ['sin 67.5°', 'sqrt(2+sqrt2)/2']] },
+            { level: 'hard', label: '超難問', relation: '余角・互いに逆数', reason: '五角形系の発展値', items: [['tan 18°', 'tan18'], ['tan 72°', 'tan72']] },
+            { level: 'hard', label: '超難問', relation: '余角・互いに逆数', reason: '黄金比から導く発展値', items: [['tan 36°', 'tan36'], ['tan 54°', 'tan54']] },
+            { level: 'hard', label: '超難問', relation: '同じ値（余角）', reason: '複雑なので導出確認向き', items: [['sin 36°', 'sqrt(10-2sqrt5)/4'], ['cos 54°', 'sqrt(10-2sqrt5)/4']] },
+            { level: 'hard', label: '超難問', relation: '同じ値（余角）', reason: '複雑な五角形系の仕上げ', items: [['cos 18°', 'sqrt(10+2sqrt5)/4'], ['sin 72°', 'sqrt(10+2sqrt5)/4']] }
+        ];
+        this.dom.secretMemoryTable.innerHTML = groups.map(group => `
+            <article class="memory-pair-card priority-${group.level}">
+                <div class="memory-card-head"><span class="memory-priority">${group.label}</span><span class="memory-relation">${group.relation}</span></div>
+                <div class="memory-pair-items">
+                    ${group.items.map(([name, valueId]) => `<div class="memory-expression"><strong>${name}</strong><span class="memory-equals">＝</span><span class="memory-value">${window.formatValueHtml(valueId, this.useRationalized)}</span></div>`).join('')}
+                </div>
+                <p class="memory-reason">${group.reason}</p>
+            </article>
+        `).join('');
     }
 
     // ==========================================
@@ -1393,7 +1651,8 @@ class TrigQuizApp {
 
     buildReferenceTable() {
         this.dom.referenceTableBody.innerHTML = '';
-        window.ANGLES.forEach(deg => {
+        const referenceAngles = this.secretModeUnlocked ? window.SECRET_ANGLES : window.ANGLES;
+        referenceAngles.forEach(deg => {
             const row = document.createElement('tr');
             row.dataset.angle = deg;
 
@@ -1423,10 +1682,16 @@ class TrigQuizApp {
     showReferenceModal() {
         this.showScreen('reference');
         this.initReferenceGuide();
+        if (this.secretModeUnlocked && this.referenceGuideVisualizer) {
+            this.referenceGuideVisualizer.setAngles(window.SECRET_ANGLES);
+            if (!window.SECRET_ANGLES.includes(this.referenceGuideAngle)) {
+                this.referenceGuideAngle = window.SECRET_ANGLES[0];
+            }
+        }
         if (this.dom.referenceFuncCards) {
             this.dom.referenceFuncCards.forEach(c => c.classList.toggle('active-reference-func', c.dataset.referenceFunc === this.referenceGuideFunc));
         }
-        this.updateReferenceGuide(this.referenceGuideAngle || 45);
+        this.updateReferenceGuide(this.referenceGuideAngle || (this.secretModeUnlocked ? window.SECRET_ANGLES[0] : 45));
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }
 

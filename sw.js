@@ -1,16 +1,17 @@
-const CACHE_NAME = 'trig-quiz-v1';
+const CACHE_NAME = 'trig-quiz-v86';
 const APP_FILES = [
     './',
     './index.html',
     './manifest.webmanifest',
-    './css/style.css',
-    './css/height-compact.css',
-    './js/trig-data.js',
+    './css/style.css?v=86',
+    './css/height-compact.css?v=86',
+    './js/trig-data.js?v=86',
     './js/audio.js',
-    './js/unit-circle.js',
+    './js/unit-circle.js?v=86',
     './js/pwa.js',
-    './js/app.js',
-    './assets/start-face.png'
+    './js/app.js?v=86',
+    './assets/start-face.png',
+    './assets/plant-growth-sprites-v1.png'
 ];
 
 self.addEventListener('install', event => {

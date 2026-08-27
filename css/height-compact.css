@@ -4,6 +4,166 @@ body:has(#start-screen.active) .main-container {
   padding-right: 0 !important;
 }
 
+/* ===== 裏モード解放・自己ベストマスコット復旧 ===== */
+#start-screen .personal-best-card > .personal-best-mascot {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 3 !important;
+  align-self: center !important;
+  flex-shrink: 0 !important;
+}
+
+body.secret-mode-unlocked:has(#start-screen.active) {
+  background:
+    radial-gradient(circle at 18% 15%, rgba(250, 204, 21, .27), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(236, 72, 153, .24), transparent 30%),
+    linear-gradient(145deg, #25104b 0%, #4c1d95 45%, #172554 100%) !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) .main-container {
+  background: transparent !important;
+}
+body.secret-mode-unlocked #start-screen .settings-card {
+  border-color: #facc15 !important;
+  box-shadow: 0 0 0 3px rgba(250,204,21,.24), 0 18px 44px rgba(15,23,42,.4) !important;
+}
+#start-screen .secret-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  padding: 5px 12px;
+  border: 2px solid #facc15;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #db2777);
+  box-shadow: 0 3px 0 #92400e, 0 0 18px rgba(250,204,21,.6);
+  font-weight: 900;
+  font-size: clamp(.72rem, 1.8vw, 1rem);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+#start-screen .secret-mode-badge[hidden],
+#start-screen .secret-mode-option[hidden],
+#start-screen .secret-time-option[hidden],
+#start-screen .personal-best-entry[hidden] {
+  display: none !important;
+}
+body.secret-mode-unlocked #start-screen .mode-tab[hidden],
+body.secret-mode-unlocked #start-screen .pill-option[hidden] {
+  display: none !important;
+}
+body.secret-mode-unlocked #start-screen .personal-best-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+body.secret-mode-unlocked #start-screen .personal-best-entry-secret {
+  border-color: #a855f7 !important;
+  background: linear-gradient(135deg, #faf5ff, #fefce8) !important;
+}
+body.secret-mode-unlocked #start-screen .personal-best-entry-secret .pb-course-name {
+  color: #7e22ce !important;
+}
+body.secret-mode-unlocked #start-screen input:disabled + .pill-label {
+  opacity: 1 !important;
+  cursor: default !important;
+}
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-row-grid {
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)) !important;
+}
+body.secret-mode-unlocked #quiz-screen .palette-btn {
+  min-height: 46px !important;
+  padding-inline: 7px !important;
+  font-size: clamp(.9rem, 2.1vw, 1.22rem) !important;
+}
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-container {
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  max-height: min(68dvh, 590px) !important;
+  padding-right: 3px !important;
+}
+body.secret-mode-unlocked #quiz-screen .secret-palette-row {
+  padding-top: 5px;
+  border-top: 2px solid rgba(124, 58, 237, .22);
+}
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .reference-screen-card {
+  border-color: #a855f7 !important;
+}
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .reference-topbar-title {
+  color: #6b21a8 !important;
+}
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .reference-guide-circle .point-hit-area {
+  r: 7px;
+}
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .guide-deg-label {
+  font-size: 12px !important;
+}
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .guide-deg-label.active-deg {
+  font-size: 18px !important;
+}
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .reference-guide-circle .point-dot {
+  r: 6px;
+}
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .reference-side-heading-value,
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .reference-side-heading-value * {
+  font-size: clamp(.68rem, 2vw, 1.05rem) !important;
+}
+body.secret-mode-unlocked #quiz-screen .palette-btn .wide-fraction {
+  min-width: 4.2em;
+}
+.radicand {
+  display: inline-block;
+  border-top: .08em solid currentColor;
+  padding-top: .02em;
+}
+
+@media (max-width: 599px) {
+  #start-screen .secret-mode-badge {
+    margin-left: 4px;
+    padding: 3px 7px;
+    font-size: .66rem;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-row-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-container {
+    max-height: calc(100dvh - 132px) !important;
+    gap: 4px !important;
+  }
+  body.secret-mode-unlocked #quiz-screen .palette-btn {
+    min-height: 38px !important;
+    padding-inline: 2px !important;
+    font-size: clamp(.61rem, 2.65vw, .76rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen .palette-row-title {
+    font-size: .68rem !important;
+    margin-bottom: 1px !important;
+  }
+}
+
+@media (min-width: 600px) and (max-height: 500px) and (orientation: landscape) {
+  #start-screen .personal-best-plant {
+    width: 68px;
+    min-width: 68px;
+    height: 80px;
+    grid-template-rows: 68px auto;
+  }
+  #start-screen .plant-sprite-viewport {
+    width: 68px;
+    height: 68px;
+  }
+  #start-screen .plant-sprite-sheet {
+    top: -30px;
+    transform: scale(1, .6);
+  }
+  #start-screen .plant-progress {
+    font-size: .58rem;
+  }
+  #start-screen .plant-progress small {
+    font-size: .52rem;
+  }
+}
+
 body:has(#start-screen.active) #start-screen,
 body:has(#start-screen.active) #start-screen .settings-card {
   width: 100% !important;
@@ -715,7 +875,7 @@ body:has(#start-screen.active) #start-screen .settings-card {
   }
   #quiz-screen.three-minute-mode .question-display {
     padding-left: 110px !important;
-    padding-right: 12px !important;
+    padding-right: 94px !important;
   }
   #quiz-screen.three-minute-mode .quiz-footer {
     width: calc(44% + 49px) !important;
@@ -1045,6 +1205,122 @@ body:has(#start-screen.active) #start-screen .settings-card {
   }
 }
 
+/* Final solid-color override: no gradients on the secret-mode top screen. */
+body.secret-mode-unlocked:has(#start-screen.active) {
+  background: #d8ccff !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) .app-header,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .settings-card {
+  background: #eee8ff !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .settings-group,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-card {
+  background: #e4dcff !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-entry-secret,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .pill-option:not(.selected-card),
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .mode-tab:not(.active) {
+  background: #f0ebff !important;
+}
+
+/* ===== v60: 裏モード単色・成長する点P花 ===== */
+body.secret-mode-unlocked:has(#start-screen.active) {
+  background: #d8ccff !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) .app-header,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .settings-card {
+  background: #eee8ff !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .settings-group,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-card {
+  background: #e4dcff !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-entry-secret,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .pill-option:not(.selected-card),
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .mode-tab:not(.active) {
+  background: #f0ebff !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #btn-start-quiz {
+  background: #e9472f !important;
+  border-color: #b8321e !important;
+  box-shadow: 0 6px 0 #a72b1d, 0 10px 22px rgba(122, 32, 22, .25) !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #btn-start-quiz:hover {
+  background: #f0523a !important;
+}
+
+.personal-best-plant {
+  width: 96px;
+  min-width: 96px;
+  height: 108px;
+  display: grid;
+  grid-template-rows: 90px auto;
+  align-items: center;
+  justify-items: center;
+  align-self: center;
+  color: #334155;
+}
+.personal-best-plant svg {
+  width: 100px;
+  height: 100px;
+  overflow: visible;
+}
+.plant-sprite-viewport {
+  position: relative;
+  display: block;
+  width: 90px;
+  height: 90px;
+  overflow: hidden;
+}
+.plant-sprite-sheet {
+  position: absolute;
+  top: -35px;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 275%;
+  background-image: url('../assets/plant-growth-sprites-v1.png');
+  background-repeat: no-repeat;
+  background-size: 1100% 200%;
+  background-position: calc(var(--plant-stage) * 10%) calc(var(--plant-row) * 100%);
+  transform: scale(1, .6);
+  transform-origin: center top;
+}
+.plant-progress {
+  margin-top: 0;
+  text-align: center;
+  font-size: .72rem;
+  font-weight: 900;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+.plant-progress small { font-size: .62rem; color: #64748b; }
+.secret-plant .plant-progress { color: #6d28d9; }
+.memory-reason {
+  margin: 5px 0 0;
+  padding-top: 4px;
+  border-top: 1px dashed currentColor;
+  color: #475569;
+  text-align: center;
+  font-size: .68rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+@media (max-width: 599px) {
+  .personal-best-plant {
+    width: 68px;
+    min-width: 68px;
+    height: 80px;
+    grid-template-rows: 68px auto;
+  }
+  .personal-best-plant svg { width: 74px; height: 74px; }
+  .plant-sprite-viewport { width: 68px; height: 68px; }
+  .plant-progress { font-size: .58rem; }
+  .plant-progress small { font-size: .52rem; }
+  .memory-reason { font-size: .62rem; }
+}
+
 /* Crown P: keep the white-line conversion above every responsive override. */
 #start-screen #btn-start-quiz .start-btn-icon.is-crown-achieved {
   filter: invert(1) !important;
@@ -1092,5 +1368,413 @@ body:has(#start-screen.active) #start-screen .settings-card {
     line-height: 1 !important;
     letter-spacing: -.03em !important;
     white-space: nowrap !important;
+  }
+}
+
+/* ===== v57: 裏モード暗記表・1画面パレット ===== */
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .settings-card {
+  background:
+    radial-gradient(circle at 90% 10%, rgba(250, 204, 21, .18), transparent 28%),
+    linear-gradient(145deg, #f5f3ff 0%, #ede9fe 48%, #fff7ed 100%) !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .settings-group,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-card {
+  background: linear-gradient(135deg, #ede9fe 0%, #f3e8ff 58%, #fef3c7 100%) !important;
+  border-color: rgba(139, 92, 246, .46) !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) .app-header {
+  background: linear-gradient(90deg, #ede9fe 0%, #f3e8ff 62%, #fef3c7 100%) !important;
+  border-bottom-color: #a855f7 !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .drill-title-image {
+  mix-blend-mode: multiply;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-entry-secret {
+  background: linear-gradient(135deg, #ddd6fe 0%, #f3e8ff 52%, #fde68a 100%) !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .pill-option:not(.selected-card),
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .mode-tab:not(.active) {
+  background: linear-gradient(135deg, #e9d5ff, #fef3c7) !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-mascot {
+  mix-blend-mode: multiply;
+}
+
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .reference-main-layout {
+  display: none !important;
+}
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .secret-memory-table {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px;
+  overflow-y: auto;
+  max-height: calc(100dvh - 112px);
+}
+.memory-pair-card {
+  min-width: 0;
+  padding: 7px 9px;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+}
+.memory-pair-card.priority-top { border-color: #f59e0b; background: #fffbeb; }
+.memory-pair-card.priority-middle { border-color: #8b5cf6; background: #f5f3ff; }
+.memory-pair-card.priority-hard { border-color: #64748b; background: #f8fafc; }
+.memory-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.memory-priority {
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #fff;
+  background: #475569;
+  font-size: .72rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.priority-top .memory-priority { background: #ea580c; }
+.priority-middle .memory-priority { background: #7c3aed; }
+.memory-relation { color: #475569; font-size: .7rem; font-weight: 800; }
+.memory-pair-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.memory-expression {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 42px;
+  padding: 3px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.82);
+  font-family: Century, "Century Schoolbook", Georgia, serif;
+  font-size: clamp(.76rem, 1.8vw, 1.05rem);
+}
+.memory-expression strong { white-space: nowrap; }
+.memory-equals { margin: 0 .28em; }
+.memory-value { display: inline-flex; align-items: center; justify-content: center; min-width: 0; }
+
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-container {
+  display: block !important;
+  overflow: hidden !important;
+  max-height: none !important;
+  padding: 3px !important;
+}
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid {
+  display: grid !important;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+}
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid .palette-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 42px !important;
+  padding: 2px !important;
+  font-size: clamp(.68rem, 1.45vw, .92rem) !important;
+}
+body.secret-mode-unlocked #quiz-screen .palette-flat-grid .priority-top { border-color: #f59e0b !important; background: #fffbeb !important; }
+body.secret-mode-unlocked #quiz-screen .palette-flat-grid .priority-middle { border-color: #8b5cf6 !important; background: #f5f3ff !important; }
+body.secret-mode-unlocked #quiz-screen .palette-flat-grid .priority-hard { border-color: #94a3b8 !important; background: #f8fafc !important; }
+
+@media (max-width: 599px) {
+  body.secret-mode-unlocked #reference-screen.secret-reference-mode .secret-memory-table {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 6px;
+    max-height: calc(100dvh - 105px);
+  }
+  .memory-pair-card { padding: 6px; }
+  .memory-expression { min-height: 38px; font-size: clamp(.65rem, 3vw, .82rem); }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid .palette-btn {
+    min-height: 38px !important;
+    font-size: clamp(.54rem, 2.35vw, .68rem) !important;
+  }
+}
+
+@media (min-width: 600px) and (max-height: 500px) and (orientation: landscape) {
+  body.secret-mode-unlocked #reference-screen.secret-reference-mode .secret-memory-table {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-height: calc(100dvh - 58px);
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-flat-grid {
+    grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Must remain last: force the secret top screen to use solid light purple. */
+body.secret-mode-unlocked:has(#start-screen.active) {
+  background: #d8ccff !important;
+  background-image: none !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) .app-header,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .settings-card {
+  background: #eee8ff !important;
+  background-image: none !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .settings-group {
+  background: #eee8ff !important;
+  background-image: none !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-card {
+  background: #e4dcff !important;
+  background-image: none !important;
+  border: 2px solid #6d28d9 !important;
+}
+
+body.secret-mode-unlocked:has(#start-screen.active) #btn-start-quiz {
+  background: #f56b57 !important;
+  border-color: #d94b36 !important;
+  box-shadow: none !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #btn-start-quiz:hover {
+  background: #f56b57 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .personal-best-entry-secret,
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .pill-option:not(.selected-card),
+body.secret-mode-unlocked:has(#start-screen.active) #start-screen .mode-tab:not(.active) {
+  background: #f0ebff !important;
+  background-image: none !important;
+}
+
+@media (max-width: 599px) {
+  #start-screen .personal-best-card {
+    grid-template-columns: minmax(0, 1fr) 68px !important;
+    column-gap: 2px !important;
+    padding: 4px 5px 3px !important;
+  }
+  #start-screen .personal-best-main {
+    min-width: 0 !important;
+  }
+  #start-screen .personal-best-note {
+    margin-top: 1px !important;
+    line-height: 1 !important;
+  }
+  /* Keep the full flowerpot inside the narrow phone column. */
+  #start-screen .plant-sprite-sheet {
+    top: -30px;
+    transform: scale(1, .6);
+  }
+}
+
+/* Final personal-best balance: compact records and reserve room for the plant. */
+#start-screen .personal-best-card {
+  grid-template-columns: minmax(0, 1fr) 108px !important;
+  column-gap: 6px !important;
+}
+#start-screen .personal-best-grid {
+  gap: 5px !important;
+  margin-top: 4px !important;
+}
+#start-screen .personal-best-entry {
+  min-height: 50px !important;
+  padding: 4px 6px !important;
+  border-radius: 11px !important;
+}
+#start-screen .pb-course-name {
+  margin-bottom: 2px !important;
+  font-size: .82rem !important;
+}
+#start-screen .pb-value {
+  font-size: 1.08rem !important;
+}
+#start-screen .personal-best-plant {
+  width: 112px;
+  min-width: 112px;
+  height: 108px;
+  grid-template-rows: 90px auto;
+}
+#start-screen .plant-progress {
+  width: 100%;
+  margin-top: 2px;
+  justify-self: center;
+  text-align: center;
+}
+#start-screen .personal-best-plant.secret-plant .plant-progress {
+  margin-top: 6px;
+}
+#start-screen .plant-sprite-viewport {
+  width: 108px;
+  height: 90px;
+}
+#start-screen .plant-sprite-sheet {
+  top: -57px;
+  left: 50%;
+  width: 62px;
+  height: 171px;
+  transform: translateX(-50%);
+}
+#start-screen .secret-plant .plant-sprite-sheet {
+  top: -2px;
+  width: 54px;
+  height: 149px;
+}
+
+@media (max-width: 599px) {
+  #start-screen .personal-best-card {
+    grid-template-columns: minmax(0, 1fr) 84px !important;
+    column-gap: 1px !important;
+  }
+  #start-screen .personal-best-entry {
+    min-height: 46px !important;
+    padding: 3px 4px !important;
+  }
+  #start-screen .pb-course-name {
+    font-size: .70rem !important;
+  }
+  #start-screen .pb-value {
+    font-size: .92rem !important;
+  }
+  #start-screen .personal-best-plant {
+    width: 82px;
+    min-width: 82px;
+    height: 96px;
+    grid-template-rows: 78px auto;
+  }
+  #start-screen .plant-sprite-viewport {
+    width: 80px;
+    height: 78px;
+  }
+  #start-screen .plant-sprite-sheet {
+    top: -50px;
+    width: 54px;
+    height: 149px;
+    transform: translateX(-50%);
+  }
+  #start-screen .secret-plant .plant-sprite-sheet {
+    top: -2px;
+    width: 47px;
+    height: 129px;
+  }
+  #start-screen .plant-progress {
+    margin-top: 2px;
+    line-height: .92;
+  }
+}
+
+@media (min-width: 600px) and (max-height: 500px) and (orientation: landscape) {
+  #start-screen .personal-best-card {
+    grid-template-columns: minmax(0, 1fr) 82px !important;
+  }
+  #start-screen .personal-best-main {
+    height: 86px !important;
+  }
+  #start-screen .personal-best-grid {
+    height: 48px !important;
+    padding-top: 7px !important;
+    align-items: end !important;
+  }
+  #start-screen .personal-best-entry {
+    width: 84% !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    max-height: 36px !important;
+    padding: 2px 4px !important;
+    justify-self: center !important;
+    overflow: visible !important;
+  }
+  #start-screen .personal-best-entry-secret {
+    width: 88% !important;
+  }
+  #start-screen .personal-best-entry .pb-course-name {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    z-index: 2;
+    margin: 0 !important;
+    padding: 0 5px;
+    transform: translateX(-50%);
+    background: #fff;
+    line-height: 1 !important;
+    white-space: nowrap;
+  }
+  body.secret-mode-unlocked #start-screen .personal-best-entry-secret .pb-course-name {
+    background: #f0ebff;
+  }
+  #start-screen .personal-best-entry .pb-result-line {
+    margin-top: 4px;
+  }
+  #start-screen .personal-best-plant {
+    width: 80px;
+    min-width: 80px;
+    height: 84px;
+    grid-template-rows: 68px auto;
+  }
+  #start-screen .plant-sprite-viewport {
+    width: 78px;
+    height: 68px;
+  }
+  #start-screen .plant-sprite-sheet {
+    top: -44px;
+    width: 48px;
+    height: 132px;
+    transform: translateX(-50%);
+  }
+  #start-screen .secret-plant .plant-sprite-sheet {
+    top: -2px;
+    width: 40px;
+    height: 110px;
+  }
+  #start-screen #btn-start-quiz .start-btn-icon {
+    width: 150px !important;
+    height: 150px !important;
+    max-width: 150px !important;
+    max-height: 150px !important;
+  }
+  #start-screen #btn-start-quiz .start-btn-label {
+    transform: translateY(-24px) !important;
+  }
+}
+
+@media (max-width: 599px) and (orientation: portrait) {
+  #start-screen .personal-best-card {
+    position: relative;
+    min-height: 116px !important;
+    padding-bottom: 14px !important;
+  }
+  #start-screen .personal-best-note {
+    position: absolute;
+    right: 5px;
+    bottom: 2px;
+    left: 5px;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    font-size: .48rem !important;
+  }
+  #start-screen .personal-best-plant {
+    transform: translate(4px, -2px);
+  }
+  #start-screen .personal-best-plant.secret-plant {
+    transform: translate(-4px, 5px);
+  }
+  #start-screen .personal-best-plant.secret-plant .plant-progress {
+    margin-top: 4px;
+  }
+}
+
+/* The final sprite touches its source-cell edge; add a tiny inset so the
+   leftmost petal is fully visible without moving the pot or progress text. */
+#start-screen .plant-sprite-sheet[style*="--plant-stage:10"] {
+  background-position-x: 99.6%;
+}
+
+@media (min-width: 600px) and (max-height: 500px) and (orientation: landscape) {
+  #start-screen .personal-best-plant.secret-plant {
+    transform: translateX(-4px);
+  }
+  #start-screen .personal-best-plant.secret-plant .plant-progress {
+    margin-top: 1.5px;
   }
 }

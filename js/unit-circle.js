@@ -33,16 +33,23 @@ class UnitCircleVisualizer {
         });
     }
 
+    setAngles(angles) {
+        this.angles = [...angles];
+        this.renderBase();
+        this.setInteractive(this.isInteractive);
+    }
+
     renderBase() {
         const isReferenceBase = this.container && this.container.id === 'reference-guide-circle';
         const isQuizBase = this.container && this.container.id === 'quiz-unit-circle';
+        const isSecretReference = isReferenceBase && this.angles.length > 0 && Math.max(...this.angles) <= 90;
         const isLargeBase = isReferenceBase || isQuizBase;
         const axisMarkerId = `arrow-axis-${this.container ? this.container.id : 'circle'}`;
         const axisPositiveEnd = isLargeBase ? 160 : 148;
         const axisNegativeYEnd = isLargeBase ? 150 : 8;
         const axisPositiveYEnd = isLargeBase ? -158 : -145;
         this.container.innerHTML = `
-            <svg viewBox="${this.container && this.container.id === 'reference-guide-circle' ? ((window.matchMedia && window.matchMedia('(max-width: 599px)').matches) ? '-180 -240 360 480' : '-225 -240 450 480') : (this.container && this.container.id === 'quiz-unit-circle' ? ((window.matchMedia && window.matchMedia('(max-width: 599px)').matches) ? '-180 -206 360 412' : '-225 -225 450 450') : '-175 -155 350 178')}" class="unit-circle-svg" aria-label="単位円の図解">
+            <svg viewBox="${this.container && this.container.id === 'reference-guide-circle' ? (isSecretReference ? ((window.matchMedia && window.matchMedia('(max-width: 599px)').matches) ? '-25 -240 210 270' : '-35 -240 230 275') : ((window.matchMedia && window.matchMedia('(max-width: 599px)').matches) ? '-180 -240 360 480' : '-225 -240 450 480')) : (this.container && this.container.id === 'quiz-unit-circle' ? ((window.matchMedia && window.matchMedia('(max-width: 599px)').matches) ? '-180 -206 360 412' : '-225 -225 450 450') : '-175 -155 350 178')}" class="unit-circle-svg" aria-label="単位円の図解">
                 <defs>
                     <!-- Arrow markers -->
                     <marker id="${axisMarkerId}" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
@@ -110,7 +117,7 @@ class UnitCircleVisualizer {
     bindPointEvents() {
         const pointGroups = this.container.querySelectorAll('.circle-point-group');
         pointGroups.forEach(grp => {
-            const deg = parseInt(grp.dataset.angle, 10);
+            const deg = parseFloat(grp.dataset.angle);
             grp.addEventListener('click', (e) => {
                 if (!this.isInteractive) return;
                 if (this.onPointClick) {
@@ -132,7 +139,8 @@ class UnitCircleVisualizer {
         const svg = this.container ? this.container.querySelector('svg.unit-circle-svg') : null;
         if (svg && this.container && (this.container.id === 'quiz-unit-circle' || this.container.id === 'reference-guide-circle')) {
             const isPhone = window.matchMedia && window.matchMedia('(max-width: 599px)').matches;
-            svg.setAttribute('viewBox', this.container.id === 'reference-guide-circle' ? (isPhone ? '-180 -240 360 480' : '-225 -240 450 480') : (isPhone ? '-180 -206 360 412' : '-225 -225 450 450'));
+            const isSecretReference = this.container.id === 'reference-guide-circle' && this.angles.length > 0 && Math.max(...this.angles) <= 90;
+            svg.setAttribute('viewBox', this.container.id === 'reference-guide-circle' ? (isSecretReference ? (isPhone ? '-25 -240 210 270' : '-35 -240 230 275') : (isPhone ? '-180 -240 360 480' : '-225 -240 450 480')) : (isPhone ? '-180 -206 360 412' : '-225 -225 450 450'));
         }
         if (this.container) this.container.classList.remove('steep-tan-feedback');
 
@@ -161,6 +169,7 @@ class UnitCircleVisualizer {
 
         const circleId = this.container ? this.container.id : '';
         const isReferenceGuide = circleId === 'reference-guide-circle';
+        const isSecretReference = isReferenceGuide && this.angles.length > 0 && Math.max(...this.angles) <= 90;
         const isQuizCircle = circleId === 'quiz-unit-circle';
         const isExpandedCircle = isReferenceGuide || isQuizCircle;
         const showFullCircleForObtuse = isExpandedCircle;
@@ -172,7 +181,9 @@ class UnitCircleVisualizer {
             svg.setAttribute(
                 'viewBox',
                 isReferenceGuide
-                    ? ((window.matchMedia && window.matchMedia('(max-width: 599px)').matches) ? '-180 -240 360 480' : '-225 -240 450 480')
+                    ? (isSecretReference
+                        ? ((window.matchMedia && window.matchMedia('(max-width: 599px)').matches) ? '-25 -240 210 270' : '-35 -240 230 275')
+                        : ((window.matchMedia && window.matchMedia('(max-width: 599px)').matches) ? '-180 -240 360 480' : '-225 -240 450 480'))
                     : (isPhoneQuiz ? '-180 -206 360 412' : '-225 -225 450 450')
             );
             svg.setAttribute(
@@ -312,7 +323,7 @@ class UnitCircleVisualizer {
 
             const pointGroups = this.container.querySelectorAll('.circle-point-group');
             pointGroups.forEach(grp => {
-                const d = parseInt(grp.dataset.angle, 10);
+                const d = parseFloat(grp.dataset.angle);
                 grp.classList.remove('correct', 'incorrect', 'selected-guide-point', 'selected-func-sin', 'selected-func-cos', 'selected-func-tan', 'selected-wrong-angle');
                 if (d === deg) grp.classList.add('selected-guide-point', `selected-func-${func}`);
                 if (hasWrongAngle && d === userSelectedDeg) grp.classList.add('selected-wrong-angle');
@@ -346,12 +357,22 @@ class UnitCircleVisualizer {
             if (d === 45)  { offsetX = 2;  offsetY = -1; }
             if (d === 60)  { offsetX = 1;  offsetY = -1; }
             if (d === 90)  { offsetX = 18; offsetY = -6; } // farther right of the y-axis
+            if (isSecretReference) {
+                const secretOffsets = {
+                    15: [18, 20], 18: [25, 8], 22.5: [18, -5], 36: [5, 1],
+                    54: [0, -8], 67.5: [40, 3], 72: [8, 1], 75: [7, -13]
+                };
+                const tuned = secretOffsets[d] || [0, 0];
+                offsetX = tuned[0];
+                offsetY = tuned[1];
+            }
 
             let anchor = 'middle';
             if (d === 0) anchor = 'start';
             else if (d === 180) anchor = 'end';
             else if (d < 90) anchor = 'start';
             else if (d > 90) anchor = 'end';
+            if (isSecretReference && d === 54) anchor = 'end';
 
             const isActive = d === deg;
             return `
@@ -459,7 +480,7 @@ class UnitCircleVisualizer {
         // Highlight only the current point in a neutral blue for the guide screen
         const pointGroups = this.container.querySelectorAll('.circle-point-group');
         pointGroups.forEach(grp => {
-            const d = parseInt(grp.dataset.angle, 10);
+            const d = parseFloat(grp.dataset.angle);
             grp.classList.remove('correct', 'incorrect', 'selected-guide-point');
             if (d === deg) {
                 grp.classList.add('selected-guide-point');

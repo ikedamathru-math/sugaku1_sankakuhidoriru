@@ -69,8 +69,27 @@ const VALUE_DEFS = {
     'sqrt3': { id: 'sqrt3', standard: '√3', rationalized: '√3', val: Math.sqrt(3), label: '√3' },
     '-sqrt3': { id: '-sqrt3', standard: '-√3', rationalized: '-√3', val: -Math.sqrt(3), label: `${MINUS}√3` },
 
+    'sqrt6-sqrt2/4': { id: 'sqrt6-sqrt2/4', standard: '(√6−√2)/4', rationalized: '(√6−√2)/4', val: (Math.sqrt(6) - Math.sqrt(2)) / 4, html: '<span class="fraction wide-fraction"><span class="num">√6−√2</span><span class="den">4</span></span>' },
+    'sqrt6+sqrt2/4': { id: 'sqrt6+sqrt2/4', standard: '(√6+√2)/4', rationalized: '(√6+√2)/4', val: (Math.sqrt(6) + Math.sqrt(2)) / 4, html: '<span class="fraction wide-fraction"><span class="num">√6＋√2</span><span class="den">4</span></span>' },
+    '2-sqrt3': { id: '2-sqrt3', standard: '2−√3', rationalized: '2−√3', val: 2 - Math.sqrt(3), label: '2−√3' },
+    '2+sqrt3': { id: '2+sqrt3', standard: '2+√3', rationalized: '2+√3', val: 2 + Math.sqrt(3), label: '2＋√3' },
+    'sqrt5-1/4': { id: 'sqrt5-1/4', standard: '(√5−1)/4', rationalized: '(√5−1)/4', val: (Math.sqrt(5) - 1) / 4, html: '<span class="fraction wide-fraction"><span class="num">√5−1</span><span class="den">4</span></span>' },
+    'sqrt5+1/4': { id: 'sqrt5+1/4', standard: '(√5+1)/4', rationalized: '(√5+1)/4', val: (Math.sqrt(5) + 1) / 4, html: '<span class="fraction wide-fraction"><span class="num">√5＋1</span><span class="den">4</span></span>' },
+    'sqrt2-1': { id: 'sqrt2-1', standard: '√2−1', rationalized: '√2−1', val: Math.sqrt(2) - 1, label: '√2−1' },
+    'sqrt2+1': { id: 'sqrt2+1', standard: '√2+1', rationalized: '√2+1', val: Math.sqrt(2) + 1, label: '√2＋1' },
+    'sqrt(2-sqrt2)/2': { id: 'sqrt(2-sqrt2)/2', standard: '√(2−√2)/2', rationalized: '√(2−√2)/2', val: Math.sqrt(2 - Math.sqrt(2)) / 2, html: '<span class="fraction wide-fraction"><span class="num">√<span class="radicand">2−√2</span></span><span class="den">2</span></span>' },
+    'sqrt(2+sqrt2)/2': { id: 'sqrt(2+sqrt2)/2', standard: '√(2+√2)/2', rationalized: '√(2+√2)/2', val: Math.sqrt(2 + Math.sqrt(2)) / 2, html: '<span class="fraction wide-fraction"><span class="num">√<span class="radicand">2＋√2</span></span><span class="den">2</span></span>' },
+    'sqrt(10+2sqrt5)/4': { id: 'sqrt(10+2sqrt5)/4', standard: '√(10+2√5)/4', rationalized: '√(10+2√5)/4', val: Math.sqrt(10 + 2 * Math.sqrt(5)) / 4, html: '<span class="fraction wide-fraction"><span class="num">√<span class="radicand">10＋2√5</span></span><span class="den">4</span></span>' },
+    'sqrt(10-2sqrt5)/4': { id: 'sqrt(10-2sqrt5)/4', standard: '√(10−2√5)/4', rationalized: '√(10−2√5)/4', val: Math.sqrt(10 - 2 * Math.sqrt(5)) / 4, html: '<span class="fraction wide-fraction"><span class="num">√<span class="radicand">10−2√5</span></span><span class="den">4</span></span>' },
+    'tan18': { id: 'tan18', standard: '1/√(5+2√5)', rationalized: '1/√(5+2√5)', val: Math.tan(Math.PI / 10), html: '<span class="fraction extra-wide-fraction"><span class="num">1</span><span class="den">√<span class="radicand">5＋2√5</span></span></span>' },
+    'tan36': { id: 'tan36', standard: '√(5−2√5)', rationalized: '√(5−2√5)', val: Math.tan(Math.PI / 5), html: '√<span class="radicand">5−2√5</span>' },
+    'tan54': { id: 'tan54', standard: '1/√(5−2√5)', rationalized: '1/√(5−2√5)', val: Math.tan(3 * Math.PI / 10), html: '<span class="fraction extra-wide-fraction"><span class="num">1</span><span class="den">√<span class="radicand">5−2√5</span></span></span>' },
+    'tan72': { id: 'tan72', standard: '√(5+2√5)', rationalized: '√(5+2√5)', val: Math.tan(2 * Math.PI / 5), html: '√<span class="radicand">5＋2√5</span>' },
+
     'none': { id: 'none', standard: 'なし', rationalized: 'なし', val: null, label: 'なし' }
 };
+
+const SECRET_ANGLES = [15, 18, 22.5, 36, 54, 67.5, 72, 75];
 
 // 角度ごとのデータテーブル
 const TRIG_DATA = {
@@ -121,6 +140,53 @@ const TRIG_DATA = {
     }
 };
 
+Object.assign(TRIG_DATA, {
+    15: {
+        sin: { valueId: 'sqrt6-sqrt2/4' }, cos: { valueId: 'sqrt6+sqrt2/4' }, tan: { valueId: '2-sqrt3' }
+    },
+    18: {
+        sin: { valueId: 'sqrt5-1/4' }, cos: { valueId: 'sqrt(10+2sqrt5)/4' }, tan: { valueId: 'tan18' }
+    },
+    22.5: {
+        sin: { valueId: 'sqrt(2-sqrt2)/2' }, cos: { valueId: 'sqrt(2+sqrt2)/2' }, tan: { valueId: 'sqrt2-1' }
+    },
+    36: {
+        sin: { valueId: 'sqrt(10-2sqrt5)/4' }, cos: { valueId: 'sqrt5+1/4' }, tan: { valueId: 'tan36' }
+    },
+    54: {
+        sin: { valueId: 'sqrt5+1/4' }, cos: { valueId: 'sqrt(10-2sqrt5)/4' }, tan: { valueId: 'tan54' }
+    },
+    67.5: {
+        sin: { valueId: 'sqrt(2+sqrt2)/2' }, cos: { valueId: 'sqrt(2-sqrt2)/2' }, tan: { valueId: 'sqrt2+1' }
+    },
+    72: {
+        sin: { valueId: 'sqrt(10+2sqrt5)/4' }, cos: { valueId: 'sqrt5-1/4' }, tan: { valueId: 'tan72' }
+    },
+    75: {
+        sin: { valueId: 'sqrt6+sqrt2/4' }, cos: { valueId: 'sqrt6-sqrt2/4' }, tan: { valueId: '2+sqrt3' }
+    }
+});
+
+const SECRET_PRIORITY_TOP = new Set(['18-sin', '36-cos', '15-tan', '75-tan', '22.5-tan', '67.5-tan']);
+const SECRET_PRIORITY_MIDDLE = new Set([
+    '72-cos', '54-sin', '15-sin', '75-cos', '15-cos',
+    '75-sin', '22.5-sin', '67.5-cos', '22.5-cos', '67.5-sin'
+]);
+const SECRET_QUESTION_POOL = SECRET_ANGLES.flatMap(angle =>
+    FUNCTIONS.flatMap(func => {
+        const key = `${angle}-${func}`;
+        const weight = SECRET_PRIORITY_TOP.has(key) ? 8 : (SECRET_PRIORITY_MIDDLE.has(key) ? 3 : 1);
+        const question = {
+        angle,
+        func,
+        valueId: TRIG_DATA[angle][func].valueId,
+        priority: SECRET_PRIORITY_TOP.has(key) ? '最重要' : (SECRET_PRIORITY_MIDDLE.has(key) ? '重要' : '超難問'),
+        explanation: `${func} ${angle}° の正確な値を確認しましょう。`
+        };
+        return Array.from({ length: weight }, () => ({ ...question }));
+    })
+);
+
 /**
  * HTML表示用の値フォーマットを取得
  * @param {string} valueId - 値ID (e.g. 'sqrt3/2', '1/sqrt2')
@@ -169,5 +235,7 @@ window.TRIG_DATA = TRIG_DATA;
 window.VALUE_DEFS = VALUE_DEFS;
 window.ANGLES = ANGLES;
 window.FUNCTIONS = FUNCTIONS;
+window.SECRET_QUESTION_POOL = SECRET_QUESTION_POOL;
+window.SECRET_ANGLES = SECRET_ANGLES;
 window.formatValueHtml = formatValueHtml;
 window.formatValueText = formatValueText;

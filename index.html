@@ -16,8 +16,8 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Main Style -->
-<link href="css/style.css" rel="stylesheet"/>
-<link href="css/height-compact.css" rel="stylesheet"/>
+<link href="css/style.css?v=86" rel="stylesheet"/>
+<link href="css/height-compact.css?v=86" rel="stylesheet"/>
 </head>
 <body>
 <!-- Header HUD -->
@@ -55,6 +55,10 @@
 <div class="mode-tab" data-mode="3min-challenge">
 <span class="mode-name">2分チャレンジ</span>
 <span class="mode-desc">2分間で何問正解できるか</span>
+</div>
+<div class="mode-tab secret-mode-option" data-mode="1min-secret" hidden>
+<span class="mode-name">1分チャレンジ</span>
+<span class="mode-desc">頻出角の完全攻略</span>
 </div>
 </div>
 </div>
@@ -94,6 +98,7 @@
 <div class="settings-group" id="time-limit-group">
 <div class="settings-section-title">時間(１問)</div>
 <div class="options-group">
+<label class="pill-option secret-time-option" hidden><input name="time-limit" type="radio" value="2"/><span class="pill-label">2秒</span></label>
 <label class="pill-option"><input name="time-limit" type="radio" value="3"/><span class="pill-label">3秒</span></label>
 <label class="pill-option"><input name="time-limit" type="radio" value="5"/><span class="pill-label">5秒</span></label>
 <label class="pill-option"><input checked="" name="time-limit" type="radio" value="10"/><span class="pill-label">10秒</span></label>
@@ -117,9 +122,15 @@
 <div class="pb-value" id="personal-best-detail">---問</div>
 <div class="pb-rank-mark" id="personal-best-2min-rank-mark">—</div>
 </div></div>
+<div class="personal-best-entry personal-best-entry-secret" hidden>
+<div class="pb-course-name">裏・1分チャレンジ</div>
+<div class="pb-result-line">
+<div class="pb-value" id="personal-best-secret-detail">---問</div>
+<div class="pb-rank-mark" id="personal-best-secret-rank-mark">—</div>
+</div></div>
 </div>
 <div class="personal-best-note" id="personal-best-note">※sin・cos・tan全選択かつ18問以上正解した記録のみ反映</div>
-</div><img alt="" class="personal-best-mascot" src="assets/personal-best-mascot.png"/></div>
+</div><div aria-live="polite" class="personal-best-plant" id="personal-best-plant"></div></div>
 </div>
 </section>
 <!-- ==========================================
@@ -134,6 +145,7 @@
 <div class="reference-main-layout"><div class="reference-circle-stage">
 <div class="unit-circle-wrapper reference-guide-circle" id="reference-guide-circle"></div>
 </div><div aria-label="三角比の見出し" class="reference-side-headings"><div class="reference-side-heading side-sin"><div class="side-heading-top"><span class="side-heading-func">sin</span><span class="side-heading-angle" id="reference-side-sin-angle">45°</span></div><div class="side-heading-value" id="reference-side-sin-value">—</div></div><div class="reference-side-heading side-cos"><div class="side-heading-top"><span class="side-heading-func">cos</span><span class="side-heading-angle" id="reference-side-cos-angle">45°</span></div><div class="side-heading-value" id="reference-side-cos-value">—</div></div><div class="reference-side-heading side-tan"><div class="side-heading-top"><span class="side-heading-func">tan</span><span class="side-heading-angle" id="reference-side-tan-angle">45°</span></div><div class="side-heading-value" id="reference-side-tan-value">—</div></div></div></div>
+<div class="secret-memory-table" id="secret-memory-table" hidden></div>
 </div>
 </section>
 <section class="screen-view" id="quiz-screen">
@@ -284,10 +296,10 @@
 <!-- Victory Confetti Canvas -->
 <canvas id="confetti-canvas"></canvas>
 <!-- Scripts -->
-<script src="js/trig-data.js"></script>
+<script src="js/trig-data.js?v=86"></script>
 <script src="js/audio.js"></script>
-<script src="js/unit-circle.js"></script>
+<script src="js/unit-circle.js?v=86"></script>
 <script src="js/pwa.js"></script>
-<script src="js/app.js"></script>
+<script src="js/app.js?v=86"></script>
 </body>
 </html>
