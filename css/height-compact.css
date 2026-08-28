@@ -2543,44 +2543,7 @@ body:not(.secret-mode-available) .app-header #btn-secret-mode {
 }
 
 
-/* ===== v126: balanced header control widths + compact result actions above rank ===== */
-/* Let short labels use short boxes instead of evenly stretching every control. */
-.app-header .header-actions {
-  justify-content: center !important;
-}
-.app-header #btn-reference,
-.app-header #btn-palette-settings,
-.app-header #btn-sound,
-.app-header #btn-bgm-toggle,
-.app-header .mode-world-switcher,
-.app-header .mode-world-switcher .btn {
-  flex: 0 0 auto !important;
-  width: auto !important;
-  min-width: 0 !important;
-  white-space: nowrap !important;
-}
-.app-header #btn-reference,
-.app-header .mode-world-switcher .btn {
-  padding-inline: 7px !important;
-}
-.app-header #btn-palette-settings {
-  padding-inline: 8px !important;
-}
-.app-header #btn-sound {
-  padding-inline: 7px !important;
-}
-.app-header #btn-bgm-toggle {
-  padding-inline: 6px !important;
-}
-.app-header .mode-world-switcher {
-  display: inline-flex !important;
-  gap: 0 !important;
-}
-.app-header .mode-world-switcher[hidden],
-body:not(.secret-mode-available) .app-header #mode-world-switcher {
-  display: none !important;
-}
-
+/* ===== v127: v126 header width refinement is smartphone portrait TOP screen only ===== */
 /* Result actions now sit above the S/A/B/C rank result and use a thin height. */
 #result-screen .result-actions {
   width: min(100%, 520px) !important;
@@ -2627,44 +2590,62 @@ body:not(.secret-mode-available) .app-header #mode-world-switcher {
 }
 
 @media (max-width: 599px) and (orientation: portrait) {
-  .app-header {
+  body:has(#start-screen.active) .app-header {
     padding-inline: 2px !important;
   }
-  .app-header .header-actions {
+  body:has(#start-screen.active) .app-header .header-actions {
     display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
     gap: 2px !important;
     overflow: hidden !important;
   }
-  .app-header #btn-reference,
-  .app-header #btn-palette-settings,
-  .app-header #btn-sound,
-  .app-header #btn-bgm-toggle,
-  .app-header .mode-world-switcher .btn {
+  body:has(#start-screen.active) .app-header #btn-reference,
+  body:has(#start-screen.active) .app-header #btn-palette-settings,
+  body:has(#start-screen.active) .app-header #btn-sound,
+  body:has(#start-screen.active) .app-header #btn-bgm-toggle,
+  body:has(#start-screen.active) .app-header .mode-world-switcher,
+  body:has(#start-screen.active) .app-header .mode-world-switcher .btn {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+  }
+  body:has(#start-screen.active) .app-header #btn-reference,
+  body:has(#start-screen.active) .app-header #btn-palette-settings,
+  body:has(#start-screen.active) .app-header #btn-sound,
+  body:has(#start-screen.active) .app-header #btn-bgm-toggle,
+  body:has(#start-screen.active) .app-header .mode-world-switcher .btn {
     min-height: 29px !important;
     height: 29px !important;
     line-height: 1 !important;
     letter-spacing: -.035em !important;
   }
-  /* Short text = narrow frame; long text receives only the width it needs. */
-  .app-header #btn-reference {
+  body:has(#start-screen.active) .app-header #btn-reference {
     padding-inline: 4px !important;
     font-size: clamp(.52rem, 2.12vw, .62rem) !important;
   }
-  .app-header #btn-palette-settings {
+  body:has(#start-screen.active) .app-header #btn-palette-settings {
     padding-inline: 4px !important;
     font-size: clamp(.48rem, 1.98vw, .58rem) !important;
   }
-  .app-header .mode-world-switcher .btn {
+  body:has(#start-screen.active) .app-header .mode-world-switcher {
+    display: inline-flex !important;
+    gap: 0 !important;
+  }
+  body:has(#start-screen.active) .app-header .mode-world-switcher[hidden],
+  body:not(.secret-mode-available):has(#start-screen.active) .app-header #mode-world-switcher {
+    display: none !important;
+  }
+  body:has(#start-screen.active) .app-header .mode-world-switcher .btn {
     padding-inline: 4px !important;
     font-size: clamp(.52rem, 2.12vw, .62rem) !important;
   }
-  .app-header #btn-sound {
+  body:has(#start-screen.active) .app-header #btn-sound {
     padding-inline: 4px !important;
     font-size: clamp(.48rem, 1.98vw, .58rem) !important;
   }
-  .app-header #btn-bgm-toggle {
+  body:has(#start-screen.active) .app-header #btn-bgm-toggle {
     padding-inline: 3px !important;
     font-size: clamp(.48rem, 1.98vw, .58rem) !important;
   }
@@ -2682,5 +2663,116 @@ body:not(.secret-mode-available) .app-header #mode-world-switcher {
     padding: 2px 5px !important;
     font-size: .67rem !important;
     border-radius: 8px !important;
+  }
+}
+
+
+/* ===== v128: smartphone portrait TOP header uses equal-width cells ===== */
+@media (max-width: 599px) and (orientation: portrait) {
+  /* Only the top screen is changed. Other screens/devices keep the previous layout. */
+  body:has(#start-screen.active) .app-header {
+    padding-inline: 2px !important;
+    overflow: hidden !important;
+  }
+
+  body:has(#start-screen.active) .app-header .header-actions {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    gap: 2px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* After secret mode is unlocked, add the 表版/裏版 slot and split into five equal cells. */
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  body:has(#start-screen.active) .app-header #btn-reference,
+  body:has(#start-screen.active) .app-header #btn-palette-settings,
+  body:has(#start-screen.active) .app-header #btn-sound,
+  body:has(#start-screen.active) .app-header #btn-bgm-toggle,
+  body:has(#start-screen.active) .app-header .mode-world-switcher {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  body:has(#start-screen.active) .app-header .mode-world-switcher {
+    display: inline-flex !important;
+  }
+  body:has(#start-screen.active) .app-header .mode-world-switcher[hidden],
+  body:not(.secret-mode-available):has(#start-screen.active) .app-header #mode-world-switcher {
+    display: none !important;
+  }
+
+  body:has(#start-screen.active) .app-header #btn-reference,
+  body:has(#start-screen.active) .app-header #btn-palette-settings,
+  body:has(#start-screen.active) .app-header #btn-sound,
+  body:has(#start-screen.active) .app-header #btn-bgm-toggle,
+  body:has(#start-screen.active) .app-header .mode-world-switcher .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: 1 1 auto !important;
+    min-height: 29px !important;
+    height: 29px !important;
+    padding: 2px 2px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+    letter-spacing: -.035em !important;
+    font-size: clamp(.47rem, 1.95vw, .59rem) !important;
+  }
+
+  /* Slightly tighter text only where five-way split is active. */
+  body.secret-mode-available:has(#start-screen.active) .app-header #btn-reference,
+  body.secret-mode-available:has(#start-screen.active) .app-header #btn-palette-settings,
+  body.secret-mode-available:has(#start-screen.active) .app-header #btn-sound,
+  body.secret-mode-available:has(#start-screen.active) .app-header #btn-bgm-toggle,
+  body.secret-mode-available:has(#start-screen.active) .app-header .mode-world-switcher .btn {
+    font-size: clamp(.44rem, 1.82vw, .56rem) !important;
+    padding-inline: 1px !important;
+    letter-spacing: -.045em !important;
+  }
+}
+
+
+/* ===== v129: maximize header button text within equal-width cells on smartphone portrait TOP ===== */
+@media (max-width: 599px) and (orientation: portrait) {
+  body:has(#start-screen.active) .app-header #btn-reference,
+  body:has(#start-screen.active) .app-header #btn-palette-settings,
+  body:has(#start-screen.active) .app-header #btn-sound,
+  body:has(#start-screen.active) .app-header #btn-bgm-toggle,
+  body:has(#start-screen.active) .app-header .mode-world-switcher .btn {
+    font-size: clamp(.54rem, 2.15vw, .66rem) !important;
+    font-weight: 800 !important;
+    letter-spacing: -.03em !important;
+  }
+
+  /* Short 表版/裏版 labels can use the space more aggressively. */
+  body:has(#start-screen.active) .app-header .mode-world-switcher .btn {
+    font-size: clamp(.68rem, 2.75vw, .84rem) !important;
+    letter-spacing: -.015em !important;
+    font-weight: 900 !important;
+  }
+
+  /* Five-way layout: keep longer labels inside their cells while still larger than v128. */
+  body.secret-mode-available:has(#start-screen.active) .app-header #btn-reference,
+  body.secret-mode-available:has(#start-screen.active) .app-header #btn-palette-settings,
+  body.secret-mode-available:has(#start-screen.active) .app-header #btn-sound,
+  body.secret-mode-available:has(#start-screen.active) .app-header #btn-bgm-toggle {
+    font-size: clamp(.50rem, 1.98vw, .62rem) !important;
+    letter-spacing: -.045em !important;
+  }
+
+  body.secret-mode-available:has(#start-screen.active) .app-header .mode-world-switcher .btn {
+    font-size: clamp(.70rem, 2.85vw, .88rem) !important;
+    letter-spacing: -.01em !important;
   }
 }

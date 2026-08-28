@@ -1,15 +1,15 @@
-const CACHE_NAME = 'trig-quiz-v126';
+const CACHE_NAME = 'trig-quiz-v129';
 const APP_FILES = [
     './',
     './index.html',
     './manifest.webmanifest',
-    './css/style.css?v=126',
-    './css/height-compact.css?v=126',
-    './js/trig-data.js?v=126',
-    './js/audio.js?v=126',
-    './js/unit-circle.js?v=126',
-    './js/pwa.js?v=126',
-    './js/app.js?v=126',
+    './css/style.css?v=129',
+    './css/height-compact.css?v=129',
+    './js/trig-data.js?v=129',
+    './js/audio.js?v=129',
+    './js/unit-circle.js?v=129',
+    './js/pwa.js?v=129',
+    './js/app.js?v=129',
     './assets/start-face.png',
     './assets/start-face-white.png',
     './assets/start-icon-white.png',
