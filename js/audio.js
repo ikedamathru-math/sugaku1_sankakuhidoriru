@@ -48,7 +48,7 @@ class QuizAudio {
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, start);
 
-            gain.gain.setValueAtTime(0.2, start);
+            gain.gain.setValueAtTime(0.36, start);
             gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
 
             osc.connect(gain);
@@ -192,6 +192,22 @@ class QuizAudio {
             osc.start(start);
             osc.stop(start + note.d);
         });
+    }
+
+    // 結果発表音（S/A/B/Cで別音源）
+    playResultRank(rank = 'C') {
+        if (!this.enabled) return;
+        const normalized = rank === 'S+' ? 'S' : String(rank || 'C').toUpperCase();
+        const files = {
+            S: 'assets/audio/result-s.wav',
+            A: 'assets/audio/result-a.wav',
+            B: 'assets/audio/result-b.wav',
+            C: 'assets/audio/result-c.wav'
+        };
+        const src = files[normalized] || files.C;
+        const el = new Audio(src);
+        el.volume = 0.82;
+        el.play().catch(() => {});
     }
 
     // ===== Background music (selected WAV tracks) =====

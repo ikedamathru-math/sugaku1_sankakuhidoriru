@@ -16,19 +16,19 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Main Style -->
-<link href="css/style.css?v=122" rel="stylesheet"/>
-<link href="css/height-compact.css?v=122" rel="stylesheet"/>
+<link href="css/style.css?v=125" rel="stylesheet"/>
+<link href="css/height-compact.css?v=125" rel="stylesheet"/>
 </head>
 <body>
 <!-- Header HUD -->
 <header class="app-header">
 <div class="header-actions">
 <span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-header" hidden id="course-elapsed-timer-header">⏱ 0:00.0</span>
-<button class="btn" id="btn-reference" title="三角比確認表">三角比確認表</button>
+<button class="btn" id="btn-reference" title="三角比確認表">確認表</button>
 <button class="btn btn-palette-settings" id="btn-palette-settings" title="値パレットの配置を設定" type="button">パレット設定</button>
 <span class="mode-world-switcher" id="mode-world-switcher" hidden>
-<button class="btn mode-world-btn" id="btn-normal-mode" type="button">基本版</button>
-<button class="btn mode-world-btn" id="btn-secret-mode" type="button">裏版</button>
+<button class="btn mode-world-btn" id="btn-normal-mode" type="button" title="通常版へ">表版</button>
+<button class="btn mode-world-btn" id="btn-secret-mode" type="button" title="裏版へ">裏版</button>
 </span>
 <button class="btn active" id="btn-sound" title="操作音オン・オフ">操作音 ON</button>
 <button class="btn" id="btn-bgm-toggle" title="効果音オン・オフ">効果音 OFF</button>
@@ -102,11 +102,11 @@
 <div class="settings-section-title">スタイル</div>
 <div class="options-group">
 <label class="pill-option">
-<input checked="" name="answer-type" type="radio" value="choice4"/>
+<input name="answer-type" type="radio" value="choice4"/>
 <span class="pill-label">角度の位置＋4択選択</span>
 </label>
 <label class="pill-option">
-<input name="answer-type" type="radio" value="palette"/>
+<input checked="" name="answer-type" type="radio" value="palette"/>
 <span class="pill-label">値パレット選択</span>
 </label>
 </div>
@@ -136,8 +136,8 @@
 <label class="pill-option secret-time-option" hidden><input name="time-limit" type="radio" value="2"/><span class="pill-label">2秒</span></label>
 <label class="pill-option"><input name="time-limit" type="radio" value="3"/><span class="pill-label">3秒</span></label>
 <label class="pill-option"><input name="time-limit" type="radio" value="5"/><span class="pill-label">5秒</span></label>
-<label class="pill-option"><input checked="" name="time-limit" type="radio" value="10"/><span class="pill-label">10秒</span></label>
-<label class="pill-option"><input name="time-limit" type="radio" value="0"/><span class="pill-label">なし</span></label>
+<label class="pill-option"><input name="time-limit" type="radio" value="10"/><span class="pill-label">10秒</span></label>
+<label class="pill-option"><input checked="" name="time-limit" type="radio" value="0"/><span class="pill-label">なし</span></label>
 </div>
 </div>
 <!-- Notation Format Toggle -->
@@ -340,10 +340,10 @@
 <!-- Victory Confetti Canvas -->
 <canvas id="confetti-canvas"></canvas>
 <!-- Scripts -->
-<script src="js/trig-data.js?v=122"></script>
-<script src="js/audio.js?v=122"></script>
-<script src="js/unit-circle.js?v=122"></script>
-<script src="js/pwa.js?v=122"></script>
-<script src="js/app.js?v=122"></script>
+<script src="js/trig-data.js?v=125"></script>
+<script src="js/audio.js?v=125"></script>
+<script src="js/unit-circle.js?v=125"></script>
+<script src="js/pwa.js?v=125"></script>
+<script src="js/app.js?v=125"></script>
 </body>
 </html>

@@ -2417,3 +2417,127 @@ body.secret-mode-unlocked #quiz-screen.palette-mode .palette-custom-grid .priori
   #quiz-screen.palette-mode .palette-custom-grid .palette-btn,
   #quiz-screen.palette-mode .palette-custom-grid .palette-empty-slot { min-height: 50px !important; }
 }
+
+
+/* ===== v123: compact one-line header labels ===== */
+.app-header .header-actions {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: clamp(2px, .5vw, 6px) !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.app-header .header-actions > .btn,
+.app-header .mode-world-switcher .btn {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  padding-left: clamp(4px, 1vw, 10px) !important;
+  padding-right: clamp(4px, 1vw, 10px) !important;
+  font-size: clamp(.58rem, 1.75vw, .82rem) !important;
+}
+.app-header .mode-world-switcher {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+}
+@media (max-width: 599px) {
+  .app-header { padding-left: 3px !important; padding-right: 3px !important; }
+  .app-header .header-actions { gap: 2px !important; }
+  .app-header .header-actions > .btn,
+  .app-header .mode-world-switcher .btn {
+    min-height: 29px !important;
+    padding: 2px 4px !important;
+    font-size: clamp(.54rem, 2.45vw, .67rem) !important;
+    letter-spacing: -.02em !important;
+  }
+}
+
+/* Achievement popup must sit above every app layer. */
+.achievement-overlay.is-visible {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+
+/* ===== v124: keep full palette labels and 裏版 on one header row ===== */
+.app-header #btn-palette-settings,
+.app-header #btn-secret-mode {
+  white-space: nowrap !important;
+}
+@media (max-width: 599px) {
+  .app-header #btn-palette-settings { font-size: clamp(.50rem, 2.15vw, .61rem) !important; padding-inline: 2px !important; }
+  .app-header #btn-secret-mode { font-size: clamp(.52rem, 2.2vw, .63rem) !important; padding-inline: 2px !important; }
+}
+
+
+/* ===== v125: 表版/裏版 header visibility + five controls on one smartphone row ===== */
+.app-header .mode-world-switcher[hidden],
+.app-header .mode-world-btn[hidden] {
+  display: none !important;
+}
+body:not(.secret-mode-available) .app-header #mode-world-switcher,
+body:not(.secret-mode-available) .app-header #btn-secret-mode {
+  display: none !important;
+}
+
+@media (max-width: 599px) and (orientation: portrait) {
+  .app-header {
+    padding: 3px 2px !important;
+    overflow: hidden !important;
+  }
+  .app-header .header-actions {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 2px !important;
+    overflow: hidden !important;
+  }
+  .app-header .header-actions > .btn,
+  .app-header .mode-world-switcher,
+  .app-header .mode-world-switcher .btn {
+    min-width: 0 !important;
+    white-space: nowrap !important;
+  }
+  .app-header .header-actions > .btn,
+  .app-header .mode-world-switcher .btn {
+    min-height: 29px !important;
+    height: 29px !important;
+    padding: 2px 2px !important;
+    letter-spacing: -.04em !important;
+    line-height: 1 !important;
+  }
+  .app-header #btn-reference {
+    flex: .80 1 0 !important;
+    font-size: clamp(.50rem, 2.15vw, .62rem) !important;
+  }
+  .app-header #btn-palette-settings {
+    flex: 1.32 1 0 !important;
+    font-size: clamp(.47rem, 2.0vw, .59rem) !important;
+  }
+  .app-header .mode-world-switcher {
+    flex: .75 1 0 !important;
+    display: inline-flex !important;
+  }
+  .app-header .mode-world-switcher[hidden] { display: none !important; }
+  .app-header .mode-world-switcher .btn {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    font-size: clamp(.50rem, 2.1vw, .61rem) !important;
+  }
+  .app-header #btn-sound,
+  .app-header #btn-bgm-toggle {
+    flex: 1.05 1 0 !important;
+    font-size: clamp(.47rem, 2.0vw, .59rem) !important;
+  }
+}

@@ -1,15 +1,15 @@
-const CACHE_NAME = 'trig-quiz-v122';
+const CACHE_NAME = 'trig-quiz-v125';
 const APP_FILES = [
     './',
     './index.html',
     './manifest.webmanifest',
-    './css/style.css?v=122',
-    './css/height-compact.css?v=122',
-    './js/trig-data.js?v=122',
-    './js/audio.js?v=122',
-    './js/unit-circle.js?v=122',
-    './js/pwa.js?v=122',
-    './js/app.js?v=122',
+    './css/style.css?v=125',
+    './css/height-compact.css?v=125',
+    './js/trig-data.js?v=125',
+    './js/audio.js?v=125',
+    './js/unit-circle.js?v=125',
+    './js/pwa.js?v=125',
+    './js/app.js?v=125',
     './assets/start-face.png',
     './assets/start-face-white.png',
     './assets/start-icon-white.png',
@@ -26,7 +26,11 @@ const APP_FILES = [
     './assets/audio/race.wav',
     './assets/audio/sprint.wav',
     './assets/audio/secret-march.wav',
-    './assets/audio/secret-dark-hero.wav'
+    './assets/audio/secret-dark-hero.wav',
+    './assets/audio/result-s.wav',
+    './assets/audio/result-a.wav',
+    './assets/audio/result-b.wav',
+    './assets/audio/result-c.wav'
 ];
 
 self.addEventListener('install', event => {
