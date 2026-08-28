@@ -200,7 +200,7 @@ class QuizAudio {
         const sources = {
             race: 'assets/audio/race.wav',
             sprint: 'assets/audio/sprint.wav',
-            secret: 'assets/audio/secret-march.wav'
+            secret: 'assets/audio/secret-dark-hero.wav'
         };
         const src = sources[track] || sources.race;
 

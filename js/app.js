@@ -41,6 +41,10 @@ class TrigQuizApp {
         this.courseElapsedInterval = null;
         this.achievementQueue = [];
         this.lastCompletedSettings = null;
+        this.paletteSettingsSecret = false;
+        this.paletteSettingsOrder = [];
+        this.paletteSettingsSelectedIndex = null;
+        this.paletteDragIndex = null;
 
         // Quiz State
         this.currentQuestion = null;
@@ -86,6 +90,14 @@ class TrigQuizApp {
             btnReferenceBack: document.getElementById('btn-reference-back'),
             headerBgmSelect: document.getElementById('header-bgm-select'),
             btnBgmToggle: document.getElementById('btn-bgm-toggle'),
+            btnPaletteSettings: document.getElementById('btn-palette-settings'),
+            paletteSettingsOverlay: document.getElementById('palette-settings-overlay'),
+            paletteSettingsTitle: document.getElementById('palette-settings-title'),
+            paletteSettingsSubtitle: document.getElementById('palette-settings-subtitle'),
+            paletteSettingsGrid: document.getElementById('palette-settings-grid'),
+            btnPaletteSettingsClose: document.getElementById('btn-palette-settings-close'),
+            btnPaletteSettingsReset: document.getElementById('btn-palette-settings-reset'),
+            btnPaletteSettingsSave: document.getElementById('btn-palette-settings-save'),
             courseElapsedTimerHeader: document.getElementById('course-elapsed-timer-header'),
 
             // Start screen controls
@@ -335,6 +347,40 @@ class TrigQuizApp {
             this.dom.btnCloseReference.addEventListener('click', () => {
                 this.audio.playClick();
                 this.hideReferenceModal();
+            });
+        }
+
+        if (this.dom.btnPaletteSettings) {
+            this.dom.btnPaletteSettings.addEventListener('click', () => {
+                this.audio.playClick();
+                this.openPaletteSettings();
+            });
+        }
+        if (this.dom.btnPaletteSettingsClose) {
+            this.dom.btnPaletteSettingsClose.addEventListener('click', () => {
+                this.audio.playClick();
+                this.closePaletteSettings();
+            });
+        }
+        if (this.dom.paletteSettingsOverlay) {
+            this.dom.paletteSettingsOverlay.addEventListener('click', event => {
+                if (event.target === this.dom.paletteSettingsOverlay) this.closePaletteSettings();
+            });
+        }
+        if (this.dom.btnPaletteSettingsReset) {
+            this.dom.btnPaletteSettingsReset.addEventListener('click', () => {
+                this.audio.playClick();
+                this.paletteSettingsOrder = this.getDefaultPaletteOrder(this.paletteSettingsSecret);
+                this.paletteSettingsSelectedIndex = null;
+                this.renderPaletteSettingsEditor();
+            });
+        }
+        if (this.dom.btnPaletteSettingsSave) {
+            this.dom.btnPaletteSettingsSave.addEventListener('click', () => {
+                this.audio.playClick();
+                this.savePaletteOrder(this.paletteSettingsSecret, this.paletteSettingsOrder);
+                if (this.currentQuestion && this.answerType === 'palette') this.renderPalette();
+                this.closePaletteSettings();
             });
         }
 
@@ -932,6 +978,173 @@ class TrigQuizApp {
         });
     }
 
+    getPaletteStorageKey(secretMode = false) {
+        return secretMode ? 'trig-quiz-palette-order-secret-v1' : 'trig-quiz-palette-order-normal-v1';
+    }
+
+    getPaletteStandardValues() {
+        return ['-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2', 'sqrt3/2', '1', '-sqrt3', '-1/sqrt3', 'none', '1/sqrt3', 'sqrt3'];
+    }
+
+    getPaletteSecretAddedValues() {
+        return [
+            'sqrt5-1/4', 'sqrt5+1/4', '2-sqrt3', '2+sqrt3',
+            'sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt2-1', 'sqrt2+1',
+            'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'tan36', 'tan72',
+            'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4', 'tan54', 'tan18'
+        ];
+    }
+
+    getDefaultPaletteOrder(secretMode = false) {
+        if (!secretMode) {
+            // 5列×3段。中央の空きを含め、従来のスマホ配置に近い初期配置。
+            return [
+                '-sqrt3', '-1/sqrt3', 'none', '1/sqrt3', 'sqrt3',
+                '-1', '-sqrt3/2', '__empty__', 'sqrt3/2', '1',
+                '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2'
+            ];
+        }
+        return [
+            '-sqrt3', '-1/sqrt3', 'none', '1/sqrt3', 'sqrt3',
+            '-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0',
+            '1/2', '1/sqrt2', 'sqrt3/2', '1',
+            ...this.getPaletteSecretAddedValues()
+        ];
+    }
+
+    loadPaletteOrder(secretMode = false) {
+        const key = this.getPaletteStorageKey(secretMode);
+        const allowed = new Set(this.getDefaultPaletteOrder(secretMode));
+        try {
+            const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+            if (!Array.isArray(parsed) || parsed.length !== allowed.size) return null;
+            if (new Set(parsed).size !== parsed.length) return null;
+            if (!parsed.every(id => allowed.has(id))) return null;
+            return parsed;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    savePaletteOrder(secretMode, order) {
+        localStorage.setItem(this.getPaletteStorageKey(secretMode), JSON.stringify(order));
+    }
+
+    getPaletteDisplayHtml(valueId) {
+        if (valueId === '__empty__') return '<span class="palette-settings-empty-label">空き</span>';
+        return window.formatValueHtml(valueId, this.useRationalized);
+    }
+
+    openPaletteSettings() {
+        if (!this.dom.paletteSettingsOverlay || !this.dom.paletteSettingsGrid) return;
+        this.paletteSettingsSecret = Boolean(this.secretModeActive);
+        this.paletteSettingsOrder = this.loadPaletteOrder(this.paletteSettingsSecret) || this.getDefaultPaletteOrder(this.paletteSettingsSecret);
+        this.paletteSettingsSelectedIndex = null;
+        this.paletteDragIndex = null;
+        if (this.dom.paletteSettingsTitle) this.dom.paletteSettingsTitle.textContent = this.paletteSettingsSecret ? '裏パレット設定' : 'パレット設定';
+        if (this.dom.paletteSettingsSubtitle) this.dom.paletteSettingsSubtitle.textContent = this.paletteSettingsSecret ? '裏版専用の値パレット配置' : '通常版専用の値パレット配置';
+        this.renderPaletteSettingsEditor();
+        this.dom.paletteSettingsOverlay.hidden = false;
+        this.dom.paletteSettingsOverlay.classList.add('active');
+        document.body.classList.add('palette-settings-open');
+    }
+
+    closePaletteSettings() {
+        if (!this.dom.paletteSettingsOverlay) return;
+        this.dom.paletteSettingsOverlay.classList.remove('active');
+        this.dom.paletteSettingsOverlay.hidden = true;
+        document.body.classList.remove('palette-settings-open');
+        this.paletteSettingsSelectedIndex = null;
+        this.paletteDragIndex = null;
+    }
+
+    swapPaletteSettingsItems(a, b) {
+        if (a === b || a == null || b == null) return;
+        const order = this.paletteSettingsOrder;
+        if (!order[a] || !order[b]) return;
+        [order[a], order[b]] = [order[b], order[a]];
+        this.paletteSettingsSelectedIndex = null;
+        this.renderPaletteSettingsEditor();
+    }
+
+    renderPaletteSettingsEditor() {
+        const grid = this.dom.paletteSettingsGrid;
+        if (!grid) return;
+        grid.innerHTML = '';
+        grid.classList.toggle('secret-palette-settings-grid', this.paletteSettingsSecret);
+        this.paletteSettingsOrder.forEach((valueId, index) => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'palette-setting-item';
+            if (valueId === '__empty__') item.classList.add('is-empty-slot');
+            if (index === this.paletteSettingsSelectedIndex) item.classList.add('is-selected');
+            item.dataset.index = String(index);
+            item.dataset.valueId = valueId;
+            item.draggable = true;
+            item.innerHTML = this.getPaletteDisplayHtml(valueId);
+            item.addEventListener('click', () => {
+                this.audio.playClick();
+                if (this.paletteSettingsSelectedIndex == null) {
+                    this.paletteSettingsSelectedIndex = index;
+                    this.renderPaletteSettingsEditor();
+                    return;
+                }
+                if (this.paletteSettingsSelectedIndex === index) {
+                    this.paletteSettingsSelectedIndex = null;
+                    this.renderPaletteSettingsEditor();
+                    return;
+                }
+                this.swapPaletteSettingsItems(this.paletteSettingsSelectedIndex, index);
+            });
+            item.addEventListener('dragstart', event => {
+                this.paletteDragIndex = index;
+                item.classList.add('is-dragging');
+                if (event.dataTransfer) {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', String(index));
+                }
+            });
+            item.addEventListener('dragend', () => {
+                this.paletteDragIndex = null;
+                item.classList.remove('is-dragging');
+            });
+            item.addEventListener('dragover', event => {
+                event.preventDefault();
+                if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+            });
+            item.addEventListener('drop', event => {
+                event.preventDefault();
+                const source = this.paletteDragIndex ?? Number(event.dataTransfer?.getData('text/plain'));
+                if (Number.isInteger(source)) this.swapPaletteSettingsItems(source, index);
+            });
+            grid.appendChild(item);
+        });
+    }
+
+    renderSavedPalette(order, secretMode, compactValues, veryCompactValues, topValues, middleValues) {
+        this.dom.paletteContainer.innerHTML = '<div class="palette-custom-grid" aria-label="自分専用の値パレット"></div>';
+        const grid = this.dom.paletteContainer.querySelector('.palette-custom-grid');
+        order.forEach(valueId => {
+            if (valueId === '__empty__') {
+                const spacer = document.createElement('span');
+                spacer.className = 'palette-empty-slot';
+                spacer.setAttribute('aria-hidden', 'true');
+                grid.appendChild(spacer);
+                return;
+            }
+            const btn = document.createElement('button');
+            const sizeClass = veryCompactValues.has(valueId) ? 'value-very-compact' : (compactValues.has(valueId) ? 'value-compact' : 'value-standard');
+            const priorityClass = secretMode && this.getPaletteSecretAddedValues().includes(valueId)
+                ? (topValues.has(valueId) ? 'priority-top' : (middleValues.has(valueId) ? 'priority-middle' : 'priority-hard'))
+                : 'priority-standard';
+            btn.className = `palette-btn ${priorityClass} ${sizeClass}`;
+            btn.dataset.valueId = valueId;
+            btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
+            btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
+            grid.appendChild(btn);
+        });
+    }
+
     renderPalette() {
         const standardValues = ['-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2', 'sqrt3/2', '1', '-sqrt3', '-1/sqrt3', 'none', '1/sqrt3', 'sqrt3'];
         const standardPortrait = {
@@ -965,6 +1178,13 @@ class TrigQuizApp {
         const middleValues = new Set(['sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2']);
         const compactValues = new Set(['sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'tan18', 'tan54']);
         const veryCompactValues = new Set(['tan72', 'tan36', 'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4']);
+
+        const isSecretPalette = this.mode === '1min-secret';
+        const savedPaletteOrder = this.loadPaletteOrder(isSecretPalette);
+        if (savedPaletteOrder) {
+            this.renderSavedPalette(savedPaletteOrder, isSecretPalette, compactValues, veryCompactValues, topValues, middleValues);
+            return;
+        }
 
         this.dom.paletteContainer.innerHTML = '<div class="palette-standard-grid" aria-label="有名角の三角比の値"></div>';
         if (this.mode === '1min-secret') {
@@ -1880,6 +2100,7 @@ class TrigQuizApp {
         if (this.dom.btnNormalMode) this.dom.btnNormalMode.hidden = !active;
         if (this.dom.btnSecretMode) this.dom.btnSecretMode.hidden = active;
         if (this.dom.btnReference) this.dom.btnReference.textContent = active ? '裏三角比確認表' : '三角比確認表';
+        if (this.dom.btnPaletteSettings) this.dom.btnPaletteSettings.textContent = active ? '裏パレット設定' : 'パレット設定';
         if (this.dom.referenceScreen) this.dom.referenceScreen.classList.toggle('secret-reference-mode', active);
         const referenceTitle = this.dom.referenceScreen?.querySelector('.reference-topbar-title');
         if (referenceTitle) referenceTitle.innerHTML = active

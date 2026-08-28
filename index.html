@@ -16,8 +16,8 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Main Style -->
-<link href="css/style.css?v=121" rel="stylesheet"/>
-<link href="css/height-compact.css?v=121" rel="stylesheet"/>
+<link href="css/style.css?v=122" rel="stylesheet"/>
+<link href="css/height-compact.css?v=122" rel="stylesheet"/>
 </head>
 <body>
 <!-- Header HUD -->
@@ -25,6 +25,7 @@
 <div class="header-actions">
 <span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-header" hidden id="course-elapsed-timer-header">⏱ 0:00.0</span>
 <button class="btn" id="btn-reference" title="三角比確認表">三角比確認表</button>
+<button class="btn btn-palette-settings" id="btn-palette-settings" title="値パレットの配置を設定" type="button">パレット設定</button>
 <span class="mode-world-switcher" id="mode-world-switcher" hidden>
 <button class="btn mode-world-btn" id="btn-normal-mode" type="button">基本版</button>
 <button class="btn mode-world-btn" id="btn-secret-mode" type="button">裏版</button>
@@ -50,6 +51,23 @@
 <div class="install-guide-actions">
 <button class="btn install-choice-primary" hidden id="btn-guide-install" type="button">インストール画面を開く</button>
 <button class="btn" id="btn-guide-close" type="button">今回は追加しない</button>
+</div>
+</div>
+</div>
+<div aria-labelledby="palette-settings-title" aria-modal="true" class="palette-settings-overlay" hidden id="palette-settings-overlay" role="dialog">
+<div class="palette-settings-card">
+<div class="palette-settings-header">
+<div>
+<h2 id="palette-settings-title">パレット設定</h2>
+<p id="palette-settings-subtitle">通常版の値パレット</p>
+</div>
+<button class="btn palette-settings-close" id="btn-palette-settings-close" type="button">×</button>
+</div>
+<p class="palette-settings-help">値を2つ順にタップすると位置を交換できます。PCではドラッグでも並べ替えできます。左上から右へ並び、その配置でプレイします。</p>
+<div aria-label="値パレットの配置" class="palette-settings-grid" id="palette-settings-grid"></div>
+<div class="palette-settings-actions">
+<button class="btn" id="btn-palette-settings-reset" type="button">初期配置に戻す</button>
+<button class="btn btn-primary" id="btn-palette-settings-save" type="button">この配置を保存</button>
 </div>
 </div>
 </div>
@@ -322,10 +340,10 @@
 <!-- Victory Confetti Canvas -->
 <canvas id="confetti-canvas"></canvas>
 <!-- Scripts -->
-<script src="js/trig-data.js?v=121"></script>
-<script src="js/audio.js?v=121"></script>
-<script src="js/unit-circle.js?v=121"></script>
-<script src="js/pwa.js?v=121"></script>
-<script src="js/app.js?v=121"></script>
+<script src="js/trig-data.js?v=122"></script>
+<script src="js/audio.js?v=122"></script>
+<script src="js/unit-circle.js?v=122"></script>
+<script src="js/pwa.js?v=122"></script>
+<script src="js/app.js?v=122"></script>
 </body>
 </html>
