@@ -1541,9 +1541,12 @@ class TrigQuizApp {
         const achievementEvents = [];
         if (isNewBest) achievementEvents.push({ type: 'best' });
         if (growthEvent) achievementEvents.push({ type: 'growth', ...growthEvent });
-        // Wait until the result screen has actually painted before opening the modal.
+        // Wait until the result screen has painted, then show celebration above it.
+        // A short second frame avoids Safari/PWA cases where the hidden overlay failed to repaint.
         requestAnimationFrame(() => {
-            setTimeout(() => this.showAchievementSequence(achievementEvents), 60);
+            requestAnimationFrame(() => {
+                setTimeout(() => this.showAchievementSequence(achievementEvents), 120);
+            });
         });
     }
 
@@ -1622,9 +1625,8 @@ class TrigQuizApp {
         localStorage.setItem(key, String(next));
         const oldStage = Math.min(10, Math.floor(current / 5));
         const newStage = Math.min(10, Math.floor(next / 5));
-        // 回数は条件を満たすたびに加算するが、演出は見た目の段階が
-        // 実際に変わる5回ごとのタイミングだけに表示する。
-        if (newStage === oldStage) return null;
+        // 条件を満たした挑戦は毎回「成長ポイント」演出を表示する。
+        // 5回ごとに段階が変わるときは、演出内で「花が成長！」と強調する。
         return {
             secretMode: mode === '1min-secret',
             oldCount: current,
@@ -1654,6 +1656,7 @@ class TrigQuizApp {
         if (!this.achievementQueue.length) {
             if (this.dom.achievementOverlay) {
                 this.dom.achievementOverlay.hidden = true;
+                this.dom.achievementOverlay.style.display = 'none';
                 this.dom.achievementOverlay.classList.remove('is-visible');
                 this.dom.achievementOverlay.setAttribute('aria-hidden', 'true');
             }
@@ -1667,12 +1670,14 @@ class TrigQuizApp {
         const event = this.achievementQueue.shift();
         if (!event) {
             this.dom.achievementOverlay.hidden = true;
+            this.dom.achievementOverlay.style.display = 'none';
             this.dom.achievementOverlay.classList.remove('is-visible');
             this.dom.achievementOverlay.setAttribute('aria-hidden', 'true');
             return;
         }
 
         this.dom.achievementOverlay.hidden = false;
+        this.dom.achievementOverlay.style.display = 'grid';
         this.dom.achievementOverlay.classList.add('is-visible');
         this.dom.achievementOverlay.setAttribute('aria-hidden', 'false');
         this.dom.achievementCard.classList.toggle('is-best', event.type === 'best');
@@ -1863,6 +1868,13 @@ class TrigQuizApp {
         }
         this.secretModeActive = nextSecretActive;
         const active = this.secretModeActive;
+
+        // If the music toggle is ON, switch the track immediately when changing
+        // between normal and secret worlds (even on the top screen).
+        if (this.bgmEnabled) {
+            this.audio.startBgm(active ? 'secret' : this.bgmTrack);
+        }
+
         document.body.classList.toggle('secret-mode-unlocked', active);
         document.body.classList.toggle('secret-mode-available', this.secretModeUnlocked);
         if (this.dom.btnNormalMode) this.dom.btnNormalMode.hidden = !active;

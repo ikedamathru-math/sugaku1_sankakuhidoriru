@@ -1,15 +1,15 @@
-const CACHE_NAME = 'trig-quiz-v120';
+const CACHE_NAME = 'trig-quiz-v121';
 const APP_FILES = [
     './',
     './index.html',
     './manifest.webmanifest',
-    './css/style.css?v=119',
-    './css/height-compact.css?v=119',
-    './js/trig-data.js?v=119',
-    './js/audio.js?v=119',
-    './js/unit-circle.js?v=119',
-    './js/pwa.js?v=119',
-    './js/app.js?v=119',
+    './css/style.css?v=121',
+    './css/height-compact.css?v=121',
+    './js/trig-data.js?v=121',
+    './js/audio.js?v=121',
+    './js/unit-circle.js?v=121',
+    './js/pwa.js?v=121',
+    './js/app.js?v=121',
     './assets/start-face.png',
     './assets/start-face-white.png',
     './assets/start-icon-white.png',
@@ -24,7 +24,8 @@ const APP_FILES = [
     './assets/point-p/happy.svg',
     './assets/point-p/thinking.svg',
     './assets/audio/race.wav',
-    './assets/audio/sprint.wav'
+    './assets/audio/sprint.wav',
+    './assets/audio/secret-march.wav'
 ];
 
 self.addEventListener('install', event => {

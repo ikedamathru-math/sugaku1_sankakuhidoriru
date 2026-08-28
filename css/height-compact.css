@@ -2246,3 +2246,15 @@ body.secret-mode-unlocked #reference-screen.secret-reference-mode .secret-memory
   font-family: "Century" !important;
   font-style: normal !important;
 }
+
+
+/* ===== v121: robust achievement overlay visibility ===== */
+.achievement-overlay.is-visible {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+.achievement-overlay[hidden] {
+  display: none !important;
+}
