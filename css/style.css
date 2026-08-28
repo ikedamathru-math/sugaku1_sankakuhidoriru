@@ -8348,3 +8348,31 @@ body:has(#reference-screen.active) .reference-screen-card {
 #reference-screen .side-heading-value .fraction .bottom {
     font-size: 1.20rem !important;
 }
+
+
+/* ===== v119: palette numerals and every quiz timer use exact Century ===== */
+#quiz-screen .palette-btn,
+#quiz-screen .palette-btn *,
+#quiz-screen .palette-container,
+#quiz-screen .palette-container *,
+#quiz-screen .course-elapsed-timer,
+#quiz-screen .course-elapsed-timer *,
+.app-header .course-elapsed-timer,
+.app-header .course-elapsed-timer *,
+#quiz-screen .global-timer-text,
+#quiz-screen .global-timer-text *,
+#quiz-screen .challenge-time-text,
+#quiz-screen .challenge-time-text *,
+#quiz-screen .visual-clock-timer,
+#quiz-screen .visual-clock-timer *,
+#quiz-screen .quiz-progress-text,
+#quiz-screen .quiz-progress-text * {
+    font-family: "Century" !important;
+    font-style: normal !important;
+}
+
+/* These answer/explanation numerals previously allowed Georgia as a fallback. */
+#quiz-screen .answer-focus-label,
+#quiz-screen .answer-focus-value {
+    font-family: "Century" !important;
+}

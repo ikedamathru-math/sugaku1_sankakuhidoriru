@@ -2213,3 +2213,36 @@ body.secret-mode-unlocked #reference-screen.secret-reference-mode .secret-memory
 .achievement-growth-visual.secret-growth .plant-sprite-sheet {
   animation: plant-celebrate 1s ease-in-out infinite alternate !important;
 }
+
+
+/* ===== v119: force achievement overlays visible when JS opens them ===== */
+.achievement-overlay.is-visible:not([hidden]) {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+
+/* ===== v119 final font lock: no Georgia in palette values or timers ===== */
+#quiz-screen.palette-mode .palette-btn,
+#quiz-screen.palette-mode .palette-btn *,
+#quiz-screen.palette-mode .palette-standard-grid .palette-btn,
+#quiz-screen.palette-mode .palette-standard-grid .palette-btn *,
+#quiz-screen.palette-mode .palette-secret-grid .palette-btn,
+#quiz-screen.palette-mode .palette-secret-grid .palette-btn *,
+#quiz-screen.palette-mode .palette-flat-grid .palette-btn,
+#quiz-screen.palette-mode .palette-flat-grid .palette-btn *,
+.course-elapsed-timer,
+.course-elapsed-timer *,
+#quiz-screen .global-timer-text,
+#quiz-screen .global-timer-text *,
+#quiz-screen .challenge-time-text,
+#quiz-screen .challenge-time-text *,
+#quiz-screen .visual-clock-timer,
+#quiz-screen .visual-clock-timer *,
+#quiz-screen .quiz-progress-text,
+#quiz-screen .quiz-progress-text * {
+  font-family: "Century" !important;
+  font-style: normal !important;
+}

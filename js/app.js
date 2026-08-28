@@ -40,6 +40,7 @@ class TrigQuizApp {
         this.globalChallengeEnded = false;
         this.courseElapsedInterval = null;
         this.achievementQueue = [];
+        this.lastCompletedSettings = null;
 
         // Quiz State
         this.currentQuestion = null;
@@ -426,11 +427,12 @@ class TrigQuizApp {
             });
         }
 
-        // Restart Quiz Button
+        // Restart Quiz Button: repeat exactly the settings used in the just-finished attempt.
         this.dom.btnRestartQuiz.addEventListener('click', () => {
             this.clearAutoAdvance();
             this.audio.playClick();
-            this.startQuiz();
+            this.restoreLastCompletedSettings();
+            this.startQuiz(true);
         });
 
         // Back to Home Button
@@ -475,6 +477,32 @@ class TrigQuizApp {
                 }
             }
         });
+    }
+
+    restoreLastCompletedSettings() {
+        const settings = this.lastCompletedSettings;
+        if (!settings) return;
+
+        this.mode = settings.mode;
+        this.answerType = settings.answerType;
+        this.targetFunctions = [...settings.targetFunctions];
+        this.timeLimitSetting = settings.timeLimitSetting;
+        this.secretModeActive = Boolean(settings.secretModeActive);
+
+        // Restore the visible UI as well so the next attempt and the top screen stay consistent.
+        this.dom.modeTabs.forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.mode === this.mode);
+        });
+        this.dom.answerTypeInputs.forEach(input => {
+            input.checked = input.value === this.answerType;
+        });
+        this.dom.funcCheckboxes.forEach(input => {
+            input.checked = this.targetFunctions.includes(input.value);
+        });
+        this.dom.timeLimitInputs.forEach(input => {
+            input.checked = input.value === String(this.timeLimitSetting);
+        });
+        this.syncSelectionCards();
     }
 
     updateSettingsFromUI() {
@@ -595,11 +623,11 @@ class TrigQuizApp {
     // Quiz Flow Management
     // ==========================================
 
-    startQuiz() {
+    startQuiz(preserveSettings = false) {
         this.clearAutoAdvance();
         this.stopGlobalChallengeTimer();
         this.stopCourseElapsedTimer();
-        this.updateSettingsFromUI();
+        if (!preserveSettings) this.updateSettingsFromUI();
         const isTwentyChallenge = this.mode === '20-challenge';
         if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.hidden = !isTwentyChallenge;
         if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.hidden = !isTwentyChallenge;
@@ -1366,6 +1394,13 @@ class TrigQuizApp {
     finishQuiz() {
         // 保存処理中に裏モードが解放されても、終了したクイズのモードは変えない。
         const completedMode = this.mode;
+        this.lastCompletedSettings = {
+            mode: completedMode,
+            answerType: this.answerType,
+            targetFunctions: [...this.targetFunctions],
+            timeLimitSetting: this.timeLimitSetting,
+            secretModeActive: this.secretModeActive
+        };
         this.stopTimer();
         this.stopGlobalChallengeTimer();
         this.quizFinishedAt = Date.now();
@@ -1506,7 +1541,10 @@ class TrigQuizApp {
         const achievementEvents = [];
         if (isNewBest) achievementEvents.push({ type: 'best' });
         if (growthEvent) achievementEvents.push({ type: 'growth', ...growthEvent });
-        this.showAchievementSequence(achievementEvents);
+        // Wait until the result screen has actually painted before opening the modal.
+        requestAnimationFrame(() => {
+            setTimeout(() => this.showAchievementSequence(achievementEvents), 60);
+        });
     }
 
     startWrongReview() {
@@ -1614,7 +1652,11 @@ class TrigQuizApp {
     showAchievementSequence(events = []) {
         this.achievementQueue = events.filter(Boolean);
         if (!this.achievementQueue.length) {
-            if (this.dom.achievementOverlay) this.dom.achievementOverlay.hidden = true;
+            if (this.dom.achievementOverlay) {
+                this.dom.achievementOverlay.hidden = true;
+                this.dom.achievementOverlay.classList.remove('is-visible');
+                this.dom.achievementOverlay.setAttribute('aria-hidden', 'true');
+            }
             return;
         }
         this.showNextAchievement();
@@ -1625,10 +1667,14 @@ class TrigQuizApp {
         const event = this.achievementQueue.shift();
         if (!event) {
             this.dom.achievementOverlay.hidden = true;
+            this.dom.achievementOverlay.classList.remove('is-visible');
+            this.dom.achievementOverlay.setAttribute('aria-hidden', 'true');
             return;
         }
 
         this.dom.achievementOverlay.hidden = false;
+        this.dom.achievementOverlay.classList.add('is-visible');
+        this.dom.achievementOverlay.setAttribute('aria-hidden', 'false');
         this.dom.achievementCard.classList.toggle('is-best', event.type === 'best');
         this.dom.achievementCard.classList.toggle('is-growth', event.type === 'growth');
         this.dom.achievementBestImage.hidden = event.type !== 'best';
@@ -1639,11 +1685,6 @@ class TrigQuizApp {
             this.dom.achievementCopy.innerHTML = '<strong>自己ベストを更新しました！</strong><span>すばらしい記録です</span>';
         } else {
             const stageLabels = ['たね', '芽', '茎', '小さな葉', '葉', 'つぼみ', '育ったつぼみ', '花びら', '開花', 'もうすぐ満開', '満開'];
-            const normalCenters = [[97,309.5],[92,307],[86,304.5],[76.5,288],[67,277.5],[74.5,269],[72,266.5],[69.5,266],[64,268.5],[80.5,266],[80,260]];
-            const secretCenters = [[86.5,213.5],[82.5,208.5],[79,197.5],[70.5,186],[80,171],[69.5,168.5],[66,167],[64,164.5],[80,162.5],[80.5,158.5],[80,141]];
-            const [centerX, centerY] = (event.secretMode ? secretCenters : normalCenters)[event.newStage];
-            const plantX = `${(-centerX / 161 * 100).toFixed(2)}%`;
-            const plantY = `${(-centerY / 443 * 100).toFixed(2)}%`;
             const stageChanged = event.newStage > event.oldStage;
             const title = stageChanged
                 ? `花が「${stageLabels[event.newStage]}」に成長！`
@@ -1651,7 +1692,7 @@ class TrigQuizApp {
             this.dom.achievementGrowthVisual.classList.toggle('secret-growth', event.secretMode);
             this.dom.achievementGrowthVisual.innerHTML = `
                 <span class="plant-sprite-viewport" aria-hidden="true">
-                    <span class="plant-sprite-sheet" style="--plant-stage:${event.newStage};--plant-row:${event.secretMode ? 1 : 0};--plant-x:${plantX};--plant-y:${plantY}"></span>
+                    <span class="plant-sprite-sheet" style="--plant-stage:${event.newStage};--plant-row:${event.secretMode ? 1 : 0}"></span>
                 </span>`;
             this.dom.achievementCopy.innerHTML = `<strong>${title}</strong><span>${event.newCount}回　${stageLabels[event.newStage]}</span>`;
         }
