@@ -199,7 +199,8 @@ class QuizAudio {
         this.stopBgm();
         const sources = {
             race: 'assets/audio/race.wav',
-            sprint: 'assets/audio/sprint.wav'
+            sprint: 'assets/audio/sprint.wav',
+            secret: 'assets/audio/secret-march.wav'
         };
         const src = sources[track] || sources.race;
 

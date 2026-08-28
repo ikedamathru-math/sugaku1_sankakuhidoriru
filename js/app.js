@@ -307,7 +307,7 @@ class TrigQuizApp {
             this.dom.headerBgmSelect.addEventListener('change', () => {
                 this.bgmTrack = this.dom.headerBgmSelect.value;
                 localStorage.setItem('trig-quiz-bgm-track', this.bgmTrack);
-                if (this.bgmEnabled) this.audio.startBgm(this.bgmTrack);
+                if (this.bgmEnabled) this.audio.startBgm(this.mode === '1min-secret' ? 'secret' : this.bgmTrack);
             });
         }
         if (this.dom.btnBgmToggle) {
@@ -316,7 +316,7 @@ class TrigQuizApp {
                 this.bgmEnabled = !this.bgmEnabled;
                 this.dom.btnBgmToggle.textContent = this.bgmEnabled ? '効果音 ON' : '効果音 OFF';
                 this.dom.btnBgmToggle.classList.toggle('active', this.bgmEnabled);
-                if (this.bgmEnabled) this.audio.startBgm(this.bgmTrack);
+                if (this.bgmEnabled) this.audio.startBgm(this.mode === '1min-secret' ? 'secret' : this.bgmTrack);
                 else this.audio.stopBgm();
             });
         }
@@ -710,7 +710,7 @@ class TrigQuizApp {
             });
         }
 
-        if (this.bgmEnabled) this.audio.startBgm(this.bgmTrack);
+        if (this.bgmEnabled) this.audio.startBgm(this.mode === '1min-secret' ? 'secret' : this.bgmTrack);
         if (this.mode === '3min-challenge' || this.mode === '1min-secret') this.startGlobalChallengeTimer();
         if (this.mode === '20-challenge') this.startCourseElapsedTimer();
         this.nextQuestion();

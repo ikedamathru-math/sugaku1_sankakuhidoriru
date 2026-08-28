@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trig-quiz-v119';
+const CACHE_NAME = 'trig-quiz-v120';
 const APP_FILES = [
     './',
     './index.html',
