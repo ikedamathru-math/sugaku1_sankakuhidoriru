@@ -16,13 +16,14 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Main Style -->
-<link href="css/style.css?v=99" rel="stylesheet"/>
-<link href="css/height-compact.css?v=99" rel="stylesheet"/>
+<link href="css/style.css?v=116" rel="stylesheet"/>
+<link href="css/height-compact.css?v=116" rel="stylesheet"/>
 </head>
 <body>
 <!-- Header HUD -->
 <header class="app-header">
 <div class="header-actions">
+<span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-header" hidden id="course-elapsed-timer-header">⏱ 0:00.0</span>
 <button class="btn" id="btn-reference" title="三角比確認表">三角比確認表</button>
 <span class="mode-world-switcher" id="mode-world-switcher" hidden>
 <button class="btn mode-world-btn" id="btn-normal-mode" type="button">基本版</button>
@@ -219,6 +220,7 @@
 <div class="quiz-footer">
 <div class="tap-next-hint" id="tap-next-hint" style="display:none;">画面をタップして次の問題へ</div>
 <div class="stop-control-wrap" id="stop-control-wrap">
+<span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-stop" hidden id="course-elapsed-timer-stop">⏱ 0:00.0</span>
 <button class="btn btn-stop" id="btn-quit-quiz">■ ストップ</button>
 <div class="stop-choice-buttons" id="stop-choice-buttons" style="display:none;">
 <button class="btn btn-primary" id="btn-stop-resume">画面タップで再開</button>
@@ -309,13 +311,21 @@
 </div>
 </div>
 </div>
+<div aria-live="assertive" aria-modal="true" class="achievement-overlay" hidden id="achievement-overlay" role="dialog">
+<div class="achievement-card" id="achievement-card">
+<img alt="自己ベスト更新を祝う点P君" class="achievement-best-image" hidden id="achievement-best-image" src="assets/best-score-popup.png"/>
+<div class="achievement-growth-visual" hidden id="achievement-growth-visual"></div>
+<div class="achievement-copy" id="achievement-copy"></div>
+<button class="btn btn-primary achievement-close" id="btn-achievement-close" type="button">結果を見る</button>
+</div>
+</div>
 <!-- Victory Confetti Canvas -->
 <canvas id="confetti-canvas"></canvas>
 <!-- Scripts -->
-<script src="js/trig-data.js?v=99"></script>
+<script src="js/trig-data.js?v=116"></script>
 <script src="js/audio.js"></script>
-<script src="js/unit-circle.js?v=99"></script>
-<script src="js/pwa.js?v=99"></script>
-<script src="js/app.js?v=99"></script>
+<script src="js/unit-circle.js?v=116"></script>
+<script src="js/pwa.js?v=116"></script>
+<script src="js/app.js?v=116"></script>
 </body>
 </html>

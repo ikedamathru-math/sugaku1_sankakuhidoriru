@@ -38,6 +38,8 @@ class TrigQuizApp {
         this.globalTimerInterval = null;
         this.globalTimeLeft = 120;
         this.globalChallengeEnded = false;
+        this.courseElapsedInterval = null;
+        this.achievementQueue = [];
 
         // Quiz State
         this.currentQuestion = null;
@@ -83,6 +85,7 @@ class TrigQuizApp {
             btnReferenceBack: document.getElementById('btn-reference-back'),
             headerBgmSelect: document.getElementById('header-bgm-select'),
             btnBgmToggle: document.getElementById('btn-bgm-toggle'),
+            courseElapsedTimerHeader: document.getElementById('course-elapsed-timer-header'),
 
             // Start screen controls
             modeTabs: document.querySelectorAll('.mode-tab'),
@@ -126,6 +129,7 @@ class TrigQuizApp {
             btnNextQuestion: document.getElementById('btn-next-question'),
             tapNextHint: document.getElementById('tap-next-hint'),
             btnQuitQuiz: document.getElementById('btn-quit-quiz'),
+            courseElapsedTimerStop: document.getElementById('course-elapsed-timer-stop'),
 
             // Result screen elements
             resultRankBadge: document.getElementById('result-rank-badge'),
@@ -137,6 +141,12 @@ class TrigQuizApp {
             btnReviewWrong: document.getElementById('btn-review-wrong'),
             btnRestartQuiz: document.getElementById('btn-restart-quiz'),
             btnBackToHome: document.getElementById('btn-back-to-home'),
+            achievementOverlay: document.getElementById('achievement-overlay'),
+            achievementCard: document.getElementById('achievement-card'),
+            achievementBestImage: document.getElementById('achievement-best-image'),
+            achievementGrowthVisual: document.getElementById('achievement-growth-visual'),
+            achievementCopy: document.getElementById('achievement-copy'),
+            btnAchievementClose: document.getElementById('btn-achievement-close'),
 
             // Reference Modal
             referenceTableBody: document.getElementById('reference-table-body'),
@@ -404,6 +414,7 @@ class TrigQuizApp {
                 this.clearAutoAdvance();
                 this.stopTimer();
                 this.stopGlobalChallengeTimer();
+                this.stopCourseElapsedTimer();
                 this.globalChallengeEnded = false;
                 this.isPaused = false;
                 this.pauseStartedAt = 0;
@@ -428,6 +439,15 @@ class TrigQuizApp {
             this.audio.playClick();
             this.showScreen('start');
         });
+
+        if (this.dom.btnAchievementClose) {
+            this.dom.btnAchievementClose.addEventListener('click', () => this.showNextAchievement());
+        }
+        if (this.dom.achievementOverlay) {
+            this.dom.achievementOverlay.addEventListener('click', event => {
+                if (event.target === this.dom.achievementOverlay) this.showNextAchievement();
+            });
+        }
 
         // Review only missed questions
         if (this.dom.btnReviewWrong) {
@@ -578,7 +598,11 @@ class TrigQuizApp {
     startQuiz() {
         this.clearAutoAdvance();
         this.stopGlobalChallengeTimer();
+        this.stopCourseElapsedTimer();
         this.updateSettingsFromUI();
+        const isTwentyChallenge = this.mode === '20-challenge';
+        if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.hidden = !isTwentyChallenge;
+        if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.hidden = !isTwentyChallenge;
         this.quizStartedAt = Date.now();
         this.quizFinishedAt = 0;
         this.totalPausedMs = 0;
@@ -597,6 +621,7 @@ class TrigQuizApp {
         this.pauseStartedAt = 0;
         this.dom.quizScreen.classList.remove('quiz-paused');
         this.dom.quizScreen.classList.toggle('three-minute-mode', this.mode === '3min-challenge' || this.mode === '1min-secret');
+        document.body.classList.toggle('quiz-20-mode', this.mode === '20-challenge');
         // Keep the hourglass in the layout-specific position, including after
         // rotating between portrait and landscape.
         this.syncVisualTimerPlacement();
@@ -659,6 +684,7 @@ class TrigQuizApp {
 
         if (this.bgmEnabled) this.audio.startBgm(this.bgmTrack);
         if (this.mode === '3min-challenge' || this.mode === '1min-secret') this.startGlobalChallengeTimer();
+        if (this.mode === '20-challenge') this.startCourseElapsedTimer();
         this.nextQuestion();
     }
 
@@ -879,51 +905,79 @@ class TrigQuizApp {
     }
 
     renderPalette() {
-        if (this.mode === '1min-secret') {
-            const baseValues = ['-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2', 'sqrt3/2', '1', '-sqrt3', '-1/sqrt3', '1/sqrt3', 'sqrt3', 'none'];
-            const addedValues = ['sqrt5-1/4', 'sqrt5+1/4', '2-sqrt3', '2+sqrt3', 'sqrt2-1', 'sqrt2+1', 'sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'tan18', 'tan72', 'tan36', 'tan54', 'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4'];
-            const topValues = new Set(['sqrt5-1/4', 'sqrt5+1/4', '2-sqrt3', '2+sqrt3', 'sqrt2-1', 'sqrt2+1']);
-            const middleValues = new Set(['sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2']);
-            const values = [...new Set([...baseValues, ...addedValues])];
-            this.dom.paletteContainer.innerHTML = '<div class="palette-flat-grid" aria-label="三角比の値一覧"></div>';
-            const grid = this.dom.paletteContainer.querySelector('.palette-flat-grid');
-            values.forEach(valueId => {
-                const btn = document.createElement('button');
-                const priorityClass = topValues.has(valueId) ? 'priority-top' : (middleValues.has(valueId) ? 'priority-middle' : (addedValues.includes(valueId) ? 'priority-hard' : 'priority-standard'));
-                const compactValues = new Set(['sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'tan18', 'tan54']);
-                const veryCompactValues = new Set(['tan72', 'tan36', 'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4']);
-                const sizeClass = veryCompactValues.has(valueId) ? 'value-very-compact' : (compactValues.has(valueId) ? 'value-compact' : 'value-standard');
-                btn.className = `palette-btn ${priorityClass} ${sizeClass}`;
-                btn.dataset.valueId = valueId;
-                btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
-                btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
-                grid.appendChild(btn);
-            });
-            return;
-        }
-
-        const rows = [
-            { title: 'sin / cos の値', className: 'row-sin-cos', values: ['-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2', 'sqrt3/2', '1'] },
-            { title: 'tan の値', className: 'row-tan', values: ['-sqrt3', '-1', '-1/sqrt3', '0', '1/sqrt3', '1', 'sqrt3', 'none'] }
+        const standardValues = ['-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2', 'sqrt3/2', '1', '-sqrt3', '-1/sqrt3', 'none', '1/sqrt3', 'sqrt3'];
+        const standardPortrait = {
+            '-sqrt3': [1, 1], '-1/sqrt3': [1, 2], 'none': ['1 / span 2', 3], '1/sqrt3': [1, 4], 'sqrt3': [1, 5],
+            '-1': [2, 1], '-sqrt3/2': [2, 2], 'sqrt3/2': [2, 4], '1': [2, 5],
+            '-1/sqrt2': [3, 1], '-1/2': [3, 2], '0': [3, 3], '1/2': [3, 4], '1/sqrt2': [3, 5]
+        };
+        const standardSecretPortrait = {
+            '-sqrt3': [1, '1 / span 6'], '-1/sqrt3': [1, '7 / span 6'], 'none': [1, '13 / span 6'], '1/sqrt3': [1, '19 / span 6'], 'sqrt3': [1, '25 / span 6'],
+            '-1': [2, '4 / span 6'], '0': [2, '13 / span 6'], '1': [2, '22 / span 6'],
+            '-sqrt3/2': [3, '1 / span 5'], '-1/sqrt2': [3, '6 / span 5'], '-1/2': [3, '11 / span 5'],
+            '1/2': [3, '16 / span 5'], '1/sqrt2': [3, '21 / span 5'], 'sqrt3/2': [3, '26 / span 5']
+        };
+        const standardWide = {
+            '-sqrt3': [1, 1], '-1/sqrt3': [1, 3], 'none': [1, 5], '1/sqrt3': [1, 7], 'sqrt3': [1, 9],
+            '-1': [2, 1], '-sqrt3/2': [2, 2], '-1/sqrt2': [2, 3], '-1/2': [2, 4], '0': [2, 5],
+            '1/2': [2, 6], '1/sqrt2': [2, 7], 'sqrt3/2': [2, 8], '1': [2, 9]
+        };
+        const addedValues = [
+            'sqrt5-1/4', 'sqrt5+1/4', '2-sqrt3', '2+sqrt3',
+            'sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt2-1', 'sqrt2+1',
+            'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'tan36', 'tan72',
+            'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4', 'tan54', 'tan18'
         ];
-        this.dom.paletteContainer.innerHTML = rows.map((row, index) => `
-            <div class="palette-row-block ${index >= 2 ? 'secret-palette-row' : ''}">
-                <div class="palette-row-title">${row.title}</div>
-                <div class="palette-row-grid ${row.className}" data-palette-row="${index}"></div>
-            </div>
-        `).join('');
+        const addedWideOrder = [
+            'sqrt5-1/4', 'sqrt5+1/4', 'sqrt6-sqrt2/4', 'sqrt6+sqrt2/4',
+            'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4',
+            '2-sqrt3', '2+sqrt3', 'sqrt2-1', 'sqrt2+1', 'tan36', 'tan72', 'tan54', 'tan18'
+        ];
+        const topValues = new Set(['sqrt5-1/4', 'sqrt5+1/4', '2-sqrt3', '2+sqrt3', 'sqrt2-1', 'sqrt2+1']);
+        const middleValues = new Set(['sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2']);
+        const compactValues = new Set(['sqrt6-sqrt2/4', 'sqrt6+sqrt2/4', 'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'tan18', 'tan54']);
+        const veryCompactValues = new Set(['tan72', 'tan36', 'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4']);
 
-        rows.forEach((row, index) => {
-            const rowEl = this.dom.paletteContainer.querySelector(`[data-palette-row="${index}"]`);
-            row.values.forEach(valueId => {
-                const btn = document.createElement('button');
-                btn.className = 'palette-btn';
-                btn.dataset.valueId = valueId;
-                btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
-                btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
-                rowEl.appendChild(btn);
+        this.dom.paletteContainer.innerHTML = '<div class="palette-standard-grid" aria-label="有名角の三角比の値"></div>';
+        if (this.mode === '1min-secret') {
+            this.dom.paletteContainer.insertAdjacentHTML('beforeend', '<div class="palette-secret-grid" aria-label="裏編で追加された三角比の値"></div>');
+        }
+        const standardGrid = this.dom.paletteContainer.querySelector('.palette-standard-grid');
+        const secretGrid = this.dom.paletteContainer.querySelector('.palette-secret-grid');
+        const appendButton = (grid, valueId, portrait, wide, priorityClass = 'priority-standard') => {
+            const btn = document.createElement('button');
+            const sizeClass = veryCompactValues.has(valueId) ? 'value-very-compact' : (compactValues.has(valueId) ? 'value-compact' : 'value-standard');
+            btn.className = `palette-btn ${priorityClass} ${sizeClass}`;
+            btn.dataset.valueId = valueId;
+            btn.style.setProperty('--palette-p-row', portrait[0]);
+            btn.style.setProperty('--palette-p-col', portrait[1]);
+            btn.style.setProperty('--palette-w-row', wide[0]);
+            btn.style.setProperty('--palette-w-col', wide[1]);
+            btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
+            btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
+            grid.appendChild(btn);
+        };
+
+        standardValues.forEach(valueId => appendButton(
+            standardGrid,
+            valueId,
+            this.mode === '1min-secret' ? standardSecretPortrait[valueId] : standardPortrait[valueId],
+            standardWide[valueId]
+        ));
+
+        if (secretGrid) {
+            addedValues.forEach((valueId, index) => {
+                const wideIndex = addedWideOrder.indexOf(valueId);
+                const priorityClass = topValues.has(valueId) ? 'priority-top' : (middleValues.has(valueId) ? 'priority-middle' : 'priority-hard');
+                appendButton(
+                    secretGrid,
+                    valueId,
+                    [Math.floor(index / 4) + 1, (index % 4) + 1],
+                    [Math.floor(wideIndex / 8) + 1, (wideIndex % 8) + 1],
+                    priorityClass
+                );
             });
-        });
+        }
     }
 
     startGlobalChallengeTimer() {
@@ -966,6 +1020,38 @@ class TrigQuizApp {
         }
         const challengeTimeText = document.getElementById('challenge-time-text');
         if (challengeTimeText) challengeTimeText.textContent = `${min}:${sec}`;
+    }
+
+    startCourseElapsedTimer() {
+        this.stopCourseElapsedTimer();
+        if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.hidden = false;
+        if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.hidden = false;
+        this.updateCourseElapsedDisplay();
+        this.courseElapsedInterval = setInterval(() => this.updateCourseElapsedDisplay(), 100);
+    }
+
+    stopCourseElapsedTimer() {
+        if (this.courseElapsedInterval) {
+            clearInterval(this.courseElapsedInterval);
+            this.courseElapsedInterval = null;
+        }
+        if (this.mode !== '20-challenge') {
+            if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.hidden = true;
+            if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.hidden = true;
+        }
+    }
+
+    updateCourseElapsedDisplay() {
+        if (this.mode !== '20-challenge' || !this.quizStartedAt) return;
+        const now = this.quizFinishedAt || Date.now();
+        const activePauseMs = this.isPaused && this.pauseStartedAt ? now - this.pauseStartedAt : 0;
+        const elapsedSeconds = Math.max(0, (now - this.quizStartedAt - (this.totalPausedMs || 0) - activePauseMs) / 1000);
+        const minutes = Math.floor(elapsedSeconds / 60);
+        const seconds = String(Math.floor(elapsedSeconds % 60)).padStart(2, '0');
+        const tenths = Math.floor((elapsedSeconds % 1) * 10);
+        const label = `⏱ ${minutes}:${seconds}.${tenths}`;
+        if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.textContent = label;
+        if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.textContent = label;
     }
 
     startTimer() {
@@ -1283,13 +1369,15 @@ class TrigQuizApp {
         this.stopTimer();
         this.stopGlobalChallengeTimer();
         this.quizFinishedAt = Date.now();
+        this.updateCourseElapsedDisplay();
+        this.stopCourseElapsedTimer();
         const total = this.history.length;
         const correctCount = this.history.filter(h => h.isCorrect).length;
         const accuracyRatio = total > 0 ? correctCount / total : 0;
-        this.recordPlantAttempt(completedMode, accuracyRatio, correctCount);
+        const growthEvent = this.recordPlantAttempt(completedMode, accuracyRatio, correctCount);
         this.clearAutoAdvance();
         this.audio.stopBgm();
-        this.savePersonalBest(completedMode);
+        const isNewBest = this.savePersonalBest(completedMode);
         this.showScreen('result');
         this.dom.resultScreen?.classList.toggle('two-minute-result', completedMode === '3min-challenge' || completedMode === '1min-secret');
 
@@ -1414,6 +1502,11 @@ class TrigQuizApp {
             this.audio.playFanfare();
             this.launchConfetti();
         }
+
+        const achievementEvents = [];
+        if (isNewBest) achievementEvents.push({ type: 'best' });
+        if (growthEvent) achievementEvents.push({ type: 'growth', ...growthEvent });
+        this.showAchievementSequence(achievementEvents);
     }
 
     startWrongReview() {
@@ -1475,18 +1568,32 @@ class TrigQuizApp {
     }
 
     recordPlantAttempt(mode = this.mode, accuracy = 0, correctCount = 0) {
-        if (this.attemptCounted || this.isReviewSession) return;
+        if (this.attemptCounted || this.isReviewSession) return null;
         const completedTwentyQuestions = mode === '20-challenge' && this.questionIndex >= this.totalQuestions;
         const completedTimedChallenge = (mode === '3min-challenge' || mode === '1min-secret') && this.globalChallengeEnded;
-        if (!completedTwentyQuestions && !completedTimedChallenge) return;
+        if (!completedTwentyQuestions && !completedTimedChallenge) return null;
         this.attemptCounted = true;
-        if (accuracy < 0.6) return;
-        if (mode === '1min-secret' && correctCount < 12) return;
+        if (accuracy < 0.6) return null;
+        if (mode === '1min-secret' && correctCount < 12) return null;
         const key = mode === '1min-secret'
             ? 'trig-quiz-plant-secret-attempts'
             : 'trig-quiz-plant-normal-attempts';
         const current = Number(localStorage.getItem(key) || 0);
-        localStorage.setItem(key, String(Math.min(50, current + 1)));
+        const next = Math.min(50, current + 1);
+        if (next === current) return null;
+        localStorage.setItem(key, String(next));
+        const oldStage = Math.min(10, Math.floor(current / 5));
+        const newStage = Math.min(10, Math.floor(next / 5));
+        // 回数は条件を満たすたびに加算するが、演出は見た目の段階が
+        // 実際に変わる5回ごとのタイミングだけに表示する。
+        if (newStage === oldStage) return null;
+        return {
+            secretMode: mode === '1min-secret',
+            oldCount: current,
+            newCount: next,
+            oldStage,
+            newStage
+        };
     }
 
     renderPersonalBestPlant(secretMode) {
@@ -1504,34 +1611,88 @@ class TrigQuizApp {
             <span class="plant-progress">${count}回<br><small>${stageLabels[stage]}</small></span>`;
     }
 
+    showAchievementSequence(events = []) {
+        this.achievementQueue = events.filter(Boolean);
+        if (!this.achievementQueue.length) {
+            if (this.dom.achievementOverlay) this.dom.achievementOverlay.hidden = true;
+            return;
+        }
+        this.showNextAchievement();
+    }
+
+    showNextAchievement() {
+        if (!this.dom.achievementOverlay) return;
+        const event = this.achievementQueue.shift();
+        if (!event) {
+            this.dom.achievementOverlay.hidden = true;
+            return;
+        }
+
+        this.dom.achievementOverlay.hidden = false;
+        this.dom.achievementCard.classList.toggle('is-best', event.type === 'best');
+        this.dom.achievementCard.classList.toggle('is-growth', event.type === 'growth');
+        this.dom.achievementBestImage.hidden = event.type !== 'best';
+        this.dom.achievementGrowthVisual.hidden = event.type !== 'growth';
+        this.dom.btnAchievementClose.textContent = this.achievementQueue.length ? '次の演出へ' : '結果を見る';
+
+        if (event.type === 'best') {
+            this.dom.achievementCopy.innerHTML = '<strong>自己ベストを更新しました！</strong><span>すばらしい記録です</span>';
+        } else {
+            const stageLabels = ['たね', '芽', '茎', '小さな葉', '葉', 'つぼみ', '育ったつぼみ', '花びら', '開花', 'もうすぐ満開', '満開'];
+            const normalCenters = [[97,309.5],[92,307],[86,304.5],[76.5,288],[67,277.5],[74.5,269],[72,266.5],[69.5,266],[64,268.5],[80.5,266],[80,260]];
+            const secretCenters = [[86.5,213.5],[82.5,208.5],[79,197.5],[70.5,186],[80,171],[69.5,168.5],[66,167],[64,164.5],[80,162.5],[80.5,158.5],[80,141]];
+            const [centerX, centerY] = (event.secretMode ? secretCenters : normalCenters)[event.newStage];
+            const plantX = `${(-centerX / 161 * 100).toFixed(2)}%`;
+            const plantY = `${(-centerY / 443 * 100).toFixed(2)}%`;
+            const stageChanged = event.newStage > event.oldStage;
+            const title = stageChanged
+                ? `花が「${stageLabels[event.newStage]}」に成長！`
+                : '花の成長ポイントが増えました！';
+            this.dom.achievementGrowthVisual.classList.toggle('secret-growth', event.secretMode);
+            this.dom.achievementGrowthVisual.innerHTML = `
+                <span class="plant-sprite-viewport" aria-hidden="true">
+                    <span class="plant-sprite-sheet" style="--plant-stage:${event.newStage};--plant-row:${event.secretMode ? 1 : 0};--plant-x:${plantX};--plant-y:${plantY}"></span>
+                </span>`;
+            this.dom.achievementCopy.innerHTML = `<strong>${title}</strong><span>${event.newCount}回　${stageLabels[event.newStage]}</span>`;
+        }
+
+        requestAnimationFrame(() => {
+            this.dom.achievementCard.classList.remove('achievement-pop');
+            requestAnimationFrame(() => this.dom.achievementCard.classList.add('achievement-pop'));
+        });
+        this.dom.btnAchievementClose.focus({ preventScroll: true });
+    }
+
     savePersonalBest(mode = this.mode) {
+        let isNewBest = false;
         const correctCount = this.history.filter(h => h.isCorrect).length;
         const totalAnswered = this.history.length;
         const accuracy = totalAnswered > 0 ? correctCount / totalAnswered : 0;
         const hasAllFunctions = ['sin', 'cos', 'tan'].every(func => this.targetFunctions.includes(func));
         if (!hasAllFunctions) {
             this.updatePersonalBestDisplay();
-            return;
+            return false;
         }
 
         if (mode === '20-challenge') {
             if (correctCount < 18) {
                 this.updatePersonalBestDisplay();
-                return;
+                return false;
             }
             const elapsed = this.getElapsedQuizTimeSeconds();
-            if (!elapsed || !Number.isFinite(elapsed)) return;
+            if (!elapsed || !Number.isFinite(elapsed)) return false;
             const key = 'trig-quiz-best-20-challenge';
             const correctKey = 'trig-quiz-best-20-correct';
             const current = Number(localStorage.getItem(key));
             if (!current || elapsed < current) {
                 localStorage.setItem(key, elapsed.toFixed(2));
                 localStorage.setItem(correctKey, String(correctCount));
+                isNewBest = true;
             }
         } else if (mode === '3min-challenge') {
             if (accuracy < 0.8) {
                 this.updatePersonalBestDisplay();
-                return;
+                return false;
             }
             const key = 'trig-quiz-best-2min-challenge';
             const totalKey = 'trig-quiz-best-2min-total';
@@ -1539,11 +1700,12 @@ class TrigQuizApp {
             if (correctCount > current) {
                 localStorage.setItem(key, String(correctCount));
                 localStorage.setItem(totalKey, String(totalAnswered));
+                isNewBest = true;
             }
         } else if (mode === '1min-secret') {
             if (accuracy < 0.8) {
                 this.updatePersonalBestDisplay();
-                return;
+                return false;
             }
             const key = 'trig-quiz-best-1min-secret';
             const totalKey = 'trig-quiz-best-1min-secret-total';
@@ -1551,9 +1713,11 @@ class TrigQuizApp {
             if (correctCount > current) {
                 localStorage.setItem(key, String(correctCount));
                 localStorage.setItem(totalKey, String(totalAnswered));
+                isNewBest = true;
             }
         }
         this.updatePersonalBestDisplay();
+        return isNewBest;
     }
 
     updatePersonalBestDisplay() {

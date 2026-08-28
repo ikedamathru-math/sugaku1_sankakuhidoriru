@@ -164,6 +164,301 @@ body.secret-mode-unlocked #quiz-screen .palette-btn .wide-fraction {
   }
 }
 
+/* ===== v100: image-matched value palettes ===== */
+#quiz-screen.palette-mode #palette-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 7px !important;
+  width: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 3px !important;
+  box-sizing: border-box !important;
+}
+#quiz-screen.palette-mode .palette-standard-grid,
+#quiz-screen.palette-mode .palette-secret-grid {
+  display: grid !important;
+  width: 100% !important;
+  gap: 6px !important;
+}
+#quiz-screen.palette-mode .palette-standard-grid {
+  grid-template-columns: repeat(9, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, minmax(0, auto)) !important;
+}
+#quiz-screen.palette-mode .palette-secret-grid {
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, minmax(0, auto)) !important;
+}
+#quiz-screen.palette-mode .palette-standard-grid .palette-btn,
+#quiz-screen.palette-mode .palette-secret-grid .palette-btn {
+  grid-row: var(--palette-w-row) !important;
+  grid-column: var(--palette-w-col) !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 56px !important;
+  padding: 4px 2px !important;
+  font-family: "Century", "Century Schoolbook", Georgia, serif !important;
+  font-size: clamp(.85rem, 1.65vw, 1.08rem) !important;
+  line-height: 1 !important;
+}
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-standard-grid .palette-btn,
+body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn {
+  min-height: 42px !important;
+}
+#quiz-screen.palette-mode .palette-secret-grid .palette-btn.value-compact {
+  font-size: clamp(.72rem, 1.4vw, .92rem) !important;
+}
+#quiz-screen.palette-mode .palette-secret-grid .palette-btn.value-very-compact {
+  font-size: clamp(.64rem, 1.25vw, .82rem) !important;
+}
+
+@media (max-width: 599px) and (orientation: portrait) {
+  #quiz-screen.palette-mode .palette-standard-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(3, minmax(0, auto)) !important;
+    gap: 7px 5px !important;
+  }
+  #quiz-screen.palette-mode .palette-secret-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(4, minmax(0, auto)) !important;
+    gap: 4px !important;
+  }
+  #quiz-screen.palette-mode .palette-standard-grid .palette-btn,
+  #quiz-screen.palette-mode .palette-secret-grid .palette-btn {
+    grid-row: var(--palette-p-row) !important;
+    grid-column: var(--palette-p-col) !important;
+  }
+  #quiz-screen.palette-mode .palette-standard-grid .palette-btn {
+    min-height: 62px !important;
+    font-size: clamp(.92rem, 4.2vw, 1.08rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode #palette-container {
+    gap: 5px !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-standard-grid .palette-btn,
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn {
+    min-height: 37px !important;
+    padding: 2px 1px !important;
+    font-size: clamp(.68rem, 2.8vw, .84rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn.value-compact {
+    font-size: clamp(.59rem, 2.45vw, .73rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn.value-very-compact {
+    font-size: clamp(.51rem, 2.1vw, .64rem) !important;
+  }
+}
+
+@media (min-width: 600px) and (max-height: 500px) and (orientation: landscape) {
+  #quiz-screen.palette-mode .palette-standard-grid .palette-btn {
+    min-height: 70px !important;
+    font-size: clamp(.9rem, 2vw, 1.15rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-standard-grid .palette-btn,
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn {
+    min-height: 38px !important;
+    padding: 2px 1px !important;
+  }
+}
+
+/* ===== v100: 20-question elapsed timer ===== */
+.course-elapsed-timer {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  min-height: 34px;
+  padding: 4px 12px;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  background: #fffaf0;
+  color: #9a3412;
+  font-family: "Century", "Century Schoolbook", Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, .16);
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.course-elapsed-timer[hidden] { display: none !important; }
+body.quiz-20-mode:has(#quiz-screen.active) .header-actions {
+  width: 100% !important;
+}
+body.quiz-20-mode:has(#quiz-screen.active) #course-elapsed-timer-header {
+  display: inline-flex;
+  margin-right: auto;
+}
+body.quiz-20-mode:has(#quiz-screen.active) #course-elapsed-timer-stop {
+  display: none;
+}
+
+@media (max-width: 599px) and (orientation: portrait) {
+  body.quiz-20-mode:has(#quiz-screen.active) .app-header {
+    display: flex !important;
+    min-height: 38px !important;
+    padding: 3px 5px !important;
+  }
+  body.quiz-20-mode:has(#quiz-screen.active) .header-actions {
+    display: flex !important;
+    justify-content: center !important;
+  }
+  body.quiz-20-mode:has(#quiz-screen.active) #btn-reference,
+  body.quiz-20-mode:has(#quiz-screen.active) #btn-sound,
+  body.quiz-20-mode:has(#quiz-screen.active) #btn-bgm-toggle,
+  body.quiz-20-mode:has(#quiz-screen.active) .mode-world-switcher {
+    display: none !important;
+  }
+  body.quiz-20-mode:has(#quiz-screen.active) #course-elapsed-timer-header {
+    min-width: 128px;
+    min-height: 30px;
+    height: 30px;
+    margin: 0 auto;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 600px) and (max-height: 500px) and (orientation: landscape) {
+  body.quiz-20-mode:has(#quiz-screen.active) #course-elapsed-timer-header {
+    display: none !important;
+  }
+  body.quiz-20-mode:has(#quiz-screen.active) #course-elapsed-timer-stop {
+    display: inline-flex !important;
+    min-width: 118px;
+    min-height: 34px;
+    font-size: 1.08rem;
+  }
+  body.quiz-20-mode:has(#quiz-screen.active) #stop-control-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+}
+
+/* ===== v100: personal-best and plant-growth celebrations ===== */
+.achievement-overlay[hidden] { display: none !important; }
+.achievement-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  background: rgba(8, 23, 55, .76);
+  backdrop-filter: blur(4px);
+}
+.achievement-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(92vw, 560px);
+  max-height: 94dvh;
+  padding: 12px;
+  overflow: hidden;
+  border: 4px solid #facc15;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .4), 0 0 32px rgba(250, 204, 21, .65);
+}
+.achievement-card.achievement-pop { animation: achievement-pop .55s cubic-bezier(.2, 1.35, .45, 1); }
+.achievement-best-image {
+  width: min(100%, 490px);
+  max-height: 70dvh;
+  object-fit: contain;
+  border-radius: 16px;
+}
+.achievement-best-image[hidden],
+.achievement-growth-visual[hidden] {
+  display: none !important;
+}
+.achievement-growth-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 36px rgba(245, 158, 11, .45);
+}
+.achievement-growth-visual.secret-growth {
+  background: linear-gradient(to bottom, #f0ecfc 0%, #e5dcfa 25%, #e5dcfa 100%);
+  box-shadow: 0 0 36px rgba(139, 92, 246, .45);
+}
+.achievement-growth-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border: 5px solid #f59e0b;
+  border-radius: 50%;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+.achievement-growth-visual.secret-growth::after {
+  border-color: #8b5cf6;
+}
+.achievement-growth-visual .plant-sprite-viewport {
+  width: 210px !important;
+  height: 210px !important;
+  overflow: hidden !important;
+}
+.achievement-growth-visual .plant-sprite-sheet {
+  top: 50% !important;
+  left: 50% !important;
+  width: 135px !important;
+  height: 371px !important;
+  transform: translate(var(--plant-x, -50%), var(--plant-y, -50%));
+  mix-blend-mode: multiply;
+  animation: plant-celebrate 1s ease-in-out infinite alternate;
+}
+.achievement-growth-visual.secret-growth .plant-sprite-sheet {
+  width: 120px !important;
+  height: 330px !important;
+  mix-blend-mode: normal;
+}
+.achievement-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #0f172a;
+  text-align: center;
+}
+.achievement-copy strong {
+  font-size: clamp(1.15rem, 4vw, 1.65rem);
+  color: #b45309;
+}
+.achievement-card.is-growth .achievement-copy strong { color: #7c3aed; }
+.achievement-copy span { font-weight: 800; }
+.achievement-close {
+  min-width: 170px;
+  min-height: 42px;
+  font-weight: 900;
+}
+@keyframes achievement-pop {
+  0% { opacity: 0; transform: scale(.55) translateY(28px); }
+  70% { opacity: 1; transform: scale(1.04) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes plant-celebrate {
+  from { transform: translate(var(--plant-x, -50%), calc(var(--plant-y, -50%) + 5px)) scale(.96); }
+  to { transform: translate(var(--plant-x, -50%), calc(var(--plant-y, -50%) - 5px)) scale(1.04); }
+}
+@media (max-width: 599px) {
+  .achievement-card { width: min(94vw, 410px); padding: 9px; gap: 7px; }
+  .achievement-best-image { max-height: 62dvh; }
+  .achievement-growth-visual { width: 190px; height: 190px; }
+  .achievement-growth-visual .plant-sprite-viewport { width: 168px !important; height: 168px !important; }
+  .achievement-growth-visual .plant-sprite-sheet { top: 50% !important; left: 50% !important; width: 108px !important; height: 297px !important; }
+  .achievement-growth-visual.secret-growth .plant-sprite-sheet { top: 50% !important; left: 50% !important; width: 96px !important; height: 264px !important; }
+  .achievement-close { min-height: 38px; }
+}
+
 body:has(#start-screen.active) #start-screen,
 body:has(#start-screen.active) #start-screen .settings-card {
   width: 100% !important;
@@ -1792,4 +2087,129 @@ body.secret-mode-unlocked:has(#start-screen.active) #start-screen .mode-tab:not(
   #start-screen .personal-best-plant.secret-plant .plant-progress {
     margin-top: 1.5px;
   }
+}
+
+/* ===== v102: image-matched palette order, sizing, and secret difficulty colors ===== */
+#quiz-screen.palette-mode .palette-secret-grid .priority-top {
+  border-color: #f59e0b !important;
+  background: #fffbeb !important;
+}
+#quiz-screen.palette-mode .palette-secret-grid .priority-middle {
+  border-color: #8b5cf6 !important;
+  background: #f5f3ff !important;
+}
+#quiz-screen.palette-mode .palette-secret-grid .priority-hard {
+  border-color: #94a3b8 !important;
+  background: #f8fafc !important;
+}
+
+/* 裏三角比確認表はスマホを含め、数式・数字をCenturyで統一する。 */
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .secret-memory-table,
+body.secret-mode-unlocked #reference-screen.secret-reference-mode .secret-memory-table * {
+  font-family: "Century", "Century Schoolbook", serif !important;
+  font-style: normal !important;
+}
+
+@media (max-width: 599px) and (orientation: portrait) {
+  #quiz-screen.palette-mode .palette-standard-grid .palette-btn {
+    min-height: 68px !important;
+    font-size: clamp(1rem, 4.6vw, 1.18rem) !important;
+  }
+  #quiz-screen.palette-mode .palette-standard-grid .palette-btn[data-value-id="none"] {
+    align-self: center !important;
+    height: 68px !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-standard-grid {
+    grid-template-columns: repeat(30, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(3, minmax(0, auto)) !important;
+    gap: 5px 0 !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-standard-grid .palette-btn {
+    min-height: 48px !important;
+    height: auto !important;
+    width: calc(100% - 4px) !important;
+    justify-self: center !important;
+    padding: 3px 1px !important;
+    font-size: clamp(.88rem, 3.7vw, 1.02rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid {
+    gap: 5px !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn {
+    min-height: 50px !important;
+    padding: 3px 1px !important;
+    font-size: clamp(.82rem, 3.4vw, 1rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn.value-compact {
+    font-size: clamp(.71rem, 2.95vw, .86rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn.value-very-compact {
+    font-size: clamp(.63rem, 2.65vw, .76rem) !important;
+  }
+
+  /* 基本編の中央列は「なし」の直下へ0を少し近づける。 */
+  body:not(.secret-mode-unlocked) #quiz-screen.palette-mode .palette-standard-grid .palette-btn[data-value-id="0"] {
+    transform: translateY(-40px) !important;
+  }
+
+  /* 20問コースの経過時間は上部左側に配置する。 */
+  body.quiz-20-mode:has(#quiz-screen.active) .header-actions {
+    justify-content: flex-start !important;
+  }
+  body.quiz-20-mode:has(#quiz-screen.active) #course-elapsed-timer-header {
+    margin: 0 auto 0 4px !important;
+  }
+}
+
+@media (min-width: 600px) and (max-height: 500px) and (orientation: landscape) {
+  #quiz-screen.palette-mode .palette-standard-grid .palette-btn {
+    min-height: 70px !important;
+    font-size: clamp(1rem, 2.15vw, 1.22rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-standard-grid .palette-btn,
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn {
+    min-height: 44px !important;
+    padding: 3px 2px !important;
+    font-size: clamp(.9rem, 1.9vw, 1.05rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn.value-compact {
+    font-size: clamp(.78rem, 1.65vw, .93rem) !important;
+  }
+  body.secret-mode-unlocked #quiz-screen.palette-mode .palette-secret-grid .palette-btn.value-very-compact {
+    font-size: clamp(.69rem, 1.48vw, .83rem) !important;
+  }
+}
+
+
+/* ===== v117: centered transparent plant growth sprites (normal + secret) ===== */
+.personal-best-plant .plant-sprite-viewport,
+#start-screen .plant-sprite-viewport,
+.achievement-growth-visual .plant-sprite-viewport {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.plant-sprite-sheet,
+#start-screen .plant-sprite-sheet,
+.secret-plant .plant-sprite-sheet,
+.achievement-growth-visual .plant-sprite-sheet,
+.achievement-growth-visual.secret-growth .plant-sprite-sheet {
+  position: absolute !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-image: url('../assets/plant-growth-sprites-v3.png') !important;
+  background-repeat: no-repeat !important;
+  background-size: 1100% 200% !important;
+  background-position: calc(var(--plant-stage) * 10%) calc(var(--plant-row) * 100%) !important;
+  transform: none !important;
+  transform-origin: center center !important;
+  mix-blend-mode: normal !important;
+}
+
+.achievement-growth-visual .plant-sprite-sheet,
+.achievement-growth-visual.secret-growth .plant-sprite-sheet {
+  animation: plant-celebrate 1s ease-in-out infinite alternate !important;
 }
