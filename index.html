@@ -16,45 +16,45 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Main Style -->
-<link href="css/style.css?v=125" rel="stylesheet"/>
-<link href="css/height-compact.css?v=125" rel="stylesheet"/>
+<link href="css/style.css?v=126" rel="stylesheet"/>
+<link href="css/height-compact.css?v=126" rel="stylesheet"/>
 </head>
 <body>
 <!-- Header HUD -->
 <header class="app-header">
 <div class="header-actions">
-<span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-header" hidden id="course-elapsed-timer-header">⏱ 0:00.0</span>
+<span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-header" hidden="" id="course-elapsed-timer-header">⏱ 0:00.0</span>
 <button class="btn" id="btn-reference" title="三角比確認表">確認表</button>
 <button class="btn btn-palette-settings" id="btn-palette-settings" title="値パレットの配置を設定" type="button">パレット設定</button>
-<span class="mode-world-switcher" id="mode-world-switcher" hidden>
-<button class="btn mode-world-btn" id="btn-normal-mode" type="button" title="通常版へ">表版</button>
-<button class="btn mode-world-btn" id="btn-secret-mode" type="button" title="裏版へ">裏版</button>
+<span class="mode-world-switcher" hidden="" id="mode-world-switcher">
+<button class="btn mode-world-btn" id="btn-normal-mode" title="通常版へ" type="button">表版</button>
+<button class="btn mode-world-btn" id="btn-secret-mode" title="裏版へ" type="button">裏版</button>
 </span>
 <button class="btn active" id="btn-sound" title="操作音オン・オフ">操作音 ON</button>
 <button class="btn" id="btn-bgm-toggle" title="効果音オン・オフ">効果音 OFF</button>
 </div>
 </header>
-<aside aria-label="ホーム画面への追加" class="install-choice" hidden id="install-choice">
+<aside aria-label="ホーム画面への追加" class="install-choice" hidden="" id="install-choice">
 <div class="install-choice-text"><strong>ホーム画面から起動しますか？</strong><span>アドレスバーなしで広く使えます</span></div>
 <div class="install-choice-actions">
 <button class="btn install-choice-primary" id="btn-install-app" type="button">ホーム画面に追加</button>
 <button class="btn" id="btn-use-browser" type="button">このまま使う</button>
 </div>
 </aside>
-<div aria-labelledby="install-guide-title" aria-modal="true" class="install-guide-overlay" hidden id="install-guide-overlay" role="dialog">
+<div aria-labelledby="install-guide-title" aria-modal="true" class="install-guide-overlay" hidden="" id="install-guide-overlay" role="dialog">
 <div class="install-guide-card">
-<div class="install-guide-symbol" id="install-guide-symbol" aria-hidden="true">＋</div>
+<div aria-hidden="true" class="install-guide-symbol" id="install-guide-symbol">＋</div>
 <h2 id="install-guide-title">ホーム画面への追加方法</h2>
 <p class="install-guide-lead" id="install-guide-lead"></p>
 <ol class="install-guide-steps" id="install-guide-steps"></ol>
 <p class="install-guide-note" id="install-guide-note"></p>
 <div class="install-guide-actions">
-<button class="btn install-choice-primary" hidden id="btn-guide-install" type="button">インストール画面を開く</button>
+<button class="btn install-choice-primary" hidden="" id="btn-guide-install" type="button">インストール画面を開く</button>
 <button class="btn" id="btn-guide-close" type="button">今回は追加しない</button>
 </div>
 </div>
 </div>
-<div aria-labelledby="palette-settings-title" aria-modal="true" class="palette-settings-overlay" hidden id="palette-settings-overlay" role="dialog">
+<div aria-labelledby="palette-settings-title" aria-modal="true" class="palette-settings-overlay" hidden="" id="palette-settings-overlay" role="dialog">
 <div class="palette-settings-card">
 <div class="palette-settings-header">
 <div>
@@ -91,7 +91,7 @@
 <span class="mode-name">2分チャレンジ</span>
 <span class="mode-desc">2分間で何問正解できるか</span>
 </div>
-<div class="mode-tab secret-mode-option" data-mode="1min-secret" hidden>
+<div class="mode-tab secret-mode-option" data-mode="1min-secret" hidden="">
 <span class="mode-name">1分チャレンジ</span>
 <span class="mode-desc">頻出角の完全攻略</span>
 </div>
@@ -133,7 +133,7 @@
 <div class="settings-group" id="time-limit-group">
 <div class="settings-section-title">時間(１問)</div>
 <div class="options-group">
-<label class="pill-option secret-time-option" hidden><input name="time-limit" type="radio" value="2"/><span class="pill-label">2秒</span></label>
+<label class="pill-option secret-time-option" hidden=""><input name="time-limit" type="radio" value="2"/><span class="pill-label">2秒</span></label>
 <label class="pill-option"><input name="time-limit" type="radio" value="3"/><span class="pill-label">3秒</span></label>
 <label class="pill-option"><input name="time-limit" type="radio" value="5"/><span class="pill-label">5秒</span></label>
 <label class="pill-option"><input name="time-limit" type="radio" value="10"/><span class="pill-label">10秒</span></label>
@@ -157,7 +157,7 @@
 <div class="pb-value" id="personal-best-detail">---問</div>
 <div class="pb-rank-mark" id="personal-best-2min-rank-mark">—</div>
 </div></div>
-<div class="personal-best-entry personal-best-entry-secret" hidden>
+<div class="personal-best-entry personal-best-entry-secret" hidden="">
 <div class="pb-course-name">裏・1分チャレンジ</div>
 <div class="pb-result-line">
 <div class="pb-value" id="personal-best-secret-detail">---問</div>
@@ -180,7 +180,7 @@
 <div class="reference-main-layout"><div class="reference-circle-stage">
 <div class="unit-circle-wrapper reference-guide-circle" id="reference-guide-circle"></div>
 </div><div aria-label="三角比の見出し" class="reference-side-headings"><div class="reference-side-heading side-sin"><div class="side-heading-top"><span class="side-heading-func">sin</span><span class="side-heading-angle" id="reference-side-sin-angle">45°</span></div><div class="side-heading-value" id="reference-side-sin-value">—</div></div><div class="reference-side-heading side-cos"><div class="side-heading-top"><span class="side-heading-func">cos</span><span class="side-heading-angle" id="reference-side-cos-angle">45°</span></div><div class="side-heading-value" id="reference-side-cos-value">—</div></div><div class="reference-side-heading side-tan"><div class="side-heading-top"><span class="side-heading-func">tan</span><span class="side-heading-angle" id="reference-side-tan-angle">45°</span></div><div class="side-heading-value" id="reference-side-tan-value">—</div></div></div></div>
-<div class="secret-memory-table" id="secret-memory-table" hidden></div>
+<div class="secret-memory-table" hidden="" id="secret-memory-table"></div>
 </div>
 </section>
 <section class="screen-view" id="quiz-screen">
@@ -203,9 +203,9 @@
 <div class="question-display">
 <span class="q-func func-sin" id="question-func">sin</span>
 <span class="q-angle" id="question-angle">135°</span>
-<span class="visual-hourglass visual-clock-timer" id="visual-timer" role="img" aria-label="残り時間">
-<span class="visual-clock-face" aria-hidden="true"><span class="visual-clock-hand"></span></span>
-<span class="challenge-time-text" id="challenge-time-text" aria-hidden="true"></span>
+<span aria-label="残り時間" class="visual-hourglass visual-clock-timer" id="visual-timer" role="img">
+<span aria-hidden="true" class="visual-clock-face"><span class="visual-clock-hand"></span></span>
+<span aria-hidden="true" class="challenge-time-text" id="challenge-time-text"></span>
 </span>
 <span class="quiz-progress-text" id="quiz-progress-text">１問目</span>
 </div><div class="quiz-problem-layout"><div class="quiz-left-panel"><div class="circle-answer-section" id="circle-answer-section">
@@ -223,13 +223,9 @@
 </div></div></div>
 <!-- Fixed Point P cheer navigator -->
 <!-- Unit Circle answer -->
-
 <!-- 4-Choice Buttons Grid -->
-
 <!-- Palette answer -->
-
 <!-- 2-Row Palette Buttons Container -->
-
 <!-- Step-by-Step Mathematical Explanation -->
 <div class="explanation-card" id="explanation-card">
 <div id="explanation-text"></div>
@@ -238,7 +234,7 @@
 <div class="quiz-footer">
 <div class="tap-next-hint" id="tap-next-hint" style="display:none;">画面をタップして次の問題へ</div>
 <div class="stop-control-wrap" id="stop-control-wrap">
-<span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-stop" hidden id="course-elapsed-timer-stop">⏱ 0:00.0</span>
+<span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-stop" hidden="" id="course-elapsed-timer-stop">⏱ 0:00.0</span>
 <button class="btn btn-stop" id="btn-quit-quiz">■ ストップ</button>
 <div class="stop-choice-buttons" id="stop-choice-buttons" style="display:none;">
 <button class="btn btn-primary" id="btn-stop-resume">画面タップで再開</button>
@@ -256,7 +252,10 @@
              ========================================== -->
 <section class="screen-view" id="result-screen">
 <div class="result-card">
-<div class="rank-badge rank-s" id="result-rank-badge">S</div>
+<div class="result-actions">
+<button class="btn btn-primary btn-large" id="btn-restart-quiz">もう一度挑戦</button>
+<button class="btn btn-large" id="btn-back-to-home">ホームに戻る</button>
+</div><div class="rank-badge rank-s" id="result-rank-badge">S</div>
 <h2>クイズ結果発表！</h2>
 <div class="result-stats-grid">
 <div class="result-stat-item">
@@ -283,10 +282,7 @@
 <!-- Dynamically populated -->
 </div>
 <!-- Leaderboard -->
-<div class="result-actions">
-<button class="btn btn-primary btn-large" id="btn-restart-quiz">もう一度挑戦</button>
-<button class="btn btn-large" id="btn-back-to-home">ホームに戻る</button>
-</div>
+
 </div>
 </section>
 </main>
@@ -329,10 +325,10 @@
 </div>
 </div>
 </div>
-<div aria-live="assertive" aria-modal="true" class="achievement-overlay" hidden id="achievement-overlay" role="dialog">
+<div aria-live="assertive" aria-modal="true" class="achievement-overlay" hidden="" id="achievement-overlay" role="dialog">
 <div class="achievement-card" id="achievement-card">
-<img alt="自己ベスト更新を祝う点P君" class="achievement-best-image" hidden id="achievement-best-image" src="assets/best-score-popup.png"/>
-<div class="achievement-growth-visual" hidden id="achievement-growth-visual"></div>
+<img alt="自己ベスト更新を祝う点P君" class="achievement-best-image" hidden="" id="achievement-best-image" src="assets/best-score-popup.png"/>
+<div class="achievement-growth-visual" hidden="" id="achievement-growth-visual"></div>
 <div class="achievement-copy" id="achievement-copy"></div>
 <button class="btn btn-primary achievement-close" id="btn-achievement-close" type="button">結果を見る</button>
 </div>
@@ -340,10 +336,10 @@
 <!-- Victory Confetti Canvas -->
 <canvas id="confetti-canvas"></canvas>
 <!-- Scripts -->
-<script src="js/trig-data.js?v=125"></script>
-<script src="js/audio.js?v=125"></script>
-<script src="js/unit-circle.js?v=125"></script>
-<script src="js/pwa.js?v=125"></script>
-<script src="js/app.js?v=125"></script>
+<script src="js/trig-data.js?v=126"></script>
+<script src="js/audio.js?v=126"></script>
+<script src="js/unit-circle.js?v=126"></script>
+<script src="js/pwa.js?v=126"></script>
+<script src="js/app.js?v=126"></script>
 </body>
 </html>
