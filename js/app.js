@@ -1692,7 +1692,7 @@ class TrigQuizApp {
         const resultTitle = this.dom.resultScreen?.querySelector('h2');
         if (resultTitle) resultTitle.textContent = completedMode === '1min-secret'
             ? '裏・1分チャレンジ結果'
-            : (completedMode === '3min-challenge' ? '2分チャレンジ結果' : 'クイズ結果発表！');
+            : (completedMode === '3min-challenge' ? '2分チャレンジ結果' : '結果発表！');
         const scoreLabel = this.dom.resultScoreText?.parentElement?.querySelector('.result-stat-label');
         if (scoreLabel) scoreLabel.textContent = completedMode === '1min-secret'
             ? '1分間の正解数'
@@ -1954,7 +1954,7 @@ class TrigQuizApp {
             const stageLabels = ['たね', '芽', '茎', '小さな葉', '葉', 'つぼみ', '育ったつぼみ', '花びら', '開花', 'もうすぐ満開', '満開'];
             const stageChanged = event.newStage > event.oldStage;
             const title = stageChanged
-                ? `花が「${stageLabels[event.newStage]}」に成長！`
+                ? `「${stageLabels[event.newStage]}」に成長！`
                 : '花の成長ポイントが増えました！';
             this.dom.achievementGrowthVisual.classList.toggle('secret-growth', event.secretMode);
             this.dom.achievementGrowthVisual.innerHTML = `
