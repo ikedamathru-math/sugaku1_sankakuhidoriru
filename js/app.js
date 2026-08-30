@@ -57,9 +57,6 @@ class TrigQuizApp {
         this.score = 0;
         this.streak = 0;
         this.maxStreak = 0;
-        this.stopPointPMeteorStream?.();
-        this._bestChaseShown = new Set();
-        this._awakeningAnnounced = false;
         this.lives = 3;
         this.isAnswered = false;
         this.history = []; // Array of { angle, func, selected, correct, isCorrect, timeTakenMs }
@@ -699,9 +696,6 @@ class TrigQuizApp {
         this.score = 0;
         this.streak = 0;
         this.maxStreak = 0;
-        this.setSecretAwakening(false);
-        this._bestChaseShown = new Set();
-        this._awakeningAnnounced = false;
         this.lives = 3;
         this.history = [];
         this.usedQuestionKeys = { standard: new Set(), secret: new Set() };
@@ -761,13 +755,6 @@ class TrigQuizApp {
         }
 
         this.showScreen('quiz');
-
-        // テロップ帯を最初から確保し、コンボ表示時に出題枠が動かないようにする。
-        const engagementPopup = this.ensureEngagementUi();
-        if (engagementPopup) {
-            engagementPopup.textContent = '';
-            engagementPopup.classList.remove('active', 'new-best', 'combo-pop', 'combo-pop-strong');
-        }
 
         // スマホでトップ画面下部のスタートボタンを押しても、
         // クイズ開始時には必ず三角比の問題が見える位置へ戻す。
@@ -1524,23 +1511,9 @@ class TrigQuizApp {
             const streakBonus = this.streak * 20;
             this.score += 100 + speedBonus + streakBonus;
 
-            if ([3, 5, 7].includes(this.streak) || this.streak >= 10) this.showComboAnimation(this.streak);
-
-            const justAwakened = this.mode === '1min-secret' && this.streak === 10;
-            if (this.mode === '1min-secret' && this.streak >= 10) this.setSecretAwakening(true);
-
-            this.updateBestChaseFeedback();
-
-            // 正解音は毎問共通。コンボは点P君の声で知らせる。
             this.audio.playCorrect();
-            this.audio.playComboVoice(this.streak);
-
-            // 裏版10連続時の特別感は、声＋流れ星＋発光で見せる。
-            // 「覚醒」という文字や追加の覚醒ボイスは出さない。
         } else {
             this.streak = 0;
-            this.setSecretAwakening(false);
-            this.stopPointPMeteorStream();
             this.audio.playIncorrect();
             if (this.mode === 'endless') {
                 this.lives--;
@@ -1597,8 +1570,6 @@ class TrigQuizApp {
         });
 
         this.streak = 0;
-        this.setSecretAwakening(false);
-        this.stopPointPMeteorStream();
         this.audio.playIncorrect();
         if (this.mode === 'endless') { this.lives--; this.updateLivesDisplay(); }
 
@@ -1640,203 +1611,15 @@ class TrigQuizApp {
         this.awaitingTapAdvance = true;
     }
 
-
-
-    ensureEngagementUi() {
-        let rail = document.getElementById('engagement-rail');
-        if (!rail) {
-            rail = document.createElement('div');
-            rail.id = 'engagement-rail';
-            rail.className = 'engagement-rail';
-            rail.setAttribute('aria-live', 'polite');
-            const popup = document.createElement('div');
-            popup.id = 'engagement-popup';
-            popup.className = 'engagement-popup';
-            rail.appendChild(popup);
-            const hud = this.dom.quizScreen?.querySelector('.quiz-hud');
-            if (hud?.parentNode) hud.parentNode.insertBefore(rail, hud.nextSibling);
-            else this.dom.quizScreen?.prepend(rail);
-        }
-        return document.getElementById('engagement-popup');
-    }
-
-    showEngagementTelop(message, variant = '', duration = 1250) {
-        if (!message) return;
-        const badge = this.ensureEngagementUi();
-        if (!badge) return;
-        badge.textContent = message;
-        badge.classList.remove('active', 'new-best', 'combo-pop', 'combo-pop-strong');
-        if (variant) badge.classList.add(variant);
-        void badge.offsetWidth;
-        badge.classList.add('active');
-        clearTimeout(this._bestChaseTimer);
-        this._bestChaseTimer = setTimeout(() => badge.classList.remove('active'), duration);
-    }
-
-    showBestChaseMessage(message, key) {
-        if (!message) return;
-        if (!this._bestChaseShown) this._bestChaseShown = new Set();
-        if (key && this._bestChaseShown.has(key)) return;
-        if (key) this._bestChaseShown.add(key);
-        this.showEngagementTelop(message, message.includes('NEW BEST') ? 'new-best' : '', 1250);
-    }
-
-    updateBestChaseFeedback() {
-
-        const correctCount = this.history.filter(h => h.isCorrect).length;
-
-        if (this.mode === '3min-challenge') {
-            const best = Number(localStorage.getItem('trig-quiz-best-2min-challenge') || 0);
-            if (!best) return;
-            if (correctCount === Math.max(1, best - 3)) this.showBestChaseMessage('BESTまであと3！', '2min-3');
-            if (correctCount === Math.max(1, best - 1)) this.showBestChaseMessage('BESTまであと1！', '2min-1');
-            if (correctCount === best + 1) this.showBestChaseMessage('NEW BEST!', '2min-new');
-            return;
-        }
-
-        if (this.mode === '1min-secret') {
-            const best = Number(localStorage.getItem('trig-quiz-best-1min-secret') || 0);
-            if (!best) return;
-            if (correctCount === Math.max(1, best - 3)) this.showBestChaseMessage('BESTまであと3！', 'secret-3');
-            if (correctCount === Math.max(1, best - 1)) this.showBestChaseMessage('BESTまであと1！', 'secret-1');
-            if (correctCount === best + 1) this.showBestChaseMessage('NEW BEST!', 'secret-new');
-            return;
-        }
-
-        if (this.mode === '20-challenge') {
-            const bestTime = Number(localStorage.getItem('trig-quiz-best-20-challenge') || 0);
-            if (!bestTime) return;
-            const elapsed = this.getElapsedQuizTimeSeconds();
-            if (correctCount === 15 && elapsed > 0 && elapsed < bestTime * 0.75) {
-                this.showBestChaseMessage('BEST更新ペース！', '20-pace');
-            }
-            if (correctCount === 20 && elapsed > 0 && elapsed < bestTime) {
-                this.showBestChaseMessage('NEW BEST!', '20-new');
-            }
-        }
-    }
-
-    setSecretAwakening(enabled) {
-        const on = Boolean(enabled && this.mode === '1min-secret');
-        this.dom.quizScreen?.classList.toggle('secret-awakened', on);
-        document.body.classList.toggle('secret-awakened-play', on);
-    }
-
-    getPointPMeteorAssets() {
-        return [
-            'assets/point-p-meteors/meteor-1.png',
-            'assets/point-p-meteors/meteor-2.png',
-            'assets/point-p-meteors/meteor-3.png',
-            'assets/point-p-meteors/meteor-4.png',
-            'assets/point-p-meteors/meteor-5.png',
-            'assets/point-p-meteors/meteor-6.png',
-            'assets/point-p-meteors/meteor-7.png'
-        ];
-    }
-
-    launchPointPMeteors(count = 2, strong = false) {
-        if (!this.dom.quizScreen) return;
-        let layer = document.getElementById('point-p-meteor-layer');
-        if (!layer) {
-            layer = document.createElement('div');
-            layer.id = 'point-p-meteor-layer';
-            layer.className = 'point-p-meteor-layer';
-            this.dom.quizScreen.appendChild(layer);
-        }
-        const actualCount = Math.max(1, count);
-        const assetPool = this.getPointPMeteorAssets();
-        const shuffledAssets = [...assetPool].sort(() => Math.random() - 0.5);
-        for (let i = 0; i < actualCount; i++) {
-            const meteor = document.createElement('div');
-            meteor.className = `point-p-meteor${strong ? ' strong' : ''}`;
-            const img = document.createElement('img');
-            img.src = shuffledAssets[i % shuffledAssets.length];
-            img.alt = '';
-            img.setAttribute('aria-hidden', 'true');
-            meteor.appendChild(img);
-            meteor.style.setProperty('--meteor-delay', `${(i * (strong ? 0.24 : 0.34) + Math.random() * 0.22).toFixed(2)}s`);
-            meteor.style.setProperty('--meteor-y', `${strong ? (20 + Math.random() * 54) : (28 + Math.random() * 42)}%`);
-            meteor.style.setProperty('--meteor-scale', `${(strong ? 1.30 : 1.16) + Math.random() * 0.18}`);
-            meteor.style.setProperty('--meteor-drift', `${(-18 + Math.random() * 36).toFixed(0)}px`);
-            meteor.style.setProperty('--meteor-tilt', `${(-4 + Math.random() * 9).toFixed(0)}deg`);
-            layer.appendChild(meteor);
-            const totalDuration = strong ? 5050 : 4450;
-            setTimeout(() => meteor.remove(), totalDuration);
-        }
-    }
-
-    startPointPMeteorStream(level = 'light') {
-        const streamLevel = level === 'strong' ? 'strong' : 'light';
-        if (this._pointPMeteorStreamLevel === streamLevel && this._pointPMeteorStreamActive) return;
-        this.stopPointPMeteorStream();
-        this._pointPMeteorStreamActive = true;
-        this._pointPMeteorStreamLevel = streamLevel;
-        const spawn = () => {
-            if (!this._pointPMeteorStreamActive) return;
-            if (streamLevel === 'strong') {
-                this.launchPointPMeteors(5 + Math.floor(Math.random() * 3), true);
-            } else {
-                this.launchPointPMeteors(1 + Math.floor(Math.random() * 2), false);
-            }
-        };
-        spawn();
-        this._pointPMeteorStreamTimer = setInterval(spawn, streamLevel === 'strong' ? 1900 : 2300);
-    }
-
-    stopPointPMeteorStream() {
-        this._pointPMeteorStreamActive = false;
-        this._pointPMeteorStreamLevel = '';
-        if (this._pointPMeteorStreamTimer) {
-            clearInterval(this._pointPMeteorStreamTimer);
-            this._pointPMeteorStreamTimer = null;
-        }
-        const layer = document.getElementById('point-p-meteor-layer');
-        if (layer) layer.innerHTML = '';
-    }
-
-    pulseUnitCircle(strong = false) {
-        const circle = document.getElementById('quiz-unit-circle');
-        if (!circle) return;
-        circle.classList.remove('combo-ring-pulse', 'combo-ring-pulse-strong');
-        void circle.offsetWidth;
-        circle.classList.add(strong ? 'combo-ring-pulse-strong' : 'combo-ring-pulse');
-        setTimeout(() => circle.classList.remove('combo-ring-pulse', 'combo-ring-pulse-strong'), strong ? 1100 : 650);
-    }
-
     showComboAnimation(combo) {
-        if (combo >= 16) {
-            this.showEngagementTelop(`${combo} COMBO!`, 'combo-pop-strong', 1200);
-            this.startPointPMeteorStream('strong');
-            return;
-        }
-        if (combo >= 11) {
-            this.showEngagementTelop(`${combo} COMBO!`, 'combo-pop-strong', 1150);
-            this.startPointPMeteorStream('strong');
-            return;
-        }
-        if (combo === 10) {
-            this.showEngagementTelop('10 COMBO!', 'combo-pop-strong', 1200);
-            this.pulseUnitCircle(true);
-            this.startPointPMeteorStream('strong');
-            return;
-        }
-        if (combo === 7) {
-            this.showEngagementTelop('7 COMBO!', 'combo-pop', 1050);
-            this.pulseUnitCircle(false);
-            this.startPointPMeteorStream('light');
-            return;
-        }
-        if (combo === 5) {
-            this.showEngagementTelop('5 COMBO!', 'combo-pop', 1000);
-            this.pulseUnitCircle(false);
-            return;
-        }
-        if (combo === 3) {
-            this.showEngagementTelop('3 COMBO!', 'combo-pop', 950);
-        }
+        this.dom.comboBadge.textContent = `${combo} COMBO!! 🔥`;
+        this.dom.comboBadge.classList.add('active');
+        setTimeout(() => {
+            this.dom.comboBadge.classList.remove('active');
+        }, 1200);
     }
 
-    // ========================================== 
+    // ==========================================
     // Quiz Result Screen
     // ==========================================
 
@@ -1848,8 +1631,6 @@ class TrigQuizApp {
     }
 
     finishQuiz() {
-        this.setSecretAwakening(false);
-        this.stopPointPMeteorStream();
         // 保存処理中に裏モードが解放されても、終了したクイズのモードは変えない。
         const completedMode = this.mode;
         this.lastCompletedSettings = {
@@ -2427,21 +2208,6 @@ class TrigQuizApp {
             this.timeLimitSetting = normalSettings?.timeLimitSetting ?? 0;
             this.syncSelectionCards();
             this.buildReferenceTable();
-            if (this.referenceGuideVisualizer) {
-                const normalAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                    ? this.getActiveAnglePool()
-                    : window.ANGLES;
-                this.referenceGuideVisualizer.setAngles(normalAngles);
-                const normalDefault = normalAngles.includes(45) ? 45 : normalAngles[0];
-                this.referenceGuideAngle = normalDefault;
-                this.updateReferenceGuide(normalDefault);
-            }
-            if (this.referenceVisualizer) {
-                const normalAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                    ? this.getActiveAnglePool()
-                    : window.ANGLES;
-                this.referenceVisualizer.setAngles(normalAngles);
-            }
             this.renderPersonalBestPlant(false);
             if (this.dom.personalBestNote) this.dom.personalBestNote.textContent = '※全三角比選択。20問は18問以上、2分は正答率80％以上のみ反映';
             return;
@@ -2469,21 +2235,6 @@ class TrigQuizApp {
         if (timeNone) timeNone.checked = true;
         this.syncSelectionCards();
         this.buildReferenceTable();
-        if (this.referenceGuideVisualizer) {
-            const secretAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                ? this.getActiveAnglePool()
-                : window.SECRET_ANGLES;
-            this.referenceGuideVisualizer.setAngles(secretAngles);
-            const secretDefault = secretAngles[0];
-            this.referenceGuideAngle = secretDefault;
-            this.updateReferenceGuide(secretDefault);
-        }
-        if (this.referenceVisualizer) {
-            const secretAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                ? this.getActiveAnglePool()
-                : window.SECRET_ANGLES;
-            this.referenceVisualizer.setAngles(secretAngles);
-        }
         this.renderPersonalBestPlant(true);
         if (this.dom.personalBestNote) this.dom.personalBestNote.textContent = '※正答率80％以上の記録のみ反映';
     }
@@ -2552,13 +2303,10 @@ class TrigQuizApp {
     showReferenceModal() {
         this.showScreen('reference');
         this.initReferenceGuide();
-        if (this.referenceGuideVisualizer) {
-            const refAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                ? this.getActiveAnglePool()
-                : (this.secretModeActive ? window.SECRET_ANGLES : window.ANGLES);
-            this.referenceGuideVisualizer.setAngles(refAngles);
-            if (!refAngles.includes(this.referenceGuideAngle)) {
-                this.referenceGuideAngle = refAngles.includes(45) ? 45 : refAngles[0];
+        if (this.secretModeActive && this.referenceGuideVisualizer) {
+            this.referenceGuideVisualizer.setAngles(window.SECRET_ANGLES);
+            if (!window.SECRET_ANGLES.includes(this.referenceGuideAngle)) {
+                this.referenceGuideAngle = window.SECRET_ANGLES[0];
             }
         }
         if (this.dom.referenceFuncCards) {

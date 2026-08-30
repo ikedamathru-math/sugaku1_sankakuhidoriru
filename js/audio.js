@@ -12,7 +12,6 @@ class QuizAudio {
         this.bgmNodes = [];
         this.bgmElement = null;
         this.bgmPausedAt = 0;
-        this.comboVoiceElement = null;
     }
 
     init() {
@@ -60,101 +59,33 @@ class QuizAudio {
         });
     }
 
-    // 連続正解音：3〜4 / 5〜9 / 10+ で明確に変化
+    // コンボ連続正解音（ストリーク数に応じて音が高くなる）
     playStreak(combo = 1) {
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
 
         const now = this.ctx.currentTime;
-        let notes;
-        let type = 'triangle';
-        let level = 0.28;
-        let step = 0.055;
-        let length = 0.30;
+        const baseFreq = 523.25 * Math.pow(1.059463, Math.min(combo, 12)); // 半音ずつ上昇
 
-        if (combo >= 10) {
-            // 10連続以降：短いファンファーレ感のある4音
-            notes = [659.25, 783.99, 987.77, 1318.51]; // E5 G5 B5 E6
-            type = 'triangle';
-            level = 0.34;
-            step = 0.055;
-            length = 0.40;
-        } else if (combo >= 5) {
-            // 5〜9連続：3音で勢いを強める
-            notes = [622.25, 783.99, 1046.50]; // D#5 G5 C6
-            type = 'triangle';
-            level = 0.31;
-            step = 0.06;
-            length = 0.34;
-        } else {
-            // 3〜4連続：通常正解より一段高い2音
-            notes = [659.25, 987.77]; // E5 B5
-            type = 'sine';
-            level = 0.30;
-            step = 0.07;
-            length = 0.29;
-        }
+        const notes = [baseFreq, baseFreq * 1.2599, baseFreq * 1.4983]; // メジャーコード
 
         notes.forEach((freq, i) => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            const startAt = now + i * step;
+            const start = now + i * 0.06;
 
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, startAt);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, start);
 
-            gain.gain.setValueAtTime(level, startAt);
-            gain.gain.exponentialRampToValueAtTime(0.001, startAt + length);
+            gain.gain.setValueAtTime(0.22, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
 
             osc.connect(gain);
             gain.connect(this.ctx.destination);
-            osc.start(startAt);
-            osc.stop(startAt + length);
-        });
 
-        // 5連続以上は低いアタックを薄く重ねて「勢い」を付ける
-        if (combo >= 5) {
-            const bass = this.ctx.createOscillator();
-            const bassGain = this.ctx.createGain();
-            bass.type = 'sine';
-            bass.frequency.setValueAtTime(combo >= 10 ? 164.81 : 196.00, now);
-            bassGain.gain.setValueAtTime(combo >= 10 ? 0.19 : 0.13, now);
-            bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-            bass.connect(bassGain);
-            bassGain.connect(this.ctx.destination);
-            bass.start(now);
-            bass.stop(now + 0.22);
-        }
-    }
-
-    // 裏版10連続に到達した瞬間だけ鳴る覚醒音
-    playAwakening() {
-        if (!this.enabled) return;
-        this.init();
-        if (!this.ctx) return;
-
-        const now = this.ctx.currentTime;
-        const notes = [
-            { f: 146.83, t: 0.00, d: 0.48, v: 0.22, type: 'sawtooth' }, // D3
-            { f: 293.66, t: 0.03, d: 0.42, v: 0.18, type: 'triangle' }, // D4
-            { f: 440.00, t: 0.14, d: 0.42, v: 0.20, type: 'triangle' }, // A4
-            { f: 587.33, t: 0.26, d: 0.48, v: 0.24, type: 'triangle' }, // D5
-            { f: 880.00, t: 0.38, d: 0.58, v: 0.27, type: 'sine' },     // A5
-        ];
-
-        notes.forEach(({f, t, d, v, type}) => {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            const st = now + t;
-            osc.type = type;
-            osc.frequency.setValueAtTime(f, st);
-            gain.gain.setValueAtTime(v, st);
-            gain.gain.exponentialRampToValueAtTime(0.001, st + d);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start(st);
-            osc.stop(st + d);
+            osc.start(start);
+            osc.stop(start + 0.35);
         });
     }
 
@@ -277,32 +208,6 @@ class QuizAudio {
         const el = new Audio(src);
         el.volume = 0.82;
         el.play().catch(() => {});
-    }
-
-    // 点P君コンボボイス。次のボイスが鳴ると前のボイスを止める。
-    playComboVoice(combo = 0) {
-        if (!this.enabled) return;
-
-        let src = '';
-        if (combo === 3) src = 'assets/audio/pointp-combo-3.mp3';
-        else if (combo === 5) src = 'assets/audio/pointp-combo-5.mp3';
-        else if (combo === 10) src = 'assets/audio/pointp-combo-10.mp3';
-        else if (combo >= 11 && combo <= 15) src = 'assets/audio/pointp-yeah.mp3';
-        else if (combo >= 16) src = 'assets/audio/pointp-waa.mp3';
-        else return; // 7コンボを含め、指定外ではボイスなし
-
-        if (this.comboVoiceElement) {
-            try { this.comboVoiceElement.pause(); } catch (e) {}
-            try { this.comboVoiceElement.currentTime = 0; } catch (e) {}
-        }
-
-        const voice = new Audio(src);
-        voice.volume = 0.95;
-        this.comboVoiceElement = voice;
-        voice.play().catch(() => {});
-        voice.addEventListener('ended', () => {
-            if (this.comboVoiceElement === voice) this.comboVoiceElement = null;
-        }, { once: true });
     }
 
     // ===== Background music (selected WAV tracks) =====
