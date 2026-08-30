@@ -57,6 +57,8 @@ class TrigQuizApp {
         this.score = 0;
         this.streak = 0;
         this.maxStreak = 0;
+        this._bestChaseShown = new Set();
+        this._awakeningAnnounced = false;
         this.lives = 3;
         this.isAnswered = false;
         this.history = []; // Array of { angle, func, selected, correct, isCorrect, timeTakenMs }
@@ -696,6 +698,9 @@ class TrigQuizApp {
         this.score = 0;
         this.streak = 0;
         this.maxStreak = 0;
+        this.setSecretAwakening(false);
+        this._bestChaseShown = new Set();
+        this._awakeningAnnounced = false;
         this.lives = 3;
         this.history = [];
         this.usedQuestionKeys = { standard: new Set(), secret: new Set() };
@@ -1016,10 +1021,12 @@ class TrigQuizApp {
                 '-1/sqrt2', '-1/2', '0', '1/2', '1/sqrt2'
             ];
         }
+        // 裏版の実際の初期配置と同じ順番。
+        // 1段目5個 → 2段目3個 → 3段目6個 → 裏追加16個。
         return [
             '-sqrt3', '-1/sqrt3', 'none', '1/sqrt3', 'sqrt3',
-            '-1', '-sqrt3/2', '-1/sqrt2', '-1/2', '0',
-            '1/2', '1/sqrt2', 'sqrt3/2', '1',
+            '-1', '0', '1',
+            '-sqrt3/2', '-1/sqrt2', '-1/2', '1/2', '1/sqrt2', 'sqrt3/2',
             ...this.getPaletteSecretAddedValues()
         ];
     }
@@ -1084,7 +1091,8 @@ class TrigQuizApp {
         if (!grid) return;
         grid.innerHTML = '';
         grid.classList.toggle('secret-palette-settings-grid', this.paletteSettingsSecret);
-        this.paletteSettingsOrder.forEach((valueId, index) => {
+
+        const createItem = (valueId, index) => {
             const item = document.createElement('button');
             item.type = 'button';
             item.className = 'palette-setting-item';
@@ -1129,20 +1137,40 @@ class TrigQuizApp {
                 const source = this.paletteDragIndex ?? Number(event.dataTransfer?.getData('text/plain'));
                 if (Number.isInteger(source)) this.swapPaletteSettingsItems(source, index);
             });
-            grid.appendChild(item);
+            return item;
+        };
+
+        if (!this.paletteSettingsSecret) {
+            this.paletteSettingsOrder.forEach((valueId, index) => grid.appendChild(createItem(valueId, index)));
+            return;
+        }
+
+        // 裏パレットは実プレイ画面と同じ「基本14個＋裏追加16個」の構成で編集する。
+        const standardWrap = document.createElement('div');
+        standardWrap.className = 'palette-settings-secret-standard';
+        const addedWrap = document.createElement('div');
+        addedWrap.className = 'palette-settings-secret-added';
+
+        this.paletteSettingsOrder.slice(0, 14).forEach((valueId, localIndex) => {
+            const item = createItem(valueId, localIndex);
+            item.style.setProperty('--secret-slot', String(localIndex + 1));
+            standardWrap.appendChild(item);
         });
+        this.paletteSettingsOrder.slice(14).forEach((valueId, localIndex) => {
+            const item = createItem(valueId, localIndex + 14);
+            addedWrap.appendChild(item);
+        });
+        grid.appendChild(standardWrap);
+        grid.appendChild(addedWrap);
     }
 
     renderSavedPalette(order, secretMode, compactValues, veryCompactValues, topValues, middleValues) {
-        this.dom.paletteContainer.innerHTML = '<div class="palette-custom-grid" aria-label="自分専用の値パレット"></div>';
-        const grid = this.dom.paletteContainer.querySelector('.palette-custom-grid');
-        order.forEach(valueId => {
+        const createButton = valueId => {
             if (valueId === '__empty__') {
                 const spacer = document.createElement('span');
                 spacer.className = 'palette-empty-slot';
                 spacer.setAttribute('aria-hidden', 'true');
-                grid.appendChild(spacer);
-                return;
+                return spacer;
             }
             const btn = document.createElement('button');
             const sizeClass = veryCompactValues.has(valueId) ? 'value-very-compact' : (compactValues.has(valueId) ? 'value-compact' : 'value-standard');
@@ -1153,8 +1181,28 @@ class TrigQuizApp {
             btn.dataset.valueId = valueId;
             btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
             btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
-            grid.appendChild(btn);
+            return btn;
+        };
+
+        if (!secretMode) {
+            this.dom.paletteContainer.innerHTML = '<div class="palette-custom-grid" aria-label="自分専用の値パレット"></div>';
+            const grid = this.dom.paletteContainer.querySelector('.palette-custom-grid');
+            order.forEach(valueId => grid.appendChild(createButton(valueId)));
+            return;
+        }
+
+        // 裏版は設定画面と同じレイアウトで表示する。
+        this.dom.paletteContainer.innerHTML = `
+            <div class="palette-custom-secret-standard" aria-label="裏版 基本の三角比の値"></div>
+            <div class="palette-custom-secret-added" aria-label="裏版で追加された三角比の値"></div>`;
+        const standardGrid = this.dom.paletteContainer.querySelector('.palette-custom-secret-standard');
+        const addedGrid = this.dom.paletteContainer.querySelector('.palette-custom-secret-added');
+        order.slice(0, 14).forEach((valueId, index) => {
+            const el = createButton(valueId);
+            el.style.setProperty('--secret-slot', String(index + 1));
+            standardGrid.appendChild(el);
         });
+        order.slice(14).forEach(valueId => addedGrid.appendChild(createButton(valueId)));
     }
 
     renderPalette() {
@@ -1511,9 +1559,27 @@ class TrigQuizApp {
             const streakBonus = this.streak * 20;
             this.score += 100 + speedBonus + streakBonus;
 
-            this.audio.playCorrect();
+            if ([3, 5, 10].includes(this.streak)) this.showComboAnimation(this.streak);
+
+            const justAwakened = this.mode === '1min-secret' && this.streak === 10;
+            if (this.mode === '1min-secret' && this.streak >= 10) this.setSecretAwakening(true);
+
+            this.updateBestChaseFeedback();
+
+            // 正解音も連続正解数に応じて段階的に変える
+            if (this.streak >= 3) {
+                this.audio.playStreak(this.streak);
+            } else {
+                this.audio.playCorrect();
+            }
+
+            // 裏版は10連続到達時だけ、正解音の直後に覚醒音を重ねる
+            if (justAwakened) {
+                setTimeout(() => this.audio.playAwakening(), 170);
+            }
         } else {
             this.streak = 0;
+            this.setSecretAwakening(false);
             this.audio.playIncorrect();
             if (this.mode === 'endless') {
                 this.lives--;
@@ -1570,6 +1636,7 @@ class TrigQuizApp {
         });
 
         this.streak = 0;
+        this.setSecretAwakening(false);
         this.audio.playIncorrect();
         if (this.mode === 'endless') { this.lives--; this.updateLivesDisplay(); }
 
@@ -1611,12 +1678,100 @@ class TrigQuizApp {
         this.awaitingTapAdvance = true;
     }
 
+
+    ensureEngagementUi() {
+        let badge = document.getElementById('engagement-popup');
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.id = 'engagement-popup';
+            badge.className = 'engagement-popup';
+            badge.setAttribute('aria-live', 'polite');
+            document.body.appendChild(badge);
+        }
+        return badge;
+    }
+
+    showBestChaseMessage(message, key) {
+        if (!message) return;
+        if (!this._bestChaseShown) this._bestChaseShown = new Set();
+        if (key && this._bestChaseShown.has(key)) return;
+        if (key) this._bestChaseShown.add(key);
+        const badge = this.ensureEngagementUi();
+        if (!badge) return;
+        badge.textContent = message;
+        badge.classList.remove('active', 'new-best', 'awakening');
+        void badge.offsetWidth;
+        if (message.includes('NEW BEST')) badge.classList.add('new-best');
+        badge.classList.add('active');
+        clearTimeout(this._bestChaseTimer);
+        this._bestChaseTimer = setTimeout(() => badge.classList.remove('active'), 1250);
+    }
+
+    updateBestChaseFeedback() {
+        const correctCount = this.history.filter(h => h.isCorrect).length;
+
+        if (this.mode === '3min-challenge') {
+            const best = Number(localStorage.getItem('trig-quiz-best-2min-challenge') || 0);
+            if (!best) return;
+            if (correctCount === Math.max(1, best - 3)) this.showBestChaseMessage('BESTまであと3！', '2min-3');
+            if (correctCount === Math.max(1, best - 1)) this.showBestChaseMessage('BESTまであと1！', '2min-1');
+            if (correctCount === best + 1) this.showBestChaseMessage('NEW BEST!', '2min-new');
+            return;
+        }
+
+        if (this.mode === '1min-secret') {
+            const best = Number(localStorage.getItem('trig-quiz-best-1min-secret') || 0);
+            if (!best) return;
+            if (correctCount === Math.max(1, best - 3)) this.showBestChaseMessage('BESTまであと3！', 'secret-3');
+            if (correctCount === Math.max(1, best - 1)) this.showBestChaseMessage('BESTまであと1！', 'secret-1');
+            if (correctCount === best + 1) this.showBestChaseMessage('NEW BEST!', 'secret-new');
+            return;
+        }
+
+        if (this.mode === '20-challenge') {
+            const bestTime = Number(localStorage.getItem('trig-quiz-best-20-challenge') || 0);
+            if (!bestTime) return;
+            const elapsed = this.getElapsedQuizTimeSeconds();
+            if (correctCount === 15 && elapsed > 0 && elapsed < bestTime * 0.75) {
+                this.showBestChaseMessage('BEST更新ペース！', '20-pace');
+            }
+            if (correctCount === 20 && elapsed > 0 && elapsed < bestTime) {
+                this.showBestChaseMessage('NEW BEST!', '20-new');
+            }
+        }
+    }
+
+    setSecretAwakening(enabled) {
+        const on = Boolean(enabled && this.mode === '1min-secret');
+        this.dom.quizScreen?.classList.toggle('secret-awakened', on);
+        document.body.classList.toggle('secret-awakened-play', on);
+        if (!on) return;
+        const badge = this.ensureEngagementUi();
+        if (badge && !this._awakeningAnnounced) {
+            this._awakeningAnnounced = true;
+            this.showBestChaseMessage('覚醒！', 'secret-awaken');
+        }
+    }
+
     showComboAnimation(combo) {
-        this.dom.comboBadge.textContent = `${combo} COMBO!! 🔥`;
-        this.dom.comboBadge.classList.add('active');
-        setTimeout(() => {
-            this.dom.comboBadge.classList.remove('active');
-        }, 1200);
+        const text = (this.mode === '1min-secret' && combo >= 10)
+            ? `${combo} COMBO!!　覚醒`
+            : `${combo} COMBO!!`;
+        const popup = this.ensureEngagementUi();
+        if (popup) {
+            popup.textContent = text;
+            popup.classList.remove('active', 'new-best', 'awakening');
+            void popup.offsetWidth;
+            if (this.mode === '1min-secret' && combo >= 10) popup.classList.add('awakening');
+            popup.classList.add('active');
+            clearTimeout(this._engagementPopupTimer);
+            this._engagementPopupTimer = setTimeout(() => popup.classList.remove('active'), 1250);
+        }
+        if (this.dom.comboBadge) {
+            this.dom.comboBadge.textContent = text;
+            this.dom.comboBadge.classList.add('active');
+            setTimeout(() => this.dom.comboBadge?.classList.remove('active'), 1200);
+        }
     }
 
     // ==========================================
@@ -1631,6 +1786,7 @@ class TrigQuizApp {
     }
 
     finishQuiz() {
+        this.setSecretAwakening(false);
         // 保存処理中に裏モードが解放されても、終了したクイズのモードは変えない。
         const completedMode = this.mode;
         this.lastCompletedSettings = {
@@ -2208,6 +2364,21 @@ class TrigQuizApp {
             this.timeLimitSetting = normalSettings?.timeLimitSetting ?? 0;
             this.syncSelectionCards();
             this.buildReferenceTable();
+            if (this.referenceGuideVisualizer) {
+                const normalAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                    ? this.getActiveAnglePool()
+                    : window.ANGLES;
+                this.referenceGuideVisualizer.setAngles(normalAngles);
+                const normalDefault = normalAngles.includes(45) ? 45 : normalAngles[0];
+                this.referenceGuideAngle = normalDefault;
+                this.updateReferenceGuide(normalDefault);
+            }
+            if (this.referenceVisualizer) {
+                const normalAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                    ? this.getActiveAnglePool()
+                    : window.ANGLES;
+                this.referenceVisualizer.setAngles(normalAngles);
+            }
             this.renderPersonalBestPlant(false);
             if (this.dom.personalBestNote) this.dom.personalBestNote.textContent = '※全三角比選択。20問は18問以上、2分は正答率80％以上のみ反映';
             return;
@@ -2235,6 +2406,21 @@ class TrigQuizApp {
         if (timeNone) timeNone.checked = true;
         this.syncSelectionCards();
         this.buildReferenceTable();
+        if (this.referenceGuideVisualizer) {
+            const secretAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                ? this.getActiveAnglePool()
+                : window.SECRET_ANGLES;
+            this.referenceGuideVisualizer.setAngles(secretAngles);
+            const secretDefault = secretAngles[0];
+            this.referenceGuideAngle = secretDefault;
+            this.updateReferenceGuide(secretDefault);
+        }
+        if (this.referenceVisualizer) {
+            const secretAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                ? this.getActiveAnglePool()
+                : window.SECRET_ANGLES;
+            this.referenceVisualizer.setAngles(secretAngles);
+        }
         this.renderPersonalBestPlant(true);
         if (this.dom.personalBestNote) this.dom.personalBestNote.textContent = '※正答率80％以上の記録のみ反映';
     }
@@ -2301,12 +2487,18 @@ class TrigQuizApp {
 
 
     showReferenceModal() {
+        // 表版へ戻った直後でも、現在のモードに対応する確認表を必ず再構築する。
+        this.buildReferenceTable();
+        if (this.dom.referenceScreen) this.dom.referenceScreen.classList.toggle('secret-reference-mode', this.secretModeActive);
         this.showScreen('reference');
         this.initReferenceGuide();
-        if (this.secretModeActive && this.referenceGuideVisualizer) {
-            this.referenceGuideVisualizer.setAngles(window.SECRET_ANGLES);
-            if (!window.SECRET_ANGLES.includes(this.referenceGuideAngle)) {
-                this.referenceGuideAngle = window.SECRET_ANGLES[0];
+        if (this.referenceGuideVisualizer) {
+            const refAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                ? this.getActiveAnglePool()
+                : (this.secretModeActive ? window.SECRET_ANGLES : window.ANGLES);
+            this.referenceGuideVisualizer.setAngles(refAngles);
+            if (!refAngles.includes(this.referenceGuideAngle)) {
+                this.referenceGuideAngle = refAngles.includes(45) ? 45 : refAngles[0];
             }
         }
         if (this.dom.referenceFuncCards) {
