@@ -57,6 +57,9 @@ class TrigQuizApp {
         this.score = 0;
         this.streak = 0;
         this.maxStreak = 0;
+        this.setSecretAwakening(false);
+        this._bestChaseShown = new Set();
+        this._awakeningAnnounced = false;
         this.lives = 3;
         this.isAnswered = false;
         this.history = []; // Array of { angle, func, selected, correct, isCorrect, timeTakenMs }
@@ -1511,9 +1514,13 @@ class TrigQuizApp {
             const streakBonus = this.streak * 20;
             this.score += 100 + speedBonus + streakBonus;
 
+            if ([3, 5, 10].includes(this.streak)) this.showComboAnimation(this.streak);
+            if (this.mode === '1min-secret' && this.streak >= 10) this.setSecretAwakening(true);
+            this.updateBestChaseFeedback();
             this.audio.playCorrect();
         } else {
             this.streak = 0;
+            this.setSecretAwakening(false);
             this.audio.playIncorrect();
             if (this.mode === 'endless') {
                 this.lives--;
@@ -1570,6 +1577,7 @@ class TrigQuizApp {
         });
 
         this.streak = 0;
+        this.setSecretAwakening(false);
         this.audio.playIncorrect();
         if (this.mode === 'endless') { this.lives--; this.updateLivesDisplay(); }
 
@@ -1611,8 +1619,87 @@ class TrigQuizApp {
         this.awaitingTapAdvance = true;
     }
 
+
+    ensureEngagementUi() {
+        const card = this.dom.quizScreen?.querySelector('.quiz-main-card');
+        if (!card) return null;
+        let badge = document.getElementById('best-chase-badge');
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.id = 'best-chase-badge';
+            badge.className = 'best-chase-badge';
+            badge.setAttribute('aria-live', 'polite');
+            card.appendChild(badge);
+        }
+        return badge;
+    }
+
+    showBestChaseMessage(message, key) {
+        if (!message) return;
+        if (!this._bestChaseShown) this._bestChaseShown = new Set();
+        if (key && this._bestChaseShown.has(key)) return;
+        if (key) this._bestChaseShown.add(key);
+        const badge = this.ensureEngagementUi();
+        if (!badge) return;
+        badge.textContent = message;
+        badge.classList.remove('active', 'new-best');
+        void badge.offsetWidth;
+        if (message.includes('NEW BEST')) badge.classList.add('new-best');
+        badge.classList.add('active');
+        clearTimeout(this._bestChaseTimer);
+        this._bestChaseTimer = setTimeout(() => badge.classList.remove('active'), 1250);
+    }
+
+    updateBestChaseFeedback() {
+        const correctCount = this.history.filter(h => h.isCorrect).length;
+
+        if (this.mode === '3min-challenge') {
+            const best = Number(localStorage.getItem('trig-quiz-best-2min-challenge') || 0);
+            if (!best) return;
+            if (correctCount === Math.max(1, best - 3)) this.showBestChaseMessage('BESTまであと3！', '2min-3');
+            if (correctCount === Math.max(1, best - 1)) this.showBestChaseMessage('BESTまであと1！', '2min-1');
+            if (correctCount === best + 1) this.showBestChaseMessage('NEW BEST!', '2min-new');
+            return;
+        }
+
+        if (this.mode === '1min-secret') {
+            const best = Number(localStorage.getItem('trig-quiz-best-1min-secret') || 0);
+            if (!best) return;
+            if (correctCount === Math.max(1, best - 3)) this.showBestChaseMessage('BESTまであと3！', 'secret-3');
+            if (correctCount === Math.max(1, best - 1)) this.showBestChaseMessage('BESTまであと1！', 'secret-1');
+            if (correctCount === best + 1) this.showBestChaseMessage('NEW BEST!', 'secret-new');
+            return;
+        }
+
+        if (this.mode === '20-challenge') {
+            const bestTime = Number(localStorage.getItem('trig-quiz-best-20-challenge') || 0);
+            if (!bestTime) return;
+            const elapsed = this.getElapsedQuizTimeSeconds();
+            if (correctCount === 15 && elapsed > 0 && elapsed < bestTime * 0.75) {
+                this.showBestChaseMessage('BEST更新ペース！', '20-pace');
+            }
+            if (correctCount === 20 && elapsed > 0 && elapsed < bestTime) {
+                this.showBestChaseMessage('NEW BEST!', '20-new');
+            }
+        }
+    }
+
+    setSecretAwakening(enabled) {
+        const on = Boolean(enabled && this.mode === '1min-secret');
+        this.dom.quizScreen?.classList.toggle('secret-awakened', on);
+        document.body.classList.toggle('secret-awakened-play', on);
+        if (!on) return;
+        const badge = this.ensureEngagementUi();
+        if (badge && !this._awakeningAnnounced) {
+            this._awakeningAnnounced = true;
+            this.showBestChaseMessage('覚醒！', 'secret-awaken');
+        }
+    }
+
     showComboAnimation(combo) {
-        this.dom.comboBadge.textContent = `${combo} COMBO!! 🔥`;
+        this.dom.comboBadge.textContent = (this.mode === '1min-secret' && combo >= 10)
+            ? `${combo} COMBO!!　覚醒`
+            : `${combo} COMBO!! 🔥`;
         this.dom.comboBadge.classList.add('active');
         setTimeout(() => {
             this.dom.comboBadge.classList.remove('active');
@@ -1631,6 +1718,7 @@ class TrigQuizApp {
     }
 
     finishQuiz() {
+        this.setSecretAwakening(false);
         // 保存処理中に裏モードが解放されても、終了したクイズのモードは変えない。
         const completedMode = this.mode;
         this.lastCompletedSettings = {
@@ -2208,6 +2296,21 @@ class TrigQuizApp {
             this.timeLimitSetting = normalSettings?.timeLimitSetting ?? 0;
             this.syncSelectionCards();
             this.buildReferenceTable();
+            if (this.referenceGuideVisualizer) {
+                const normalAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                    ? this.getActiveAnglePool()
+                    : window.ANGLES;
+                this.referenceGuideVisualizer.setAngles(normalAngles);
+                const normalDefault = normalAngles.includes(45) ? 45 : normalAngles[0];
+                this.referenceGuideAngle = normalDefault;
+                this.updateReferenceGuide(normalDefault);
+            }
+            if (this.referenceVisualizer) {
+                const normalAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                    ? this.getActiveAnglePool()
+                    : window.ANGLES;
+                this.referenceVisualizer.setAngles(normalAngles);
+            }
             this.renderPersonalBestPlant(false);
             if (this.dom.personalBestNote) this.dom.personalBestNote.textContent = '※全三角比選択。20問は18問以上、2分は正答率80％以上のみ反映';
             return;
@@ -2235,6 +2338,21 @@ class TrigQuizApp {
         if (timeNone) timeNone.checked = true;
         this.syncSelectionCards();
         this.buildReferenceTable();
+        if (this.referenceGuideVisualizer) {
+            const secretAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                ? this.getActiveAnglePool()
+                : window.SECRET_ANGLES;
+            this.referenceGuideVisualizer.setAngles(secretAngles);
+            const secretDefault = secretAngles[0];
+            this.referenceGuideAngle = secretDefault;
+            this.updateReferenceGuide(secretDefault);
+        }
+        if (this.referenceVisualizer) {
+            const secretAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                ? this.getActiveAnglePool()
+                : window.SECRET_ANGLES;
+            this.referenceVisualizer.setAngles(secretAngles);
+        }
         this.renderPersonalBestPlant(true);
         if (this.dom.personalBestNote) this.dom.personalBestNote.textContent = '※正答率80％以上の記録のみ反映';
     }
@@ -2303,10 +2421,13 @@ class TrigQuizApp {
     showReferenceModal() {
         this.showScreen('reference');
         this.initReferenceGuide();
-        if (this.secretModeActive && this.referenceGuideVisualizer) {
-            this.referenceGuideVisualizer.setAngles(window.SECRET_ANGLES);
-            if (!window.SECRET_ANGLES.includes(this.referenceGuideAngle)) {
-                this.referenceGuideAngle = window.SECRET_ANGLES[0];
+        if (this.referenceGuideVisualizer) {
+            const refAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
+                ? this.getActiveAnglePool()
+                : (this.secretModeActive ? window.SECRET_ANGLES : window.ANGLES);
+            this.referenceGuideVisualizer.setAngles(refAngles);
+            if (!refAngles.includes(this.referenceGuideAngle)) {
+                this.referenceGuideAngle = refAngles.includes(45) ? 45 : refAngles[0];
             }
         }
         if (this.dom.referenceFuncCards) {
