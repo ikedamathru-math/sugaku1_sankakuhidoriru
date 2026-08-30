@@ -12,6 +12,7 @@ class QuizAudio {
         this.bgmNodes = [];
         this.bgmElement = null;
         this.bgmPausedAt = 0;
+        this.comboVoiceElement = null;
     }
 
     init() {
@@ -276,6 +277,32 @@ class QuizAudio {
         const el = new Audio(src);
         el.volume = 0.82;
         el.play().catch(() => {});
+    }
+
+    // 点P君コンボボイス。次のボイスが鳴ると前のボイスを止める。
+    playComboVoice(combo = 0) {
+        if (!this.enabled) return;
+
+        let src = '';
+        if (combo === 3) src = 'assets/audio/pointp-combo-3.mp3';
+        else if (combo === 5) src = 'assets/audio/pointp-combo-5.mp3';
+        else if (combo === 10) src = 'assets/audio/pointp-combo-10.mp3';
+        else if (combo >= 11 && combo <= 15) src = 'assets/audio/pointp-yeah.mp3';
+        else if (combo >= 16) src = 'assets/audio/pointp-waa.mp3';
+        else return; // 7コンボを含め、指定外ではボイスなし
+
+        if (this.comboVoiceElement) {
+            try { this.comboVoiceElement.pause(); } catch (e) {}
+            try { this.comboVoiceElement.currentTime = 0; } catch (e) {}
+        }
+
+        const voice = new Audio(src);
+        voice.volume = 0.95;
+        this.comboVoiceElement = voice;
+        voice.play().catch(() => {});
+        voice.addEventListener('ended', () => {
+            if (this.comboVoiceElement === voice) this.comboVoiceElement = null;
+        }, { once: true });
     }
 
     // ===== Background music (selected WAV tracks) =====
