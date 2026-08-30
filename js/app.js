@@ -699,6 +699,9 @@ class TrigQuizApp {
         this.score = 0;
         this.streak = 0;
         this.maxStreak = 0;
+        this.setSecretAwakening(false);
+        this._bestChaseShown = new Set();
+        this._awakeningAnnounced = false;
         this.lives = 3;
         this.history = [];
         this.usedQuestionKeys = { standard: new Set(), secret: new Set() };
@@ -1515,9 +1518,23 @@ class TrigQuizApp {
             this.score += 100 + speedBonus + streakBonus;
 
             if ([3, 5, 10].includes(this.streak)) this.showComboAnimation(this.streak);
+
+            const justAwakened = this.mode === '1min-secret' && this.streak === 10;
             if (this.mode === '1min-secret' && this.streak >= 10) this.setSecretAwakening(true);
+
             this.updateBestChaseFeedback();
-            this.audio.playCorrect();
+
+            // 正解音も連続正解数に応じて段階的に変える
+            if (this.streak >= 3) {
+                this.audio.playStreak(this.streak);
+            } else {
+                this.audio.playCorrect();
+            }
+
+            // 裏版は10連続到達時だけ、正解音の直後に覚醒音を重ねる
+            if (justAwakened) {
+                setTimeout(() => this.audio.playAwakening(), 170);
+            }
         } else {
             this.streak = 0;
             this.setSecretAwakening(false);
@@ -1621,15 +1638,13 @@ class TrigQuizApp {
 
 
     ensureEngagementUi() {
-        const card = this.dom.quizScreen?.querySelector('.quiz-main-card');
-        if (!card) return null;
-        let badge = document.getElementById('best-chase-badge');
+        let badge = document.getElementById('engagement-popup');
         if (!badge) {
             badge = document.createElement('div');
-            badge.id = 'best-chase-badge';
-            badge.className = 'best-chase-badge';
+            badge.id = 'engagement-popup';
+            badge.className = 'engagement-popup';
             badge.setAttribute('aria-live', 'polite');
-            card.appendChild(badge);
+            document.body.appendChild(badge);
         }
         return badge;
     }
@@ -1642,7 +1657,7 @@ class TrigQuizApp {
         const badge = this.ensureEngagementUi();
         if (!badge) return;
         badge.textContent = message;
-        badge.classList.remove('active', 'new-best');
+        badge.classList.remove('active', 'new-best', 'awakening');
         void badge.offsetWidth;
         if (message.includes('NEW BEST')) badge.classList.add('new-best');
         badge.classList.add('active');
@@ -1697,13 +1712,24 @@ class TrigQuizApp {
     }
 
     showComboAnimation(combo) {
-        this.dom.comboBadge.textContent = (this.mode === '1min-secret' && combo >= 10)
+        const text = (this.mode === '1min-secret' && combo >= 10)
             ? `${combo} COMBO!!　覚醒`
-            : `${combo} COMBO!! 🔥`;
-        this.dom.comboBadge.classList.add('active');
-        setTimeout(() => {
-            this.dom.comboBadge.classList.remove('active');
-        }, 1200);
+            : `${combo} COMBO!!`;
+        const popup = this.ensureEngagementUi();
+        if (popup) {
+            popup.textContent = text;
+            popup.classList.remove('active', 'new-best', 'awakening');
+            void popup.offsetWidth;
+            if (this.mode === '1min-secret' && combo >= 10) popup.classList.add('awakening');
+            popup.classList.add('active');
+            clearTimeout(this._engagementPopupTimer);
+            this._engagementPopupTimer = setTimeout(() => popup.classList.remove('active'), 1250);
+        }
+        if (this.dom.comboBadge) {
+            this.dom.comboBadge.textContent = text;
+            this.dom.comboBadge.classList.add('active');
+            setTimeout(() => this.dom.comboBadge?.classList.remove('active'), 1200);
+        }
     }
 
     // ==========================================
