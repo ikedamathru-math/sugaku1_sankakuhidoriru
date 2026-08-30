@@ -57,7 +57,6 @@ class TrigQuizApp {
         this.score = 0;
         this.streak = 0;
         this.maxStreak = 0;
-        this.setSecretAwakening(false);
         this._bestChaseShown = new Set();
         this._awakeningAnnounced = false;
         this.lives = 3;
