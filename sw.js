@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trig-quiz-v129-reference-palette-fix';
+const CACHE_NAME = 'trig-quiz-v129-pointp-voice-v4';
 const APP_FILES = [
     './',
     './index.html',
