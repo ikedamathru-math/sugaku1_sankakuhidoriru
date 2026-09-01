@@ -1114,15 +1114,37 @@ body {
 }
 
 .rank-badge {
+    --rank-character-image: none;
     font-size: 3.8rem;
     font-weight: 900;
     font-family: var(--font-math);
     line-height: 1;
     padding: 12px 30px;
+    margin-block: 14px;
     border-radius: 20px;
     border: 3px solid;
+    position: relative;
+    overflow: visible;
     animation: rank-appear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
+.rank-badge::after {
+    content: "";
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    width: clamp(96px, 13vw, 132px);
+    aspect-ratio: 1;
+    transform: translateY(-50%);
+    background: var(--rank-character-image) center / contain no-repeat;
+    pointer-events: none;
+}
+
+.rank-badge.rank-s-plus { --rank-character-image: url("../assets/rank-s-plus-pompons.png"); }
+.rank-badge.rank-s { --rank-character-image: url("../assets/rank-s-guts-pose.png"); }
+.rank-badge.rank-a { --rank-character-image: url("../assets/rank-a-clapping.png"); }
+.rank-badge.rank-b { --rank-character-image: url("../assets/rank-b-whistle.png"); }
+.rank-badge.rank-c { --rank-character-image: url("../assets/rank-c-all-fours.png"); }
 
 .rank-badge.rank-s-plus, .rank-badge.rank-s {
     color: var(--color-gold);
@@ -1231,6 +1253,11 @@ body {
     background: #64748b;
     color: #fff;
     font-size: 0.9rem;
+    margin-block: 0;
+}
+
+.rank-badge.rank-unranked::after {
+    display: none;
 }
 
 .history-item {

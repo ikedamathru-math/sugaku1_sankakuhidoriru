@@ -16,8 +16,8 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Main Style -->
-<link href="css/style.css?v=129" rel="stylesheet"/>
-<link href="css/height-compact.css?v=129" rel="stylesheet"/>
+<link href="css/style.css?v=136" rel="stylesheet"/>
+<link href="css/height-compact.css?v=136" rel="stylesheet"/>
 </head>
 <body>
 <!-- Header HUD -->
@@ -27,8 +27,8 @@
 <button class="btn" id="btn-reference" title="三角比確認表">確認表</button>
 <button class="btn btn-palette-settings" id="btn-palette-settings" title="値パレットの配置を設定" type="button">パレット設定</button>
 <span class="mode-world-switcher" hidden="" id="mode-world-switcher">
-<button class="btn mode-world-btn" id="btn-normal-mode" title="通常版へ" type="button">表版</button>
-<button class="btn mode-world-btn" id="btn-secret-mode" title="裏版へ" type="button">裏版</button>
+<button class="btn mode-world-btn" id="btn-normal-mode" title="表版へ" type="button">表版へ</button>
+<button class="btn mode-world-btn" id="btn-secret-mode" title="裏版へ" type="button">裏版へ</button>
 </span>
 <button class="btn active" id="btn-sound" title="操作音オン・オフ">操作音 ON</button>
 <button class="btn" id="btn-bgm-toggle" title="効果音オン・オフ">効果音 OFF</button>
@@ -208,6 +208,7 @@
 <span aria-hidden="true" class="challenge-time-text" id="challenge-time-text"></span>
 </span>
 <span class="quiz-progress-text" id="quiz-progress-text">１問目</span>
+<span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-question" hidden="" id="course-elapsed-timer-question">⏱ 0:00.0</span>
 </div><div class="quiz-problem-layout"><div class="quiz-left-panel"><div class="circle-answer-section" id="circle-answer-section">
 <div class="answer-step answer-step-large" id="step-angle-label">① 角度の位置を選ぶ</div>
 <div class="unit-circle-wrapper" id="quiz-unit-circle"></div>
@@ -340,10 +341,10 @@
 <!-- Victory Confetti Canvas -->
 <canvas id="confetti-canvas"></canvas>
 <!-- Scripts -->
-<script src="js/trig-data.js?v=129"></script>
-<script src="js/audio.js?v=129"></script>
-<script src="js/unit-circle.js?v=129"></script>
-<script src="js/pwa.js?v=129"></script>
-<script src="js/app.js?v=129"></script>
+<script src="js/trig-data.js?v=136"></script>
+<script src="js/audio.js?v=136"></script>
+<script src="js/unit-circle.js?v=136"></script>
+<script src="js/pwa.js?v=136"></script>
+<script src="js/app.js?v=136"></script>
 </body>
 </html>

@@ -102,6 +102,7 @@ class TrigQuizApp {
             btnPaletteSettingsReset: document.getElementById('btn-palette-settings-reset'),
             btnPaletteSettingsSave: document.getElementById('btn-palette-settings-save'),
             courseElapsedTimerHeader: document.getElementById('course-elapsed-timer-header'),
+            courseElapsedTimerQuestion: document.getElementById('course-elapsed-timer-question'),
 
             // Start screen controls
             modeTabs: document.querySelectorAll('.mode-tab'),
@@ -690,6 +691,7 @@ class TrigQuizApp {
         }
         const isTwentyChallenge = this.mode === '20-challenge';
         if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.hidden = !isTwentyChallenge;
+        if (this.dom.courseElapsedTimerQuestion) this.dom.courseElapsedTimerQuestion.hidden = !isTwentyChallenge;
         if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.hidden = !isTwentyChallenge;
         this.quizStartedAt = Date.now();
         this.quizFinishedAt = 0;
@@ -1029,6 +1031,37 @@ class TrigQuizApp {
         ];
     }
 
+    getSecretPaletteSlot(index) {
+        const defaultValueId = this.getDefaultPaletteOrder(true)[index];
+        const standardPortrait = {
+            '-sqrt3': [1, '1 / span 6'], '-1/sqrt3': [1, '7 / span 6'], 'none': [1, '13 / span 6'], '1/sqrt3': [1, '19 / span 6'], 'sqrt3': [1, '25 / span 6'],
+            '-1': [2, '4 / span 6'], '0': [2, '13 / span 6'], '1': [2, '22 / span 6'],
+            '-sqrt3/2': [3, '1 / span 5'], '-1/sqrt2': [3, '6 / span 5'], '-1/2': [3, '11 / span 5'],
+            '1/2': [3, '16 / span 5'], '1/sqrt2': [3, '21 / span 5'], 'sqrt3/2': [3, '26 / span 5']
+        };
+        const standardWide = {
+            '-sqrt3': [1, 1], '-1/sqrt3': [1, 3], 'none': [1, 5], '1/sqrt3': [1, 7], 'sqrt3': [1, 9],
+            '-1': [2, 1], '-sqrt3/2': [2, 2], '-1/sqrt2': [2, 3], '-1/2': [2, 4], '0': [2, 5],
+            '1/2': [2, 6], '1/sqrt2': [2, 7], 'sqrt3/2': [2, 8], '1': [2, 9]
+        };
+        if (index < 14) {
+            return { group: 'standard', portrait: standardPortrait[defaultValueId], wide: standardWide[defaultValueId] };
+        }
+
+        const addedIndex = index - 14;
+        const addedWideOrder = [
+            'sqrt5-1/4', 'sqrt5+1/4', 'sqrt6-sqrt2/4', 'sqrt6+sqrt2/4',
+            'sqrt(2-sqrt2)/2', 'sqrt(2+sqrt2)/2', 'sqrt(10-2sqrt5)/4', 'sqrt(10+2sqrt5)/4',
+            '2-sqrt3', '2+sqrt3', 'sqrt2-1', 'sqrt2+1', 'tan36', 'tan72', 'tan54', 'tan18'
+        ];
+        const wideIndex = addedWideOrder.indexOf(defaultValueId);
+        return {
+            group: 'added',
+            portrait: [Math.floor(addedIndex / 4) + 1, (addedIndex % 4) + 1],
+            wide: [Math.floor(wideIndex / 8) + 1, (wideIndex % 8) + 1]
+        };
+    }
+
     loadPaletteOrder(secretMode = false) {
         const key = this.getPaletteStorageKey(secretMode);
         const allowed = new Set(this.getDefaultPaletteOrder(secretMode));
@@ -1044,7 +1077,19 @@ class TrigQuizApp {
     }
 
     savePaletteOrder(secretMode, order) {
-        localStorage.setItem(this.getPaletteStorageKey(secretMode), JSON.stringify(order));
+        const key = this.getPaletteStorageKey(secretMode);
+        const defaultOrder = this.getDefaultPaletteOrder(secretMode);
+        const isDefaultOrder = order.length === defaultOrder.length
+            && order.every((valueId, index) => valueId === defaultOrder[index]);
+
+        // The built-in palette has separate portrait/landscape layouts. Keeping
+        // its sequence as a "custom" layout would flatten those placements and
+        // make Reset look different after rotating the device.
+        if (isDefaultOrder) {
+            localStorage.removeItem(key);
+            return;
+        }
+        localStorage.setItem(key, JSON.stringify(order));
     }
 
     getPaletteDisplayHtml(valueId) {
@@ -1089,6 +1134,17 @@ class TrigQuizApp {
         if (!grid) return;
         grid.innerHTML = '';
         grid.classList.toggle('secret-palette-settings-grid', this.paletteSettingsSecret);
+        let secretStandardGrid = null;
+        let secretAddedGrid = null;
+        if (this.paletteSettingsSecret) {
+            secretStandardGrid = document.createElement('div');
+            secretStandardGrid.className = 'palette-settings-secret-standard';
+            secretStandardGrid.setAttribute('aria-label', '有名角の値');
+            secretAddedGrid = document.createElement('div');
+            secretAddedGrid.className = 'palette-settings-secret-added';
+            secretAddedGrid.setAttribute('aria-label', '裏版で追加された値');
+            grid.append(secretStandardGrid, secretAddedGrid);
+        }
         this.paletteSettingsOrder.forEach((valueId, index) => {
             const item = document.createElement('button');
             item.type = 'button';
@@ -1099,6 +1155,15 @@ class TrigQuizApp {
             item.dataset.valueId = valueId;
             item.draggable = true;
             item.innerHTML = this.getPaletteDisplayHtml(valueId);
+            let targetGrid = grid;
+            if (this.paletteSettingsSecret) {
+                const slot = this.getSecretPaletteSlot(index);
+                item.style.setProperty('--palette-p-row', slot.portrait[0]);
+                item.style.setProperty('--palette-p-col', slot.portrait[1]);
+                item.style.setProperty('--palette-w-row', slot.wide[0]);
+                item.style.setProperty('--palette-w-col', slot.wide[1]);
+                targetGrid = slot.group === 'standard' ? secretStandardGrid : secretAddedGrid;
+            }
             item.addEventListener('click', () => {
                 this.audio.playClick();
                 if (this.paletteSettingsSelectedIndex == null) {
@@ -1134,11 +1199,34 @@ class TrigQuizApp {
                 const source = this.paletteDragIndex ?? Number(event.dataTransfer?.getData('text/plain'));
                 if (Number.isInteger(source)) this.swapPaletteSettingsItems(source, index);
             });
-            grid.appendChild(item);
+            targetGrid.appendChild(item);
         });
     }
 
     renderSavedPalette(order, secretMode, compactValues, veryCompactValues, topValues, middleValues) {
+        if (secretMode) {
+            this.dom.paletteContainer.innerHTML = '<div class="palette-standard-grid" aria-label="自分専用の有名角の値"></div><div class="palette-secret-grid" aria-label="自分専用の裏版追加値"></div>';
+            const standardGrid = this.dom.paletteContainer.querySelector('.palette-standard-grid');
+            const addedGrid = this.dom.paletteContainer.querySelector('.palette-secret-grid');
+            order.forEach((valueId, index) => {
+                const slot = this.getSecretPaletteSlot(index);
+                const btn = document.createElement('button');
+                const sizeClass = veryCompactValues.has(valueId) ? 'value-very-compact' : (compactValues.has(valueId) ? 'value-compact' : 'value-standard');
+                const priorityClass = this.getPaletteSecretAddedValues().includes(valueId)
+                    ? (topValues.has(valueId) ? 'priority-top' : (middleValues.has(valueId) ? 'priority-middle' : 'priority-hard'))
+                    : 'priority-standard';
+                btn.className = `palette-btn ${priorityClass} ${sizeClass}`;
+                btn.dataset.valueId = valueId;
+                btn.style.setProperty('--palette-p-row', slot.portrait[0]);
+                btn.style.setProperty('--palette-p-col', slot.portrait[1]);
+                btn.style.setProperty('--palette-w-row', slot.wide[0]);
+                btn.style.setProperty('--palette-w-col', slot.wide[1]);
+                btn.innerHTML = window.formatValueHtml(valueId, this.useRationalized);
+                btn.addEventListener('click', () => this.handlePaletteSelect(valueId, btn));
+                (slot.group === 'standard' ? standardGrid : addedGrid).appendChild(btn);
+            });
+            return;
+        }
         this.dom.paletteContainer.innerHTML = '<div class="palette-custom-grid" aria-label="自分専用の値パレット"></div>';
         const grid = this.dom.paletteContainer.querySelector('.palette-custom-grid');
         order.forEach(valueId => {
@@ -1290,6 +1378,7 @@ class TrigQuizApp {
     startCourseElapsedTimer() {
         this.stopCourseElapsedTimer();
         if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.hidden = false;
+        if (this.dom.courseElapsedTimerQuestion) this.dom.courseElapsedTimerQuestion.hidden = false;
         if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.hidden = false;
         this.updateCourseElapsedDisplay();
         this.courseElapsedInterval = setInterval(() => this.updateCourseElapsedDisplay(), 100);
@@ -1302,6 +1391,7 @@ class TrigQuizApp {
         }
         if (this.mode !== '20-challenge') {
             if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.hidden = true;
+            if (this.dom.courseElapsedTimerQuestion) this.dom.courseElapsedTimerQuestion.hidden = true;
             if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.hidden = true;
         }
     }
@@ -1316,6 +1406,7 @@ class TrigQuizApp {
         const tenths = Math.floor((elapsedSeconds % 1) * 10);
         const label = `⏱ ${minutes}:${seconds}.${tenths}`;
         if (this.dom.courseElapsedTimerHeader) this.dom.courseElapsedTimerHeader.textContent = label;
+        if (this.dom.courseElapsedTimerQuestion) this.dom.courseElapsedTimerQuestion.textContent = label;
         if (this.dom.courseElapsedTimerStop) this.dom.courseElapsedTimerStop.textContent = label;
     }
 
@@ -1742,6 +1833,52 @@ class TrigQuizApp {
         this.audio.playResultRank(rank);
     }
 
+    launchConfetti() {
+        const canvas = this.dom.confettiCanvas;
+        const ctx = canvas?.getContext('2d');
+        if (!canvas || !ctx) return;
+
+        const scale = Math.min(2, window.devicePixelRatio || 1);
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+
+        const colors = ['#facc15', '#22c55e', '#38bdf8', '#fb7185', '#a78bfa', '#f97316'];
+        const pieces = Array.from({ length: 90 }, () => ({
+            x: Math.random() * width,
+            y: -20 - Math.random() * height * .35,
+            w: 5 + Math.random() * 6,
+            h: 8 + Math.random() * 8,
+            vx: (Math.random() - .5) * 3,
+            vy: 3 + Math.random() * 4,
+            spin: (Math.random() - .5) * .22,
+            angle: Math.random() * Math.PI,
+            color: colors[Math.floor(Math.random() * colors.length)]
+        }));
+        const startedAt = performance.now();
+        const draw = now => {
+            ctx.clearRect(0, 0, width, height);
+            pieces.forEach(piece => {
+                piece.x += piece.vx;
+                piece.y += piece.vy;
+                piece.angle += piece.spin;
+                ctx.save();
+                ctx.translate(piece.x, piece.y);
+                ctx.rotate(piece.angle);
+                ctx.fillStyle = piece.color;
+                ctx.fillRect(-piece.w / 2, -piece.h / 2, piece.w, piece.h);
+                ctx.restore();
+            });
+            if (now - startedAt < 1800) requestAnimationFrame(draw);
+            else ctx.clearRect(0, 0, width, height);
+        };
+        requestAnimationFrame(draw);
+    }
+
     finishQuiz() {
         this.setSecretAwakening(false);
         // 保存処理中に裏モードが解放されても、終了したクイズのモードは変えない。
@@ -1962,8 +2099,9 @@ class TrigQuizApp {
     getTimedChallengeRank(correctCount, isSecret = false, accuracy = 1) {
         if (accuracy < 0.8) return { rank: '記録対象外', rankClass: 'rank-unranked' };
         const thresholds = isSecret
-            ? { s: 20, a: 15, b: 10 }
-            : { s: 40, a: 30, b: 20 };
+            ? { sPlus: 30, s: 20, a: 15, b: 10 }
+            : { sPlus: 80, s: 40, a: 30, b: 20 };
+        if (correctCount >= thresholds.sPlus) return { rank: 'S+', rankClass: 'rank-s-plus' };
         if (correctCount >= thresholds.s) return { rank: 'S', rankClass: 'rank-s' };
         if (correctCount >= thresholds.a) return { rank: 'A', rankClass: 'rank-a' };
         if (correctCount >= thresholds.b) return { rank: 'B', rankClass: 'rank-b' };
@@ -2165,9 +2303,10 @@ class TrigQuizApp {
         const bestSecretRank = bestSecretQualifies
             ? this.getTimedChallengeRank(bestSecret, true).rank
             : '—';
-        const hasNormalSS = (best20Rank === 'S' || best20Rank === 'S+') && best2minRank === 'S';
+        const hasNormalSS = (best20Rank === 'S' || best20Rank === 'S+')
+            && (best2minRank === 'S' || best2minRank === 'S+');
         const hasEarnedCrown = hasNormalSS;
-        this.secretCrownEarned = bestSecretRank === 'S';
+        this.secretCrownEarned = bestSecretRank === 'S' || bestSecretRank === 'S+';
 
         this.applySecretModeState(hasEarnedCrown);
         this.renderPersonalBestPlant(this.secretModeActive);
@@ -2206,13 +2345,13 @@ class TrigQuizApp {
             this.dom.personalBestRankMark.title = labels[best20Rank];
         }
         if (this.dom.personalBest2minRankMark) {
-            const labels = { S: '40問以上・正答率80%以上', A: '30問以上・正答率80%以上', B: '20問以上・正答率80%以上', C: '20問未満・正答率80%以上', '—': '記録なし' };
+            const labels = { 'S+': '80問以上・正答率80%以上', S: '40問以上・正答率80%以上', A: '30問以上・正答率80%以上', B: '20問以上・正答率80%以上', C: '20問未満・正答率80%以上', '—': '記録なし' };
             this.dom.personalBest2minRankMark.textContent = best2minRank;
             this.dom.personalBest2minRankMark.setAttribute('aria-label', labels[best2minRank]);
             this.dom.personalBest2minRankMark.title = labels[best2minRank];
         }
         if (this.dom.personalBestSecretRankMark) {
-            const labels = { S: '20問以上・正答率80%以上', A: '15問以上・正答率80%以上', B: '10問以上・正答率80%以上', C: '10問未満・正答率80%以上', '—': '記録なし' };
+            const labels = { 'S+': '30問以上・正答率80%以上', S: '20問以上・正答率80%以上', A: '15問以上・正答率80%以上', B: '10問以上・正答率80%以上', C: '10問未満・正答率80%以上', '—': '記録なし' };
             this.dom.personalBestSecretRankMark.textContent = bestSecretRank;
             this.dom.personalBestSecretRankMark.setAttribute('aria-label', labels[bestSecretRank]);
             this.dom.personalBestSecretRankMark.title = labels[bestSecretRank];
@@ -2255,11 +2394,11 @@ class TrigQuizApp {
         document.body.classList.toggle('secret-mode-available', this.secretModeUnlocked);
         if (this.dom.modeWorldSwitcher) this.dom.modeWorldSwitcher.hidden = !this.secretModeUnlocked;
         if (this.dom.btnNormalMode) {
-            this.dom.btnNormalMode.textContent = '表版';
+            this.dom.btnNormalMode.textContent = '表版へ';
             this.dom.btnNormalMode.hidden = !active;
         }
         if (this.dom.btnSecretMode) {
-            this.dom.btnSecretMode.textContent = '裏版';
+            this.dom.btnSecretMode.textContent = '裏版へ';
             this.dom.btnSecretMode.hidden = !this.secretModeUnlocked || active;
         }
         if (this.dom.btnReference) this.dom.btnReference.textContent = active ? '裏確認表' : '確認表';
