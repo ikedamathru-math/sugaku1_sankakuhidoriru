@@ -23,6 +23,7 @@ class TrigQuizApp {
         this.secretModeActive = false;
         this.secretCrownEarned = false;
         this.normalModeSettings = null;
+        this.angleNotation = localStorage.getItem('trig-quiz-angle-notation') === 'radian' ? 'radian' : 'degree';
 
         // Settings State
         this.mode = '20-challenge'; // '20-challenge' | '3min-challenge' | '1min-secret'
@@ -94,6 +95,7 @@ class TrigQuizApp {
             headerBgmSelect: document.getElementById('header-bgm-select'),
             btnBgmToggle: document.getElementById('btn-bgm-toggle'),
             btnPaletteSettings: document.getElementById('btn-palette-settings'),
+            btnAngleNotation: document.getElementById('btn-angle-notation'),
             paletteSettingsOverlay: document.getElementById('palette-settings-overlay'),
             paletteSettingsTitle: document.getElementById('palette-settings-title'),
             paletteSettingsSubtitle: document.getElementById('palette-settings-subtitle'),
@@ -120,6 +122,7 @@ class TrigQuizApp {
             personalBestSecretDetail: document.getElementById('personal-best-secret-detail'),
             personalBestSecretRankMark: document.getElementById('personal-best-secret-rank-mark'),
             personalBestNote: document.getElementById('personal-best-note'),
+            personalBestVersion: document.getElementById('personal-best-version'),
             personalBestPlant: document.getElementById('personal-best-plant'),
             secretModeBadge: document.getElementById('secret-mode-badge'),
             modeWorldSwitcher: document.getElementById('mode-world-switcher'),
@@ -204,6 +207,7 @@ class TrigQuizApp {
         this.updatePersonalBestDisplay();
         requestAnimationFrame(() => this.fitStartScreenToViewport());
         this.initReferenceGuide();
+        this.applyAngleNotation(false);
         if (this.dom.btnBgmToggle) {
             this.dom.btnBgmToggle.textContent = this.bgmEnabled ? '効果音 ON' : '効果音 OFF';
         }
@@ -358,6 +362,14 @@ class TrigQuizApp {
             this.dom.btnPaletteSettings.addEventListener('click', () => {
                 this.audio.playClick();
                 this.openPaletteSettings();
+            });
+        }
+        if (this.dom.btnAngleNotation) {
+            this.dom.btnAngleNotation.addEventListener('click', () => {
+                this.audio.playClick();
+                this.angleNotation = this.angleNotation === 'degree' ? 'radian' : 'degree';
+                localStorage.setItem('trig-quiz-angle-notation', this.angleNotation);
+                this.applyAngleNotation(true);
             });
         }
         if (this.dom.btnPaletteSettingsClose) {
@@ -536,8 +548,10 @@ class TrigQuizApp {
         this.mode = settings.mode;
         this.answerType = settings.answerType;
         this.targetFunctions = [...settings.targetFunctions];
-        this.timeLimitSetting = settings.timeLimitSetting;
+        this.timeLimitSetting = 0;
         this.secretModeActive = Boolean(settings.secretModeActive);
+        this.angleNotation = settings.angleNotation || this.angleNotation;
+        this.applyAngleNotation(false);
 
         // Restore the visible UI as well so the next attempt and the top screen stay consistent.
         this.dom.modeTabs.forEach(tab => {
@@ -576,10 +590,8 @@ class TrigQuizApp {
             this.targetFunctions = checkedFuncs;
         }
 
-        const selectedTimeLimit = document.querySelector('input[name="time-limit"]:checked');
-        if (selectedTimeLimit) {
-            this.timeLimitSetting = parseInt(selectedTimeLimit.value, 10);
-        }
+        // 1問ごとの制限時間は廃止。コース全体の計時だけを使用する。
+        this.timeLimitSetting = 0;
     }
 
 
@@ -589,18 +601,16 @@ class TrigQuizApp {
                 'reference-guide-circle',
                 (deg) => this.updateReferenceGuide(deg)
             );
-            if (this.secretModeActive) {
-                this.referenceGuideVisualizer.setAngles(window.SECRET_ANGLES);
-            }
+            this.referenceGuideVisualizer.setAngles(this.getCircleAnglePool());
             this.referenceGuideVisualizer.setInteractive(true);
-            this.updateReferenceGuide(this.secretModeActive ? window.SECRET_ANGLES[0] : 45);
+            this.updateReferenceGuide(this.secretModeActive && this.angleNotation === 'degree' ? window.SECRET_ANGLES[0] : 45);
         }
     }
 
     updateReferenceGuide(deg) {
-        if (!window.TRIG_DATA || !window.TRIG_DATA[deg]) return;
+        const data = window.getTrigData(deg);
+        if (!data) return;
         this.referenceGuideAngle = deg;
-        const data = window.TRIG_DATA[deg];
 
         if (this.referenceGuideVisualizer) {
             this.referenceGuideVisualizer.update(deg, 'all');
@@ -608,7 +618,7 @@ class TrigQuizApp {
         }
 
         if (this.dom.referenceCurrentAngle) {
-            this.dom.referenceCurrentAngle.textContent = `${deg}°`;
+            this.dom.referenceCurrentAngle.innerHTML = this.formatAngleHtml(deg);
         }
         if (this.dom.referenceSinValue) {
             this.dom.referenceSinValue.innerHTML = window.formatValueHtml(data.sin.valueId, this.useRationalized);
@@ -619,12 +629,12 @@ class TrigQuizApp {
         if (this.dom.referenceTanValue) {
             this.dom.referenceTanValue.innerHTML = window.formatValueHtml(data.tan.valueId, this.useRationalized);
         }
-        if (this.dom.referenceSinAngle) this.dom.referenceSinAngle.textContent = `${deg}°`;
-        if (this.dom.referenceCosAngle) this.dom.referenceCosAngle.textContent = `${deg}°`;
-        if (this.dom.referenceTanAngle) this.dom.referenceTanAngle.textContent = `${deg}°`;
-        if (this.dom.referenceSideSinAngle) this.dom.referenceSideSinAngle.textContent = `${deg}°`;
-        if (this.dom.referenceSideCosAngle) this.dom.referenceSideCosAngle.textContent = `${deg}°`;
-        if (this.dom.referenceSideTanAngle) this.dom.referenceSideTanAngle.textContent = `${deg}°`;
+        if (this.dom.referenceSinAngle) this.dom.referenceSinAngle.innerHTML = this.formatAngleHtml(deg);
+        if (this.dom.referenceCosAngle) this.dom.referenceCosAngle.innerHTML = this.formatAngleHtml(deg);
+        if (this.dom.referenceTanAngle) this.dom.referenceTanAngle.innerHTML = this.formatAngleHtml(deg);
+        if (this.dom.referenceSideSinAngle) this.dom.referenceSideSinAngle.innerHTML = this.formatAngleHtml(deg);
+        if (this.dom.referenceSideCosAngle) this.dom.referenceSideCosAngle.innerHTML = this.formatAngleHtml(deg);
+        if (this.dom.referenceSideTanAngle) this.dom.referenceSideTanAngle.innerHTML = this.formatAngleHtml(deg);
         if (this.dom.referenceSideSinValue) {
             this.dom.referenceSideSinValue.innerHTML = window.formatValueHtml(data.sin.valueId, this.useRationalized);
             this.dom.referenceSideSinValue.classList.toggle('is-integer-value', ['-1', '0', '1'].includes(data.sin.valueId));
@@ -681,12 +691,14 @@ class TrigQuizApp {
         this.stopGlobalChallengeTimer();
         this.stopCourseElapsedTimer();
         if (!preserveSettings) this.updateSettingsFromUI();
+        this.timeLimitSetting = 0;
+        this.visualizer?.setAngles(this.getCircleAnglePool());
         if (!this.secretModeActive && this.mode !== '1min-secret') {
             this.normalModeSettings = {
                 mode: this.mode,
                 answerType: this.answerType,
                 targetFunctions: [...this.targetFunctions],
-                timeLimitSetting: this.timeLimitSetting
+                timeLimitSetting: 0
             };
         }
         const isTwentyChallenge = this.mode === '20-challenge';
@@ -793,6 +805,65 @@ class TrigQuizApp {
         return String(value).replace(/[0-9]/g, digit => String.fromCharCode(digit.charCodeAt(0) + 0xFEE0));
     }
 
+    getActiveAnglePool() {
+        if (this.angleNotation !== 'radian') {
+            return this.secretModeActive ? [...window.SECRET_ANGLES] : [...window.ANGLES];
+        }
+        const standardTurn = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+        if (!this.secretModeActive) return standardTurn;
+        const secondTurn = standardTurn.slice(1).map(angle => angle + 360);
+        const difficult = [...window.SECRET_ANGLES, ...window.SECRET_ANGLES.map(angle => angle + 360)];
+        return [...standardTurn, ...secondTurn, ...difficult].sort((a, b) => a - b);
+    }
+
+    getCircleAnglePool() {
+        const source = this.getActiveAnglePool();
+        return [...new Set(source.map(angle => window.normalizeAngle(angle)))].sort((a, b) => a - b);
+    }
+
+    formatAngleHtml(angle) {
+        return window.formatAngleHtml(angle, this.angleNotation);
+    }
+
+    formatAngleText(angle) {
+        return window.formatAngleText(angle, this.angleNotation);
+    }
+
+    bestStorageKey(baseKey) {
+        return this.angleNotation === 'radian' ? `${baseKey}-radian` : baseKey;
+    }
+
+    anglesShareTerminalSide(a, b) {
+        return window.normalizeAngle(a) === window.normalizeAngle(b);
+    }
+
+    applyAngleNotation(refresh = true) {
+        const radian = this.angleNotation === 'radian';
+        document.body.classList.toggle('radian-mode', radian);
+        if (this.dom.btnAngleNotation) {
+            this.dom.btnAngleNotation.innerHTML = radian
+                ? '<span>数Ⅱ</span><span>弧度法</span>'
+                : '<span>数Ⅰ</span><span>度数法</span>';
+            this.dom.btnAngleNotation.classList.toggle('active', radian);
+            this.dom.btnAngleNotation.setAttribute('aria-pressed', String(radian));
+            this.dom.btnAngleNotation.setAttribute('aria-label', radian ? '数Ⅱ 弧度法。数Ⅰ 度数法へ切り替える' : '数Ⅰ 度数法。数Ⅱ 弧度法へ切り替える');
+            this.dom.btnAngleNotation.title = radian ? '度数法へ切り替える' : '弧度法へ切り替える';
+        }
+        if (this.dom.personalBestVersion) this.dom.personalBestVersion.textContent = radian ? '弧度法ver.' : '度数法ver.';
+        const circleAngles = this.getCircleAnglePool();
+        this.visualizer?.setAngles(circleAngles);
+        this.referenceVisualizer?.setAngles(circleAngles);
+        this.referenceGuideVisualizer?.setAngles(circleAngles);
+        this.buildReferenceTable();
+        this.updatePersonalBestDisplay();
+        if (refresh && this.dom.referenceScreen?.classList.contains('active')) {
+            const next = circleAngles.includes(window.normalizeAngle(this.referenceGuideAngle))
+                ? window.normalizeAngle(this.referenceGuideAngle)
+                : circleAngles[0];
+            this.updateReferenceGuide(next);
+        }
+    }
+
     nextQuestion() {
         this.clearAutoAdvance();
         this.awaitingTapAdvance = false;
@@ -844,7 +915,7 @@ class TrigQuizApp {
     generateQuestion() {
         if (this.reviewQueue && this.reviewQueue.length > 0) {
             const q = this.reviewQueue.shift();
-            const data = window.TRIG_DATA[q.angle][q.func];
+            const data = window.getTrigData(q.angle)[q.func];
             return {
                 angle: q.angle,
                 func: q.func,
@@ -854,6 +925,19 @@ class TrigQuizApp {
         }
 
         if (this.mode === '1min-secret') {
+            if (this.angleNotation === 'radian') {
+                const roll = Math.random();
+                const standardFirstTurn = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+                const standardSecondTurn = standardFirstTurn.slice(1).map(angle => angle + 360);
+                const difficultRadians = [...window.SECRET_ANGLES, ...window.SECRET_ANGLES.map(angle => angle + 360)];
+                const angles = roll < 0.60 ? standardFirstTurn : (roll < 0.85 ? standardSecondTurn : difficultRadians);
+                const pool = angles.flatMap(angle => this.targetFunctions.map(func => {
+                    const data = window.getTrigData(angle)?.[func];
+                    return data ? { angle, func, valueId: data.valueId, explanation: data.explanation } : null;
+                })).filter(Boolean);
+                const question = this.takeUnusedQuestion(pool, roll < 0.60 ? 'radian-first' : (roll < 0.85 ? 'radian-second' : 'radian-hard'));
+                return { angle: question.angle, func: question.func, correctValueId: question.valueId, explanation: question.explanation };
+            }
             const useAddedAngle = this.questionIndex % 5 === 0;
             const pool = useAddedAngle
                 ? (window.SECRET_QUESTION_POOL || [])
@@ -872,19 +956,21 @@ class TrigQuizApp {
             };
         }
 
-        const angles = [0, 30, 45, 60, 90, 120, 135, 150, 180];
+        const angles = this.angleNotation === 'radian'
+            ? [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360]
+            : [0, 30, 45, 60, 90, 120, 135, 150, 180];
 
         const funcs = this.targetFunctions;
 
         const pool = angles.flatMap(angle => funcs.map(func => ({
             angle,
             func,
-            valueId: window.TRIG_DATA[angle][func].valueId,
-            explanation: window.TRIG_DATA[angle][func].explanation
+            valueId: window.getTrigData(angle)[func].valueId,
+            explanation: window.getTrigData(angle)[func].explanation
         })));
         const question = this.takeUnusedQuestion(pool, 'standard');
         const { angle, func } = question;
-        const data = window.TRIG_DATA[angle][func];
+        const data = window.getTrigData(angle)[func];
         const correctValueId = data.valueId;
 
         return {
@@ -935,7 +1021,7 @@ class TrigQuizApp {
         this.dom.questionFunc.textContent = `${this.currentQuestion.func}`;
         this.dom.questionFunc.className = `q-func func-${this.currentQuestion.func}`;
         // Show the angle so user knows which position to select on the unit circle
-        this.dom.questionAngle.textContent = `${this.currentQuestion.angle}°`;
+        this.dom.questionAngle.innerHTML = this.formatAngleHtml(this.currentQuestion.angle);
 
         // Unit circle: hide dynamic layer, enable interactive points
         this.visualizer.hideDynamic();
@@ -1540,7 +1626,7 @@ class TrigQuizApp {
         // 4択は「角度＋値」、数式パレットは「値のみ」で採点
         const circleCorrect = this.answerType === 'palette'
             ? true
-            : (this.selectedAngle === this.currentQuestion.angle);
+            : this.anglesShareTerminalSide(this.selectedAngle, this.currentQuestion.angle);
         const valueCorrect = (this.selectedChoiceId === this.currentQuestion.correctValueId);
         const isCorrect = this.answerType === 'palette'
             ? valueCorrect
@@ -1565,7 +1651,9 @@ class TrigQuizApp {
             : this.dom.choicesContainer.querySelectorAll('.choice-btn');
         answerButtons.forEach(btn => {
             btn.classList.remove('selected');
-            btn.disabled = true;
+            // 不正解確認中も、この選択肢をもう一度押せば次へ進めるようにする。
+            // 採点の二重実行は各クリック処理の isAnswered 判定で防ぐ。
+            btn.setAttribute('aria-disabled', 'true');
 
             if (btn.dataset.valueId === this.currentQuestion.correctValueId) {
                 btn.classList.add('correct');
@@ -1586,9 +1674,9 @@ class TrigQuizApp {
 
         // 単位円ポイントのハイライト（4択のみ）
         if (this.answerType !== 'palette') this.visualizer.container.querySelectorAll('.circle-point-group').forEach(grp => {
-            const d = parseInt(grp.dataset.angle, 10);
+            const d = parseFloat(grp.dataset.angle);
             grp.classList.remove('selected');
-            if (d === this.currentQuestion.angle) {
+            if (this.anglesShareTerminalSide(d, this.currentQuestion.angle)) {
                 grp.classList.add('correct');
                 grp.setAttribute('aria-label', `${d}度 正解`);
             } else if (d === this.selectedAngle && !circleCorrect) {
@@ -1607,7 +1695,7 @@ class TrigQuizApp {
             const streakBonus = this.streak * 20;
             this.score += 100 + speedBonus + streakBonus;
 
-            if ([3, 5, 7, 10].includes(this.streak)) this.showComboAnimation(this.streak);
+            if ([3, 5, 10].includes(this.streak)) this.showComboAnimation(this.streak);
 
             const justAwakened = this.mode === '1min-secret' && this.streak === 10;
             if (this.mode === '1min-secret' && this.streak >= 10) this.setSecretAwakening(true);
@@ -1689,7 +1777,7 @@ class TrigQuizApp {
             : this.dom.choicesContainer.querySelectorAll('.choice-btn');
         answerButtons.forEach(btn => {
             btn.classList.remove('selected');
-            btn.disabled = true;
+            btn.setAttribute('aria-disabled', 'true');
             if (btn.dataset.valueId === this.currentQuestion.correctValueId) {
                 btn.classList.add('correct');
                 btn.setAttribute('aria-label', `${btn.textContent.trim()} 正解`);
@@ -1701,9 +1789,9 @@ class TrigQuizApp {
         });
         if (this.answerType !== 'palette') {
             this.visualizer.container.querySelectorAll('.circle-point-group').forEach(grp => {
-                const angle = parseInt(grp.dataset.angle, 10);
+                const angle = parseFloat(grp.dataset.angle);
                 grp.classList.remove('selected');
-                if (angle === this.currentQuestion.angle) {
+                if (this.anglesShareTerminalSide(angle, this.currentQuestion.angle)) {
                     grp.classList.add('correct');
                     grp.setAttribute('aria-label', `${angle}度 正解`);
                 }
@@ -1818,7 +1906,7 @@ class TrigQuizApp {
             clearTimeout(this._engagementPopupTimer);
             this._engagementPopupTimer = setTimeout(() => popup.classList.remove('active'), 1100);
         }
-        if (combo === 5 || combo === 7) this.pulseUnitCircle(false);
+        if (combo === 5) this.pulseUnitCircle(false);
         if (combo === 10) this.pulseUnitCircle(true);
     }
 
@@ -1888,7 +1976,8 @@ class TrigQuizApp {
             answerType: this.answerType,
             targetFunctions: [...this.targetFunctions],
             timeLimitSetting: this.timeLimitSetting,
-            secretModeActive: this.secretModeActive
+            secretModeActive: this.secretModeActive,
+            angleNotation: this.angleNotation
         };
         this.stopTimer();
         this.stopGlobalChallengeTimer();
@@ -1901,10 +1990,13 @@ class TrigQuizApp {
         const growthEvent = this.recordPlantAttempt(completedMode, accuracyRatio, correctCount);
         this.clearAutoAdvance();
         this.audio.stopBgm();
+        const wasSecretModeUnlocked = this.secretModeUnlocked;
         const isNewBest = this.savePersonalBest(completedMode);
+        const secretModeJustUnlocked = !wasSecretModeUnlocked && this.secretModeUnlocked;
         this.showScreen('result');
 
         const achievementEvents = [];
+        if (secretModeJustUnlocked) achievementEvents.push({ type: 'unlock' });
         if (isNewBest) achievementEvents.push({ type: 'best' });
         if (growthEvent) achievementEvents.push({ type: 'growth', ...growthEvent });
 
@@ -2004,7 +2096,7 @@ class TrigQuizApp {
             const item = document.createElement('div');
             item.className = `history-item ${h.isCorrect ? 'is-correct' : 'is-wrong'}`;
             
-            const qStr = `${h.func} ${h.angle}°`;
+            const qStr = `${h.func} ${this.formatAngleText(h.angle)}`;
             const correctVal = window.formatValueHtml(h.correct, this.useRationalized);
             const userVal = h.selected === 'TIMEOUT' ? '時間切れ' : window.formatValueHtml(h.selected, this.useRationalized);
 
@@ -2119,16 +2211,18 @@ class TrigQuizApp {
         const key = mode === '1min-secret'
             ? 'trig-quiz-plant-secret-attempts'
             : 'trig-quiz-plant-normal-attempts';
-        const current = Number(localStorage.getItem(key) || 0);
+        const notationKey = this.angleNotation === 'radian' ? `${key}-radian` : key;
+        const current = Number(localStorage.getItem(notationKey) || 0);
         const next = Math.min(50, current + 1);
         if (next === current) return null;
-        localStorage.setItem(key, String(next));
+        localStorage.setItem(notationKey, String(next));
         const oldStage = Math.min(10, Math.floor(current / 5));
         const newStage = Math.min(10, Math.floor(next / 5));
         // 成長カウント自体は条件を満たすたびに増やすが、ポップは5の倍数だけ表示する。
         if (next % 5 !== 0) return null;
         return {
             secretMode: mode === '1min-secret',
+            angleNotation: this.angleNotation,
             oldCount: current,
             newCount: next,
             oldStage,
@@ -2138,12 +2232,14 @@ class TrigQuizApp {
 
     renderPersonalBestPlant(secretMode) {
         if (!this.dom.personalBestPlant) return;
-        const key = secretMode ? 'trig-quiz-plant-secret-attempts' : 'trig-quiz-plant-normal-attempts';
+        const baseKey = secretMode ? 'trig-quiz-plant-secret-attempts' : 'trig-quiz-plant-normal-attempts';
+        const key = this.angleNotation === 'radian' ? `${baseKey}-radian` : baseKey;
         const count = Math.min(50, Math.max(0, Number(localStorage.getItem(key) || 0)));
         const stage = Math.min(10, Math.floor(count / 5));
         const stageLabels = ['たね', '芽', '茎', '小さな葉', '葉', 'つぼみ', '育ったつぼみ', '花びら', '開花', 'もうすぐ満開', '満開'];
         this.dom.personalBestPlant.classList.toggle('secret-plant', secretMode);
-        this.dom.personalBestPlant.setAttribute('aria-label', `${secretMode ? '裏モード' : '通常モード'}の花：${count}回、${stageLabels[stage]}`);
+        this.dom.personalBestPlant.classList.toggle('radian-plant', this.angleNotation === 'radian');
+        this.dom.personalBestPlant.setAttribute('aria-label', `${this.angleNotation === 'radian' ? '数Ⅱ・弧度法' : '数Ⅰ・度数法'}、${secretMode ? '裏モード' : '通常モード'}の花：${count}回、${stageLabels[stage]}`);
         this.dom.personalBestPlant.innerHTML = `
             <span class="plant-sprite-viewport" aria-hidden="true">
                 <span class="plant-sprite-sheet" style="--plant-stage:${stage};--plant-row:${secretMode ? 1 : 0}"></span>
@@ -2195,19 +2291,27 @@ class TrigQuizApp {
         this.dom.achievementOverlay.setAttribute('aria-hidden', 'false');
         this.dom.achievementCard.classList.toggle('is-best', event.type === 'best');
         this.dom.achievementCard.classList.toggle('is-growth', event.type === 'growth');
+        this.dom.achievementCard.classList.toggle('is-unlock', event.type === 'unlock');
         this.dom.achievementBestImage.hidden = event.type !== 'best';
-        this.dom.achievementGrowthVisual.hidden = event.type !== 'growth';
+        this.dom.achievementGrowthVisual.hidden = event.type !== 'growth' && event.type !== 'unlock';
         this.dom.btnAchievementClose.textContent = this.achievementQueue.length ? '次の演出へ' : '結果を見る';
 
         if (event.type === 'best') {
             this.dom.achievementCopy.innerHTML = '<strong>自己ベストを更新しました！</strong><span>すばらしい記録です</span>';
+        } else if (event.type === 'unlock') {
+            this.dom.achievementGrowthVisual.classList.remove('secret-growth', 'radian-growth');
+            this.dom.achievementGrowthVisual.classList.add('secret-unlock-visual');
+            this.dom.achievementGrowthVisual.innerHTML = '<span class="secret-unlock-icon" aria-hidden="true">🔓</span><strong>裏版</strong>';
+            this.dom.achievementCopy.innerHTML = '<strong>SS達成！ 裏版が解放されました</strong><span>表版の2コースでS以上を達成しました</span>';
         } else {
+            this.dom.achievementGrowthVisual.classList.remove('secret-unlock-visual');
             const stageLabels = ['たね', '芽', '茎', '小さな葉', '葉', 'つぼみ', '育ったつぼみ', '花びら', '開花', 'もうすぐ満開', '満開'];
             const stageChanged = event.newStage > event.oldStage;
             const title = stageChanged
                 ? `「${stageLabels[event.newStage]}」に成長！`
                 : '花の成長ポイントが増えました！';
             this.dom.achievementGrowthVisual.classList.toggle('secret-growth', event.secretMode);
+            this.dom.achievementGrowthVisual.classList.toggle('radian-growth', event.angleNotation === 'radian');
             this.dom.achievementGrowthVisual.innerHTML = `
                 <span class="plant-sprite-viewport" aria-hidden="true">
                     <span class="plant-sprite-sheet" style="--plant-stage:${event.newStage};--plant-row:${event.secretMode ? 1 : 0}"></span>
@@ -2240,8 +2344,8 @@ class TrigQuizApp {
             }
             const elapsed = this.getElapsedQuizTimeSeconds();
             if (!elapsed || !Number.isFinite(elapsed)) return false;
-            const key = 'trig-quiz-best-20-challenge';
-            const correctKey = 'trig-quiz-best-20-correct';
+            const key = this.bestStorageKey('trig-quiz-best-20-challenge');
+            const correctKey = this.bestStorageKey('trig-quiz-best-20-correct');
             const current = Number(localStorage.getItem(key));
             if (!current || elapsed < current) {
                 localStorage.setItem(key, elapsed.toFixed(2));
@@ -2253,8 +2357,8 @@ class TrigQuizApp {
                 this.updatePersonalBestDisplay();
                 return false;
             }
-            const key = 'trig-quiz-best-2min-challenge';
-            const totalKey = 'trig-quiz-best-2min-total';
+            const key = this.bestStorageKey('trig-quiz-best-2min-challenge');
+            const totalKey = this.bestStorageKey('trig-quiz-best-2min-total');
             const current = Number(localStorage.getItem(key) || 0);
             if (correctCount > current) {
                 localStorage.setItem(key, String(correctCount));
@@ -2266,8 +2370,8 @@ class TrigQuizApp {
                 this.updatePersonalBestDisplay();
                 return false;
             }
-            const key = 'trig-quiz-best-1min-secret';
-            const totalKey = 'trig-quiz-best-1min-secret-total';
+            const key = this.bestStorageKey('trig-quiz-best-1min-secret');
+            const totalKey = this.bestStorageKey('trig-quiz-best-1min-secret-total');
             const current = Number(localStorage.getItem(key) || 0);
             if (correctCount > current) {
                 localStorage.setItem(key, String(correctCount));
@@ -2282,16 +2386,16 @@ class TrigQuizApp {
     updatePersonalBestDisplay() {
         if (!this.dom.personalBestTime || !this.dom.personalBestDetail) return;
 
-        const best20 = Number(localStorage.getItem('trig-quiz-best-20-challenge'));
-        const storedBest20Correct = Number(localStorage.getItem('trig-quiz-best-20-correct'));
+        const best20 = Number(localStorage.getItem(this.bestStorageKey('trig-quiz-best-20-challenge')));
+        const storedBest20Correct = Number(localStorage.getItem(this.bestStorageKey('trig-quiz-best-20-correct')));
         // Existing records were already limited to 18+ correct; preserve them when migrating.
         const best20Correct = storedBest20Correct || (best20 ? 18 : 0);
-        const best3min = Number(localStorage.getItem('trig-quiz-best-2min-challenge'));
-        const best3minTotalStored = Number(localStorage.getItem('trig-quiz-best-2min-total'));
+        const best3min = Number(localStorage.getItem(this.bestStorageKey('trig-quiz-best-2min-challenge')));
+        const best3minTotalStored = Number(localStorage.getItem(this.bestStorageKey('trig-quiz-best-2min-total')));
         const best3minTotal = best3minTotalStored || best3min;
         const best3minQualifies = best3min > 0 && best3minTotal > 0 && best3min / best3minTotal >= 0.8;
-        const bestSecret = Number(localStorage.getItem('trig-quiz-best-1min-secret'));
-        const bestSecretTotalStored = Number(localStorage.getItem('trig-quiz-best-1min-secret-total'));
+        const bestSecret = Number(localStorage.getItem(this.bestStorageKey('trig-quiz-best-1min-secret')));
+        const bestSecretTotalStored = Number(localStorage.getItem(this.bestStorageKey('trig-quiz-best-1min-secret-total')));
         const bestSecretTotal = bestSecretTotalStored || bestSecret;
         const bestSecretQualifies = bestSecret > 0 && bestSecretTotal > 0 && bestSecret / bestSecretTotal >= 0.8;
         const best20Rank = best20
@@ -2303,6 +2407,7 @@ class TrigQuizApp {
         const bestSecretRank = bestSecretQualifies
             ? this.getTimedChallengeRank(bestSecret, true).rank
             : '—';
+        // 数Ⅰ（度数法）と数Ⅱ（弧度法）は、それぞれの記録だけで裏版を解放する。
         const hasNormalSS = (best20Rank === 'S' || best20Rank === 'S+')
             && (best2minRank === 'S' || best2minRank === 'S+');
         const hasEarnedCrown = hasNormalSS;
@@ -2394,11 +2499,13 @@ class TrigQuizApp {
         document.body.classList.toggle('secret-mode-available', this.secretModeUnlocked);
         if (this.dom.modeWorldSwitcher) this.dom.modeWorldSwitcher.hidden = !this.secretModeUnlocked;
         if (this.dom.btnNormalMode) {
-            this.dom.btnNormalMode.textContent = '表版へ';
+            this.dom.btnNormalMode.textContent = '裏版';
+            this.dom.btnNormalMode.title = '表版に切り替える';
             this.dom.btnNormalMode.hidden = !active;
         }
         if (this.dom.btnSecretMode) {
-            this.dom.btnSecretMode.textContent = '裏版へ';
+            this.dom.btnSecretMode.textContent = '表版';
+            this.dom.btnSecretMode.title = '裏版に切り替える';
             this.dom.btnSecretMode.hidden = !this.secretModeUnlocked || active;
         }
         if (this.dom.btnReference) this.dom.btnReference.textContent = active ? '裏確認表' : '確認表';
@@ -2457,22 +2564,18 @@ class TrigQuizApp {
                 input.closest('.pill-option').hidden = input.value === '2';
                 input.checked = input.value === String(normalSettings?.timeLimitSetting ?? 0);
             });
-            this.timeLimitSetting = normalSettings?.timeLimitSetting ?? 0;
+            this.timeLimitSetting = 0;
             this.syncSelectionCards();
             this.buildReferenceTable();
             if (this.referenceGuideVisualizer) {
-                const normalAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                    ? this.getActiveAnglePool()
-                    : window.ANGLES;
+                const normalAngles = this.getCircleAnglePool();
                 this.referenceGuideVisualizer.setAngles(normalAngles);
                 const normalDefault = normalAngles.includes(45) ? 45 : normalAngles[0];
                 this.referenceGuideAngle = normalDefault;
                 this.updateReferenceGuide(normalDefault);
             }
             if (this.referenceVisualizer) {
-                const normalAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                    ? this.getActiveAnglePool()
-                    : window.ANGLES;
+                const normalAngles = this.getCircleAnglePool();
                 this.referenceVisualizer.setAngles(normalAngles);
             }
             this.renderPersonalBestPlant(false);
@@ -2503,18 +2606,14 @@ class TrigQuizApp {
         this.syncSelectionCards();
         this.buildReferenceTable();
         if (this.referenceGuideVisualizer) {
-            const secretAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                ? this.getActiveAnglePool()
-                : window.SECRET_ANGLES;
+            const secretAngles = this.getCircleAnglePool();
             this.referenceGuideVisualizer.setAngles(secretAngles);
             const secretDefault = secretAngles[0];
             this.referenceGuideAngle = secretDefault;
             this.updateReferenceGuide(secretDefault);
         }
         if (this.referenceVisualizer) {
-            const secretAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                ? this.getActiveAnglePool()
-                : window.SECRET_ANGLES;
+            const secretAngles = this.getCircleAnglePool();
             this.referenceVisualizer.setAngles(secretAngles);
         }
         this.renderPersonalBestPlant(true);
@@ -2541,7 +2640,13 @@ class TrigQuizApp {
             <article class="memory-pair-card priority-${group.level}">
                 <div class="memory-card-head"><span class="memory-priority">${group.label}</span><span class="memory-relation">${group.relation}</span></div>
                 <div class="memory-pair-items">
-                    ${group.items.map(([name, valueId]) => `<div class="memory-expression"><strong>${name}</strong><span class="memory-equals">＝</span><span class="memory-value">${window.formatValueHtml(valueId, this.useRationalized)}</span></div>`).join('')}
+                    ${group.items.map(([name, valueId]) => {
+                        const match = name.match(/^(sin|cos|tan)\s+([\d.]+)°$/);
+                        const angleName = match && this.angleNotation === 'radian'
+                            ? `${match[1]} ${this.formatAngleHtml(Number(match[2]))}`
+                            : name;
+                        return `<div class="memory-expression"><strong>${angleName}</strong><span class="memory-equals">＝</span><span class="memory-value">${window.formatValueHtml(valueId, this.useRationalized)}</span></div>`;
+                    }).join('')}
                 </div>
                 <p class="memory-reason">${group.reason}</p>
             </article>
@@ -2554,17 +2659,19 @@ class TrigQuizApp {
 
     buildReferenceTable() {
         this.dom.referenceTableBody.innerHTML = '';
-        const referenceAngles = this.secretModeActive ? window.SECRET_ANGLES : window.ANGLES;
+        const referenceAngles = this.getActiveAnglePool();
         referenceAngles.forEach(deg => {
+            const data = window.getTrigData(deg);
+            if (!data) return;
             const row = document.createElement('tr');
             row.dataset.angle = deg;
 
-            const sinVal = window.formatValueHtml(window.TRIG_DATA[deg].sin.valueId, this.useRationalized);
-            const cosVal = window.formatValueHtml(window.TRIG_DATA[deg].cos.valueId, this.useRationalized);
-            const tanVal = window.formatValueHtml(window.TRIG_DATA[deg].tan.valueId, this.useRationalized);
+            const sinVal = window.formatValueHtml(data.sin.valueId, this.useRationalized);
+            const cosVal = window.formatValueHtml(data.cos.valueId, this.useRationalized);
+            const tanVal = window.formatValueHtml(data.tan.valueId, this.useRationalized);
 
             row.innerHTML = `
-                <td class="cell-angle"><strong>${deg}°</strong></td>
+                <td class="cell-angle"><strong>${this.formatAngleHtml(deg)}</strong></td>
                 <td class="cell-sin">${sinVal}</td>
                 <td class="cell-cos">${cosVal}</td>
                 <td class="cell-tan">${tanVal}</td>
@@ -2586,9 +2693,7 @@ class TrigQuizApp {
         this.showScreen('reference');
         this.initReferenceGuide();
         if (this.referenceGuideVisualizer) {
-            const refAngles = (typeof this.getActiveAnglePool === 'function' && this.angleNotation === 'radian')
-                ? this.getActiveAnglePool()
-                : (this.secretModeActive ? window.SECRET_ANGLES : window.ANGLES);
+            const refAngles = this.getCircleAnglePool();
             this.referenceGuideVisualizer.setAngles(refAngles);
             if (!refAngles.includes(this.referenceGuideAngle)) {
                 this.referenceGuideAngle = refAngles.includes(45) ? 45 : refAngles[0];

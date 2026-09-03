@@ -7,8 +7,8 @@
 <meta content="#ffffff" name="theme-color"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
-<title>三角比マスター (0°〜180°) - sin, cos, tan クイズ</title>
-<meta content="0度から180度までの三角比（sin, cos, tan）を半円・単位円と合わせて楽しく学べるスピードクイズ＆特訓Webアプリ" name="description"/>
+<title>三角比マスター - 度数法・弧度法 sin, cos, tan クイズ</title>
+<meta content="度数法と弧度法を切り替え、単位円と合わせてsin・cos・tanを学べるスピードクイズ＆特訓Webアプリ" name="description"/>
 <link href="manifest.webmanifest" rel="manifest"/>
 <link href="assets/start-face.png" rel="apple-touch-icon"/>
 <!-- Google Fonts -->
@@ -16,20 +16,20 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Main Style -->
-<link href="css/style.css?v=136" rel="stylesheet"/>
-<link href="css/height-compact.css?v=136" rel="stylesheet"/>
+<link href="css/style.css?v=155" rel="stylesheet"/>
+<link href="css/height-compact.css?v=155" rel="stylesheet"/>
 </head>
 <body>
 <!-- Header HUD -->
 <header class="app-header">
 <div class="header-actions">
 <span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-header" hidden="" id="course-elapsed-timer-header">⏱ 0:00.0</span>
+<span class="mode-world-switcher" hidden="" id="mode-world-switcher">
+<button class="btn mode-world-btn" id="btn-normal-mode" title="表版に切り替える" type="button">裏版</button>
+<button class="btn mode-world-btn" id="btn-secret-mode" title="裏版に切り替える" type="button">表版</button>
+</span>
 <button class="btn" id="btn-reference" title="三角比確認表">確認表</button>
 <button class="btn btn-palette-settings" id="btn-palette-settings" title="値パレットの配置を設定" type="button">パレット設定</button>
-<span class="mode-world-switcher" hidden="" id="mode-world-switcher">
-<button class="btn mode-world-btn" id="btn-normal-mode" title="表版へ" type="button">表版へ</button>
-<button class="btn mode-world-btn" id="btn-secret-mode" title="裏版へ" type="button">裏版へ</button>
-</span>
 <button class="btn active" id="btn-sound" title="操作音オン・オフ">操作音 ON</button>
 <button class="btn" id="btn-bgm-toggle" title="効果音オン・オフ">効果音 OFF</button>
 </div>
@@ -77,7 +77,10 @@
              1. Start & Settings Screen
              ========================================== -->
 <section class="screen-view active" id="start-screen">
-<div class="settings-card"><div class="drill-title"><img alt="三角比ドリル" class="drill-title-image" src="assets/title-sankakuhidoriru-reference.png"/></div>
+<div class="settings-card"><div class="title-row">
+<button aria-pressed="false" class="angle-notation-btn" id="btn-angle-notation" title="度数法と弧度法を切り替える" type="button"><span>数Ⅰ</span><span>度数法</span></button>
+<div class="drill-title"><img alt="三角比ドリル" class="drill-title-image" src="assets/title-sankakuhidoriru-transparent-v1.png"/></div>
+</div>
 <!-- Nickname Input -->
 <!-- Mode Selection -->
 <div class="settings-group">
@@ -129,21 +132,10 @@
 </label>
 </div>
 </div>
-<!-- Time Limit -->
-<div class="settings-group" id="time-limit-group">
-<div class="settings-section-title">時間(１問)</div>
-<div class="options-group">
-<label class="pill-option secret-time-option" hidden=""><input name="time-limit" type="radio" value="2"/><span class="pill-label">2秒</span></label>
-<label class="pill-option"><input name="time-limit" type="radio" value="3"/><span class="pill-label">3秒</span></label>
-<label class="pill-option"><input name="time-limit" type="radio" value="5"/><span class="pill-label">5秒</span></label>
-<label class="pill-option"><input name="time-limit" type="radio" value="10"/><span class="pill-label">10秒</span></label>
-<label class="pill-option"><input checked="" name="time-limit" type="radio" value="0"/><span class="pill-label">なし</span></label>
-</div>
-</div>
 <!-- Notation Format Toggle -->
 <button class="btn btn-primary btn-large start-quiz-btn" id="btn-start-quiz"><span class="start-btn-label">スタート</span><img alt="" class="start-btn-icon" src="assets/start-icon-white.png"/></button>
-<div aria-live="polite" class="personal-best-card"><div class="personal-best-main">
-<div class="personal-best-head">自己ベスト</div>
+<div class="personal-best-wrap"><div aria-live="polite" class="personal-best-card"><div class="personal-best-main">
+<div class="personal-best-heading-row"><div class="personal-best-head">自己ベスト</div><span class="personal-best-version" id="personal-best-version">度数法ver.</span></div>
 <div class="personal-best-grid">
 <div class="personal-best-entry personal-best-entry-20">
 <div class="pb-course-name">20問コース</div>
@@ -165,7 +157,7 @@
 </div></div>
 </div>
 <div class="personal-best-note" id="personal-best-note">※sin・cos・tan全選択かつ18問以上正解した記録のみ反映</div>
-</div><div aria-live="polite" class="personal-best-plant" id="personal-best-plant"></div></div>
+</div><div aria-live="polite" class="personal-best-plant" id="personal-best-plant"></div></div></div>
 </div>
 </section>
 <!-- ==========================================
@@ -204,7 +196,6 @@
 <span class="q-func func-sin" id="question-func">sin</span>
 <span class="q-angle" id="question-angle">135°</span>
 <span aria-label="残り時間" class="visual-hourglass visual-clock-timer" id="visual-timer" role="img">
-<span aria-hidden="true" class="visual-clock-face"><span class="visual-clock-hand"></span></span>
 <span aria-hidden="true" class="challenge-time-text" id="challenge-time-text"></span>
 </span>
 <span class="quiz-progress-text" id="quiz-progress-text">１問目</span>
@@ -237,7 +228,7 @@
 </div>
 <!-- Card Footer (Next & Quit) -->
 <div class="quiz-footer">
-<div class="tap-next-hint" id="tap-next-hint" style="display:none;">画面をタップして次の問題へ</div>
+<div class="tap-next-hint" id="tap-next-hint" style="display:none;">画面をタップ 次の問題</div>
 <div class="stop-control-wrap" id="stop-control-wrap">
 <span aria-label="20問コース経過時間" class="course-elapsed-timer course-elapsed-timer-stop" hidden="" id="course-elapsed-timer-stop">⏱ 0:00.0</span>
 <button class="btn btn-stop" id="btn-quit-quiz">■ ストップ</button>
@@ -341,10 +332,10 @@
 <!-- Victory Confetti Canvas -->
 <canvas id="confetti-canvas"></canvas>
 <!-- Scripts -->
-<script src="js/trig-data.js?v=136"></script>
-<script src="js/audio.js?v=136"></script>
-<script src="js/unit-circle.js?v=136"></script>
-<script src="js/pwa.js?v=136"></script>
-<script src="js/app.js?v=136"></script>
+<script src="js/trig-data.js?v=155"></script>
+<script src="js/audio.js?v=155"></script>
+<script src="js/unit-circle.js?v=155"></script>
+<script src="js/pwa.js?v=155"></script>
+<script src="js/app.js?v=155"></script>
 </body>
 </html>

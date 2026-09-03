@@ -236,6 +236,72 @@ function formatValueText(valueId, useRationalized = false) {
     return map[valueId] || raw.replace('-', '−');
 }
 
+function normalizeAngle(deg) {
+    const normalized = Number(deg) % 360;
+    return normalized < 0 ? normalized + 360 : normalized;
+}
+
+function getTrigData(deg) {
+    const normalized = normalizeAngle(deg);
+    if (TRIG_DATA[normalized]) return TRIG_DATA[normalized];
+
+    const rad = normalized * Math.PI / 180;
+    const near = (a, b) => Math.abs(a - b) < 1e-7;
+    const findValueId = value => {
+        if (!Number.isFinite(value)) return 'none';
+        const match = Object.values(VALUE_DEFS).find(def => def.val !== null && near(def.val, value));
+        return match ? match.id : null;
+    };
+    const sinId = findValueId(Math.sin(rad));
+    const cosId = findValueId(Math.cos(rad));
+    const tanId = Math.abs(Math.cos(rad)) < 1e-7 ? 'none' : findValueId(Math.tan(rad));
+    if (!sinId || !cosId || !tanId) return null;
+    return {
+        sin: { valueId: sinId, explanation: '同じ終辺をもつ角の単位円上の y 座標です。' },
+        cos: { valueId: cosId, explanation: '同じ終辺をもつ角の単位円上の x 座標です。' },
+        tan: { valueId: tanId, explanation: '同じ終辺をもつ角の動径の傾きです。' }
+    };
+}
+
+function gcd(a, b) {
+    a = Math.abs(Math.round(a));
+    b = Math.abs(Math.round(b));
+    while (b) [a, b] = [b, a % b];
+    return a || 1;
+}
+
+function radianParts(deg) {
+    const scaled = Math.round(Number(deg) * 2);
+    const denominatorBase = 360;
+    const divisor = gcd(scaled, denominatorBase);
+    return { numerator: scaled / divisor, denominator: denominatorBase / divisor };
+}
+
+function formatAngleHtml(deg, notation = 'degree') {
+    if (notation !== 'radian') return `<span class="angle-number">${deg}</span><span class="degree-mark">°</span>`;
+    const { numerator, denominator } = radianParts(deg);
+    if (numerator === 0) return '<span class="angle-number">0</span>';
+    const sign = numerator < 0 ? '<span class="angle-number">−</span>' : '';
+    const n = Math.abs(numerator);
+    if (denominator === 1) {
+        return `${sign}${n === 1 ? '' : `<span class="angle-number">${n}</span>`}<span class="angle-pi">π</span>`;
+    }
+    if (n === 1) {
+        return `${sign}<span class="angle-fraction"><span class="num angle-pi">π</span><span class="den angle-number">${denominator}</span></span>`;
+    }
+    return `${sign}<span class="angle-fraction"><span class="num angle-number">${n}</span><span class="den angle-number">${denominator}</span></span><span class="angle-pi angle-pi-after">π</span>`;
+}
+
+function formatAngleText(deg, notation = 'degree') {
+    if (notation !== 'radian') return `${deg}°`;
+    const { numerator, denominator } = radianParts(deg);
+    if (numerator === 0) return '0';
+    const sign = numerator < 0 ? '−' : '';
+    const n = Math.abs(numerator);
+    if (denominator === 1) return `${sign}${n === 1 ? '' : n}π`;
+    return `${sign}${n === 1 ? '' : n}π/${denominator}`;
+}
+
 window.TRIG_DATA = TRIG_DATA;
 window.VALUE_DEFS = VALUE_DEFS;
 window.ANGLES = ANGLES;
@@ -245,3 +311,8 @@ window.SECRET_QUESTION_POOL = SECRET_QUESTION_POOL;
 window.SECRET_ANGLES = SECRET_ANGLES;
 window.formatValueHtml = formatValueHtml;
 window.formatValueText = formatValueText;
+window.normalizeAngle = normalizeAngle;
+window.getTrigData = getTrigData;
+window.formatAngleHtml = formatAngleHtml;
+window.formatAngleText = formatAngleText;
+window.radianParts = radianParts;

@@ -163,6 +163,9 @@ class UnitCircleVisualizer {
         this.currentFunc = func;
         this.setInteractive(false);
 
+        const displayDeg = deg;
+        deg = window.normalizeAngle ? window.normalizeAngle(deg) : deg;
+        if (Number.isFinite(userSelectedDeg) && window.normalizeAngle) userSelectedDeg = window.normalizeAngle(userSelectedDeg);
         const rad = (deg * Math.PI) / 180;
         const px = Math.cos(rad) * this.R;
         const py = -Math.sin(rad) * this.R; // SVGは上がマイナス
@@ -172,6 +175,7 @@ class UnitCircleVisualizer {
         const isSecretReference = isReferenceGuide && this.angles.length > 0 && Math.max(...this.angles) <= 90;
         const isQuizCircle = circleId === 'quiz-unit-circle';
         const isExpandedCircle = isReferenceGuide || isQuizCircle;
+        const isVerticalTangent = deg === 90 || deg === 270;
         const showFullCircleForObtuse = isExpandedCircle;
         const svg = this.container ? this.container.querySelector('svg.unit-circle-svg') : null;
         if (svg && isExpandedCircle) {
@@ -198,7 +202,11 @@ class UnitCircleVisualizer {
         const arcRadius = 26;
         const arcEndX = Math.cos(rad) * arcRadius;
         const arcEndY = -Math.sin(rad) * arcRadius;
-        const arcPath = `M ${arcRadius} 0 A ${arcRadius} ${arcRadius} 0 0 0 ${arcEndX} ${arcEndY}`;
+        const fullTurnArc = displayDeg >= 360;
+        const largeArcFlag = !fullTurnArc && deg > 180 ? 1 : 0;
+        const arcPath = fullTurnArc
+            ? `M ${arcRadius} 0 A ${arcRadius} ${arcRadius} 0 1 0 ${-arcRadius} 0 A ${arcRadius} ${arcRadius} 0 1 0 ${arcRadius} 0`
+            : `M ${arcRadius} 0 A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 0 ${arcEndX} ${arcEndY}`;
 
         // 角度テキスト（扇形の中央）
         const midRad = rad / 2;
@@ -207,7 +215,7 @@ class UnitCircleVisualizer {
         const aty = -Math.sin(midRad) * arcTextR;
 
         // 三角比データ
-        const data = window.TRIG_DATA[deg];
+        const data = window.getTrigData ? window.getTrigData(displayDeg) : window.TRIG_DATA[deg];
         const valSin = data ? window.formatValueText(data.sin.valueId) : '';
         const valCos = data ? window.formatValueText(data.cos.valueId) : '';
         const valTan = data ? window.formatValueText(data.tan.valueId) : '';
@@ -290,7 +298,7 @@ class UnitCircleVisualizer {
                     <circle cx="${px}" cy="${py}" r="9" class="answer-point-mask cos-answer-point-mask" />
                     ${answerBoxMarkup(data.cos.valueId, labelX, labelY, 'cos-focus-label')}
                 `;
-            } else if (deg === 90) {
+            } else if (isVerticalTangent) {
                 const tanFullLimit = window.matchMedia && window.matchMedia('(max-width: 599px)').matches ? 205 : 218;
                 focusContent = `
                     <line x1="${this.R}" y1="${-tanFullLimit}" x2="${this.R}" y2="${tanFullLimit}" class="component-line tan-line answer-focus-line" />
@@ -333,25 +341,60 @@ class UnitCircleVisualizer {
 
         // 直角マーク
         let rightAngleMark = '';
-        if (deg !== 0 && deg !== 90 && deg !== 180) {
+        if (deg !== 0 && deg !== 90 && deg !== 180 && deg !== 270) {
             const sq = 6.5;
             const signX = px >= 0 ? -1 : 1;
+            const signY = py > 0 ? 1 : -1;
             rightAngleMark = `
-                <path d="M ${px + signX * sq} 0 L ${px + signX * sq} ${-sq} L ${px} ${-sq}" class="right-angle-mark" />
+                <path d="M ${px + signX * sq} 0 L ${px + signX * sq} ${signY * sq} L ${px} ${signY * sq}" class="right-angle-mark" />
             `;
         }
+
+        const svgAngleMarkup = (angle, x, y, className = '', showCoterminal = false) => {
+            if (window.app?.angleNotation !== 'radian' || !window.radianParts) {
+                return `<text x="${x}" y="${y}" class="${className}" text-anchor="middle">${angle}°</text>`;
+            }
+            const { numerator, denominator } = window.radianParts(angle);
+            if (numerator === 0) {
+                if (!showCoterminal) return `<text x="${x}" y="${y}" class="${className} angle-number-svg" text-anchor="middle">0</text>`;
+                const lowerCoefficient = window.app?.secretModeActive ? '2π・4π' : '2π';
+                return `<g transform="translate(${x} ${y})" class="${className}">
+                    <text x="0" y="-7" class="angle-number-svg" text-anchor="middle">0</text>
+                    <text x="0" y="16" text-anchor="middle"><tspan class="angle-number-svg">${lowerCoefficient.startsWith('2') ? '2' : ''}</tspan><tspan class="angle-pi-svg">π</tspan>${window.app?.secretModeActive ? '<tspan class="angle-number-svg">・4</tspan><tspan class="angle-pi-svg">π</tspan>' : ''}</text>
+                </g>`;
+            }
+            if (denominator === 1) {
+                const coefficient = numerator === 1 ? '' : numerator;
+                return `<text x="${x}" y="${y}" class="${className}" text-anchor="middle"><tspan class="angle-number-svg">${coefficient}</tspan><tspan class="angle-pi-svg">π</tspan></text>`;
+            }
+            const n = Math.abs(numerator);
+            const sign = numerator < 0 ? '−' : '';
+            const piAfter = n > 1;
+            const fracX = piAfter ? -5 : 0;
+            return `<g transform="translate(${x} ${y})" class="${className}">
+                ${sign ? '<text x="-14" y="3" class="angle-number-svg" text-anchor="middle">−</text>' : ''}
+                <text x="${fracX}" y="-5" class="${n === 1 ? 'angle-pi-svg' : 'angle-number-svg'}" text-anchor="middle">${n === 1 ? 'π' : n}</text>
+                <line x1="${fracX - 7}" y1="-1" x2="${fracX + 7}" y2="-1" class="angle-fraction-bar-svg" />
+                <text x="${fracX}" y="10" class="angle-number-svg" text-anchor="middle">${denominator}</text>
+                ${piAfter ? '<text x="8" y="4" class="angle-pi-svg" text-anchor="middle">π</text>' : ''}
+            </g>`;
+        };
 
         // Angle labels: place near arc, with fine-tuning per angle to avoid axis overlap
         const angleLabels = this.angles.map(d => {
             const r = d * Math.PI / 180;
-            let labelR = this.R + 9; // close to arc
-            if (d === 30 || d === 45 || d === 60) { labelR = this.R + 16; } // a little farther from the arc
+            let labelR = this.R + (window.app?.angleNotation === 'radian' ? 19 : 9);
+            if (d === 30 || d === 45 || d === 60 || d === 120 || d === 135 || d === 150 || d === 210 || d === 225 || d === 240 || d === 300 || d === 315 || d === 330) {
+                labelR = this.R + (window.app?.angleNotation === 'radian' ? 25 : 16);
+            }
+            if (window.app?.angleNotation === 'radian' && [270, 300, 315, 330].includes(d)) labelR = this.R + 34;
+            if (window.app?.angleNotation === 'radian' && d === 0) labelR = this.R + 10;
             let lx = Math.cos(r) * labelR;
             let ly = -Math.sin(r) * labelR;
 
             // Fine-tune per angle to avoid axis overlap
             let offsetX = 0, offsetY = 0;
-            if (d === 0)   { offsetX = 6;  offsetY = 15; } // blue label stays beside the right vertex
+            if (d === 0)   { offsetX = 6;  offsetY = window.app?.angleNotation === 'radian' ? 0 : 15; }
             if (d === 180) { offsetX = 5; offsetY = -10; } // upper-left of the vertex, inside the frame
             if (d === 30)  { offsetX = 2;  offsetY = 0; }
             if (d === 45)  { offsetX = 2;  offsetY = -1; }
@@ -375,11 +418,8 @@ class UnitCircleVisualizer {
             if (isSecretReference && d === 54) anchor = 'end';
 
             const isActive = d === deg;
-            return `
-                <text x="${lx + offsetX}" y="${ly + offsetY}"
-                      class="guide-deg-label anim-fade-in ${isActive ? 'active-deg' : ''}"
-                      text-anchor="${anchor}">${d}°</text>
-            `;
+            const anchorShift = anchor === 'start' ? 9 : (anchor === 'end' ? -9 : 0);
+            return svgAngleMarkup(d, lx + offsetX + anchorShift, ly + offsetY, `guide-deg-label anim-fade-in ${isActive ? 'active-deg' : ''}`, true);
         }).join('');
 
         let content = `
@@ -389,7 +429,7 @@ class UnitCircleVisualizer {
 
             <!-- Angle Arc -->
             <path d="${arcPath}" class="angle-arc anim-fade-in" />
-            <text x="${atx}" y="${deg === 0 ? aty + 15 : aty}" class="angle-text anim-fade-in" text-anchor="middle" dominant-baseline="central">${deg}°</text>
+            ${svgAngleMarkup(displayDeg, atx, deg === 0 ? aty + 15 : aty, 'angle-text anim-fade-in')}
 
             <!-- Right Triangle Fill -->
             <polygon points="0,0 ${px},0 ${px},${py}" class="triangle-fill anim-fade-in" />
@@ -405,7 +445,7 @@ class UnitCircleVisualizer {
             <line x1="0" y1="0" x2="${px}" y2="${py}" class="radius-line" />
         `;
         // Tan 表示 (always show on the x=1 tangent line)
-        if (deg === 90) {
+        if (isVerticalTangent) {
             content += `
                 <line x1="${this.R}" y1="${isReferenceGuide ? -232 : (isExpandedCircle ? -218 : -148)}" x2="${this.R}" y2="${isReferenceGuide ? 232 : 8}" class="component-line tan-line active-func" />
                 <g class="tan-badge anim-fade-in">
