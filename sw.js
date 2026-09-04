@@ -1,15 +1,15 @@
-const CACHE_NAME = 'trig-quiz-v155-separated-secret-unlock';
+const CACHE_NAME = 'trig-quiz-v156-achievement-sequence-fix';
 const APP_FILES = [
     './',
     './index.html',
     './manifest.webmanifest',
-    './css/style.css?v=155',
-    './css/height-compact.css?v=155',
-    './js/trig-data.js?v=155',
-    './js/audio.js?v=155',
-    './js/unit-circle.js?v=155',
-    './js/pwa.js?v=155',
-    './js/app.js?v=155',
+    './css/style.css?v=156',
+    './css/height-compact.css?v=156',
+    './js/trig-data.js?v=156',
+    './js/audio.js?v=156',
+    './js/unit-circle.js?v=156',
+    './js/pwa.js?v=156',
+    './js/app.js?v=156',
     './assets/start-face.png',
     './assets/start-face-white.png',
     './assets/start-icon-white.png',
