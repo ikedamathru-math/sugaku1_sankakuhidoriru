@@ -8628,3 +8628,216 @@ body.secret-awakened-play::after {
     font-size: .76rem !important;
   }
 }
+
+
+/* Anonymous recorded voice selector */
+.btn-voice-select {
+    font-weight: 800;
+    white-space: nowrap;
+}
+.voice-select-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 4500;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(15, 23, 42, .58);
+    backdrop-filter: blur(3px);
+}
+.voice-select-overlay[hidden] { display: none !important; }
+.voice-select-card {
+    width: min(470px, 100%);
+    padding: 18px;
+    border: 2px solid #cbd5e1;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 20px 55px rgba(15, 23, 42, .25);
+}
+.voice-select-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.voice-select-title { font-size: 1.25rem; font-weight: 900; }
+.voice-select-subtitle { margin-top: 2px; color: var(--text-muted); font-size: .82rem; }
+.voice-select-close { min-width: 40px; padding: 6px 10px; font-size: 1.2rem; }
+.voice-select-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+.voice-choice {
+    min-height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 11px 13px;
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--text-primary);
+    cursor: pointer;
+    font: inherit;
+}
+.voice-choice strong { font-size: .96rem; }
+.voice-choice span { color: var(--text-muted); font-size: .76rem; font-weight: 700; }
+.voice-choice.active {
+    border-color: #0284c7;
+    background: #f0f9ff;
+    box-shadow: 0 0 0 3px rgba(2,132,199,.10);
+}
+.voice-choice.active strong { color: #0369a1; }
+.voice-select-note { margin-top: 12px; text-align: center; color: var(--text-muted); font-size: .76rem; }
+@media (max-width: 599px) {
+    /* Portrait phone: keep all top controls on one line. */
+    .app-header .header-actions {
+        width: 100%;
+        gap: 3px !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-end;
+        overflow: visible;
+    }
+    .app-header .header-actions > .btn {
+        flex: 0 1 auto;
+        min-width: 0 !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+        font-size: clamp(.58rem, 2.45vw, .74rem) !important;
+        white-space: nowrap;
+    }
+    .btn-voice-select { order: initial; }
+    .voice-select-grid { grid-template-columns: 1fr; max-height: 58vh; overflow-y: auto; }
+}
+
+@media (max-width: 390px) and (orientation: portrait) {
+    .app-header { padding-left: 3px !important; padding-right: 3px !important; }
+    .app-header .header-actions { gap: 2px !important; }
+    .app-header .header-actions > .btn {
+        padding-left: 3px !important;
+        padding-right: 3px !important;
+        font-size: .58rem !important;
+    }
+}
+
+/* ===== v164: portrait-phone header controls always stay on one row ===== */
+@media (max-width: 599px) and (orientation: portrait) {
+  .app-header {
+    width: 100% !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+    overflow: visible !important;
+  }
+
+  .app-header .header-actions,
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: nowrap !important;
+    gap: 2px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .app-header .header-actions > .btn,
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions > .btn {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 29px !important;
+    min-height: 29px !important;
+    padding: 2px 2px !important;
+    font-size: clamp(.52rem, 2.18vw, .66rem) !important;
+    line-height: 1 !important;
+    letter-spacing: -.02em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+
+  .app-header #btn-palette-settings {
+    flex-grow: 1.35 !important;
+  }
+  .app-header #btn-sound,
+  .app-header #btn-bgm-toggle {
+    flex-grow: 1.13 !important;
+  }
+  .app-header #btn-reference,
+  .app-header #btn-voice-select {
+    flex-grow: .82 !important;
+  }
+  .app-header #btn-voice-select {
+    order: 99 !important;
+  }
+
+  /* When the front/back switch appears, count it as one compact item. */
+  .app-header .mode-world-switcher:not([hidden]) {
+    display: flex !important;
+    flex: .82 1 0 !important;
+    min-width: 0 !important;
+    order: -1 !important;
+  }
+  .app-header .mode-world-switcher:not([hidden]) .mode-world-btn {
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 29px !important;
+    min-height: 29px !important;
+    padding: 2px 1px !important;
+    font-size: clamp(.50rem, 2.05vw, .62rem) !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 360px) and (orientation: portrait) {
+  .app-header .header-actions,
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions {
+    gap: 1px !important;
+  }
+  .app-header .header-actions > .btn,
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions > .btn {
+    padding-left: 1px !important;
+    padding-right: 1px !important;
+    font-size: .52rem !important;
+  }
+  .app-header .mode-world-switcher:not([hidden]) .mode-world-btn {
+    font-size: .50rem !important;
+  }
+}
+
+/* ===== v165: stable one-row portrait header (fix crushed controls) ===== */
+@media (max-width: 599px) and (orientation: portrait) {
+  .app-header { width:100% !important; padding-left:4px !important; padding-right:4px !important; overflow:visible !important; }
+  .app-header .header-actions,
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions {
+    display:grid !important; grid-auto-flow:column !important; grid-auto-columns:minmax(0,1fr) !important;
+    grid-template-columns:none !important; align-items:center !important; gap:3px !important;
+    width:100% !important; min-width:0 !important; overflow:visible !important;
+  }
+  .app-header .mode-world-switcher:not([hidden]) { display:contents !important; }
+  .app-header .header-actions > .btn,
+  .app-header .mode-world-switcher .mode-world-btn,
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions > .btn {
+    width:100% !important; min-width:0 !important; max-width:100% !important; height:30px !important; min-height:30px !important;
+    box-sizing:border-box !important; padding:2px 2px !important; margin:0 !important;
+    font-size:clamp(.56rem,2.35vw,.70rem) !important; line-height:1 !important; letter-spacing:-.025em !important;
+    white-space:nowrap !important; overflow:hidden !important; text-overflow:clip !important; flex:none !important;
+  }
+  .app-header #btn-voice-select { order:initial !important; }
+}
+@media (max-width:380px) and (orientation:portrait) {
+  .app-header .header-actions,
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions { gap:2px !important; }
+  .app-header .header-actions > .btn,
+  .app-header .mode-world-switcher .mode-world-btn,
+  body.secret-mode-available:has(#start-screen.active) .app-header .header-actions > .btn {
+    padding-left:1px !important; padding-right:1px !important; font-size:.55rem !important;
+  }
+}

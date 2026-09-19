@@ -33,7 +33,7 @@ class QuizAudio {
 
     // 正解音（明るい2音アルペジオ）
     playCorrect() {
-        if (!this.enabled) return;
+        // 正解音はBGM・操作音設定に関係なく常に鳴らす。
         this.init();
         if (!this.ctx) return;
 
@@ -159,7 +159,7 @@ class QuizAudio {
 
     // 不正解音（落ち着いた低音バズ）
     playIncorrect() {
-        if (!this.enabled) return;
+        // 不正解音はBGM・操作音設定に関係なく常に鳴らす。
         this.init();
         if (!this.ctx) return;
 
