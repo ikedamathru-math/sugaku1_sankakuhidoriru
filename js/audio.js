@@ -12,6 +12,8 @@ class QuizAudio {
         this.bgmNodes = [];
         this.bgmElement = null;
         this.bgmPausedAt = 0;
+        this.voiceElement = null;
+        this.voiceTimer = null;
     }
 
     init() {
@@ -33,7 +35,7 @@ class QuizAudio {
 
     // 正解音（明るい2音アルペジオ）
     playCorrect() {
-        if (!this.enabled) return;
+        // 正解音はBGM・操作音設定に関係なく常に鳴らす。
         this.init();
         if (!this.ctx) return;
 
@@ -48,7 +50,7 @@ class QuizAudio {
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, start);
 
-            gain.gain.setValueAtTime(0.36, start);
+            gain.gain.setValueAtTime(0.48, start);
             gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
 
             osc.connect(gain);
@@ -159,7 +161,7 @@ class QuizAudio {
 
     // 不正解音（落ち着いた低音バズ）
     playIncorrect() {
-        if (!this.enabled) return;
+        // 不正解音はBGM・操作音設定に関係なく常に鳴らす。
         this.init();
         if (!this.ctx) return;
 
@@ -171,7 +173,7 @@ class QuizAudio {
         osc.frequency.setValueAtTime(180, now);
         osc.frequency.linearRampToValueAtTime(120, now + 0.25);
 
-        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.setValueAtTime(0.38, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
 
         osc.connect(gain);
@@ -279,6 +281,39 @@ class QuizAudio {
     }
 
 
+    // ===== Recorded character voices (anonymous VOICE 1-7) =====
+    stopVoice() {
+        if (this.voiceTimer) {
+            window.clearTimeout(this.voiceTimer);
+            this.voiceTimer = null;
+        }
+        if (this.voiceElement) {
+            try { this.voiceElement.pause(); } catch (e) {}
+            this.voiceElement = null;
+        }
+    }
+
+    playVoiceFile(src, delay = 0) {
+        if (!this.enabled || !src) return;
+        const play = () => {
+            this.voiceTimer = null;
+            if (this.voiceElement) {
+                try { this.voiceElement.pause(); } catch (e) {}
+            }
+            const el = new Audio(src);
+            this.voiceElement = el;
+            el.volume = 0.95;
+            el.play().catch(() => {});
+            el.addEventListener('ended', () => {
+                if (this.voiceElement === el) this.voiceElement = null;
+            }, { once: true });
+        };
+        if (delay > 0) {
+            if (this.voiceTimer) window.clearTimeout(this.voiceTimer);
+            this.voiceTimer = window.setTimeout(play, delay);
+        } else play();
+    }
+
     // ===== Background music (selected WAV tracks) =====
     startBgm(track = 'race') {
         this.stopBgm();
@@ -326,6 +361,8 @@ class QuizAudio {
             this.bgmElement = null;
         }
         this.bgmPausedAt = 0;
+        this.voiceElement = null;
+        this.voiceTimer = null;
         this.currentBgm = 'none';
     }
 

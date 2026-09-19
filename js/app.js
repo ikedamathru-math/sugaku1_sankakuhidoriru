@@ -47,6 +47,9 @@ class TrigQuizApp {
         this.paletteSettingsSelectedIndex = null;
         this.paletteDragIndex = null;
         this.pendingResultRankSound = null;
+        this.voiceChoice = Math.min(7, Math.max(1, parseInt(localStorage.getItem('trig-quiz-voice-choice') || '1', 10) || 1));
+        // 声はデフォルトOFF。明示的にONにした場合だけ保存して再利用する。
+        this.voiceEnabled = localStorage.getItem('trig-quiz-voice-enabled') === 'on';
 
         // Quiz State
         this.currentQuestion = null;
@@ -90,6 +93,10 @@ class TrigQuizApp {
 
             // Header elements
             btnSound: document.getElementById('btn-sound'),
+            btnVoiceSelect: document.getElementById('btn-voice-select'),
+            voiceSelectOverlay: document.getElementById('voice-select-overlay'),
+            voiceSelectGrid: document.getElementById('voice-select-grid'),
+            btnVoiceSelectClose: document.getElementById('btn-voice-select-close'),
             btnReference: document.getElementById('btn-reference'),
             btnReferenceBack: document.getElementById('btn-reference-back'),
             headerBgmSelect: document.getElementById('header-bgm-select'),
@@ -201,6 +208,7 @@ class TrigQuizApp {
         this.bindEvents();
         this.bindViewportFit();
         this.bindAudioUnlock();
+        this.initVoiceSelector();
         this.buildReferenceTable();
         this.updateSettingsFromUI();
         this.syncSelectionCards();
@@ -215,6 +223,83 @@ class TrigQuizApp {
         this.bgmTrack = 'race';
 }
 
+
+    getVoiceFiles() {
+        const base = 'assets/voices/';
+        return {
+            1: { combo3: base+'v1_combo3.mp3', combo5: base+'v1_combo5.mp3', combo10: base+'v1_combo10.mp3', hype: base+'v1_hype.mp3', clear: base+'v1_clear.mp3', fail: base+'v1_fail.mp3' },
+            2: { combo3: base+'v2_combo3.mp3', combo5: base+'v2_combo5.mp3', combo10: base+'v2_combo10.mp3', hype: base+'v2_hype.mp3', clear: base+'v2_clear.mp3', fail: base+'v2_fail.mp3' },
+            3: { combo3: base+'v3_combo3.mp3', combo5: base+'v3_combo5.mp3', combo10: base+'v3_combo10.mp3', hype: base+'v3_hype.mp3', clear: base+'v3_clear.mp3', fail: null },
+            4: { combo3: base+'v4_combo3.mp3', combo5: base+'v4_combo5.mp3', combo10: base+'v4_combo10.mp3', hype: base+'v4_hype.mp3', clear: base+'v4_clear.mp3', fail: base+'v4_fail.mp3' },
+            5: { combo3: base+'v5_combo3.mp3', combo5: base+'v5_combo5.mp3', combo10: base+'v5_combo10.mp3', hype: base+'v5_hype.mp3', clear: base+'v5_clear.mp3', fail: base+'v5_fail.mp3' },
+            6: { combo3: base+'v6_combo3.mp3', combo5: base+'v6_combo5.mp3', combo10: base+'v6_combo10.mp3', hype: base+'v6_hype.mp3', clear: base+'v6_clear.mp3', fail: base+'v6_fail.mp3' },
+            7: { combo3: base+'v7_combo3.mp3', combo5: base+'v7_combo5.mp3', combo10: base+'v7_combo10.mp3', hype: base+'v7_hype.mp3', clear: base+'v7_clear.mp3', fail: base+'v7_fail.mp3' }
+        };
+    }
+
+    getSelectedVoice() { return this.getVoiceFiles()[this.voiceChoice] || this.getVoiceFiles()[1]; }
+
+    playSelectedVoice(kind, delay = 0) {
+        if (!this.voiceEnabled) return;
+        const src = this.getSelectedVoice()[kind];
+        if (src) this.audio.playVoiceFile(src, delay);
+    }
+
+    initVoiceSelector() {
+        const refresh = () => {
+            if (this.dom.btnVoiceSelect) this.dom.btnVoiceSelect.textContent = this.voiceEnabled ? `声${this.voiceChoice}` : '声OFF';
+            this.dom.voiceSelectGrid?.querySelectorAll('.voice-choice').forEach(btn => {
+                const isOff = btn.dataset.voiceEnabled === 'false';
+                const selected = isOff ? !this.voiceEnabled : (this.voiceEnabled && Number(btn.dataset.voice) === this.voiceChoice);
+                btn.classList.toggle('active', selected);
+                btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            });
+        };
+        refresh();
+        this.dom.btnVoiceSelect?.addEventListener('click', () => {
+            this.audio.playClick();
+            if (this.dom.voiceSelectOverlay) this.dom.voiceSelectOverlay.hidden = false;
+            refresh();
+        });
+        this.dom.btnVoiceSelectClose?.addEventListener('click', () => {
+            this.audio.playClick();
+            if (this.dom.voiceSelectOverlay) this.dom.voiceSelectOverlay.hidden = true;
+        });
+        this.dom.voiceSelectOverlay?.addEventListener('click', e => {
+            if (e.target === this.dom.voiceSelectOverlay) this.dom.voiceSelectOverlay.hidden = true;
+        });
+        this.dom.voiceSelectGrid?.querySelectorAll('.voice-choice').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.voiceEnabled === 'false') {
+                    this.voiceEnabled = false;
+                    localStorage.setItem('trig-quiz-voice-enabled', 'off');
+                    refresh();
+                    return;
+                }
+                this.voiceChoice = Number(btn.dataset.voice) || 1;
+                this.voiceEnabled = true;
+                localStorage.setItem('trig-quiz-voice-choice', String(this.voiceChoice));
+                localStorage.setItem('trig-quiz-voice-enabled', 'on');
+                refresh();
+                // 声1〜7を選んだ時は、その声のリアクションを試聴。
+                this.playSelectedVoice('hype');
+            });
+        });
+    }
+
+    playComboVoice(streak) {
+        if (streak === 3) {
+            this.playSelectedVoice('combo3');
+        } else if (streak === 5) {
+            this.playSelectedVoice('combo5');
+        } else if (streak === 10) {
+            // 10コンボ到達時は「10コンボ」の音声のみ。
+            this.playSelectedVoice('combo10');
+        } else if (streak > 10) {
+            // 10コンボを超えたら、正解するたびに喜び音声を流す。
+            this.playSelectedVoice('hype');
+        }
+    }
 
     bindViewportFit() {
         const refit = () => requestAnimationFrame(() => {
@@ -1697,13 +1782,15 @@ class TrigQuizApp {
 
             if ([3, 5, 10].includes(this.streak)) this.showComboAnimation(this.streak);
 
+            // 正解時の「ピロン」は毎回必ず先に鳴らす。
+            // 10コンボ以上では、この効果音に喜び音声を重ねてよい。
+            this.audio.playCorrect();
+            this.playComboVoice(this.streak);
+
             const justAwakened = this.mode === '1min-secret' && this.streak === 10;
             if (this.mode === '1min-secret' && this.streak >= 10) this.setSecretAwakening(true);
 
             this.updateBestChaseFeedback();
-
-            // 正解音は毎問共通。コンボはテロップで知らせる。
-            this.audio.playCorrect();
 
             // 裏版10連続時の特別感は、テロップと発光で見せる。
         } else {
@@ -1918,7 +2005,20 @@ class TrigQuizApp {
         const rank = this.pendingResultRankSound;
         this.pendingResultRankSound = null;
         if (!rank) return;
-        this.audio.playResultRank(rank);
+
+        // 結果発表ではランクに応じて選択中の声を使う。
+        // A以上: ステージクリアの声 / B以下: ダメだった時の声。
+        // 声3（佐藤）は失敗用の声がないため、B以下だけ従来のランク効果音を使う。
+        if (!this.voiceEnabled) {
+            // 声OFFでは従来の結果ランク効果音を使用する。
+            this.audio.playResultRank(rank);
+        } else if (rank === 'S' || rank === 'A') {
+            this.playSelectedVoice('clear');
+        } else if (this.voiceChoice === 3) {
+            this.audio.playResultRank(rank);
+        } else {
+            this.playSelectedVoice('fail');
+        }
     }
 
     launchConfetti() {
@@ -2120,10 +2220,10 @@ class TrigQuizApp {
             }
         }
 
-        // Result sound priority:
+        // Result audio priority:
         // - If a personal-best/growth popup exists, wait until the user finishes all popups
         //   and presses the final 「結果を見る」 button.
-        // - If there is no popup, play the S/A/B/C sound on the result screen immediately.
+        // - A以上はクリア音声、B以下は失敗音声（声3のみ従来のランク効果音）。
         if (achievementEvents.length) {
             this.pendingAchievementEvents = achievementEvents;
             setTimeout(() => {
@@ -2289,6 +2389,12 @@ class TrigQuizApp {
         this.dom.achievementOverlay.style.setProperty('pointer-events', 'auto', 'important');
         this.dom.achievementOverlay.classList.add('is-visible');
         this.dom.achievementOverlay.setAttribute('aria-hidden', 'false');
+        // 前の演出の鍵・花を必ず消してから次の演出を描画する。
+        // 裏版解放の直後に別の演出が続いても、操作ボタンが押し出されないようにする。
+        if (this.dom.achievementGrowthVisual) {
+            this.dom.achievementGrowthVisual.classList.remove('secret-unlock-visual', 'secret-growth', 'radian-growth');
+            this.dom.achievementGrowthVisual.innerHTML = '';
+        }
         this.dom.achievementCard.classList.toggle('is-best', event.type === 'best');
         this.dom.achievementCard.classList.toggle('is-growth', event.type === 'growth');
         this.dom.achievementCard.classList.toggle('is-unlock', event.type === 'unlock');

@@ -4171,7 +4171,7 @@ body.radian-mode #start-screen .angle-notation-btn:focus-visible {
 .achievement-card.is-unlock .achievement-copy strong {
   color: #4338ca !important;
 }
-.achievement-growth-visual.secret-unlock-visual {
+.achievement-growth-visual.secret-unlock-visual:not([hidden]) {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
